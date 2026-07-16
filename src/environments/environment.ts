@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  baseUrl: 'https://your-api.com/api'
+  baseUrl: 'https://workfitbackend.runasp.net/api'
 };
