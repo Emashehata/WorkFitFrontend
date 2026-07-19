@@ -1,3 +1,4 @@
+import { organizationGuard } from './core/guards/organization.guard';
 import { Routes } from '@angular/router';
 import { RegisterOrganizationComponent } from './features/auth/register-organization/register-organization.component';
 import { LoginComponent } from './features/auth/login/login.component';
