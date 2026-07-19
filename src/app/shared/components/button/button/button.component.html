@@ -1,0 +1,19 @@
+<button
+  [type]="type()"
+  [disabled]="disabled() || loading()"
+  class="inline-flex items-center justify-center gap-2 m-1 rounded-2xl px-5 py-3 text-sm font-semibold transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60"
+  [class]="buttonClass()">
+
+  @if (loading()) {
+    <i class="fa-solid fa-spinner animate-spin"></i>
+  } @else {
+
+    @if (icon()) {
+      <i [class]="icon()"></i>
+    }
+
+    <ng-content></ng-content>
+
+  }
+
+</button>

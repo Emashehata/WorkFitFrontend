@@ -6,6 +6,7 @@ import {
 import { RouterOutlet } from '@angular/router';
 import { SidebarComponent } from '../../../shared/components/sidebar/sidebar/sidebar.component';
 import { HeaderComponent } from '../../../shared/components/header/header/header.component';
+import { ToastComponent } from "../../../shared/components/toast/toast/toast.component";
  
 
 @Component({
@@ -14,8 +15,9 @@ import { HeaderComponent } from '../../../shared/components/header/header/header
   imports: [
     RouterOutlet,
     SidebarComponent,
-    HeaderComponent
-  ],
+    HeaderComponent,
+    ToastComponent
+],
   templateUrl: './dashboard-layout.component.html',
 })
 export class DashboardLayoutComponent {

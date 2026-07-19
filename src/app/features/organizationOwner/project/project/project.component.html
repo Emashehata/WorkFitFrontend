@@ -1,0 +1,39 @@
+ <div class="projects-grid">
+  @for (project of projects; track project.id) {
+    <app-card>
+      <div card-header class="card-header-row">
+        <h3 class="project-title">{{ project.name }}</h3>
+       <app-badge
+  [variant]="getStatusConfig(project.status).variant"
+  [icon]="getStatusConfig(project.status).icon">
+  {{ project.status }}
+</app-badge>
+      </div>
+
+      <div class="project-meta">
+        <div class="meta-item">
+          <i class="fa-solid fa-users"></i>
+          <span>Members <b>{{ project.memberCount ?? 0 }}</b></span>
+        </div>
+        <div class="meta-item">
+          <i class="fa-solid fa-list-check"></i>
+          <span>Tasks <b>{{ project.taskCount }}</b></span>
+        </div>
+        <div class="meta-item">
+          <i class="fa-regular fa-calendar"></i>
+          <span>{{ project.startDate ? (project.startDate | date:'MMM d, y') : '—' }}</span>
+        </div>
+        <div class="meta-item">
+          <i class="fa-solid fa-flag-checkered"></i>
+          <span>{{ project.endDate ? (project.endDate | date:'MMM d, y') : '—' }}</span>
+        </div>
+      </div>
+
+      <div card-footer>
+        <app-button variant="outline" icon="fa-solid fa-eye" (click)="onView(project)">View</app-button>
+        <app-button variant="secondary" icon="fa-solid fa-pen" (click)="onEdit(project)">Edit</app-button>
+        <app-button variant="danger" icon="fa-solid fa-trash" (click)="onDelete(project)">Delete</app-button>
+      </div>
+    </app-card>
+  }
+</div>

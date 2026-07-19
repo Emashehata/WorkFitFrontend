@@ -1,0 +1,8 @@
+<span
+  class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset w-fit"
+  [class]="badgeClass()">
+  @if (icon()) {
+    <i [class]="icon()" class="text-[10px]"></i>
+  }
+  <ng-content></ng-content>
+</span>

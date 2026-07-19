@@ -4,6 +4,7 @@ import { LoginComponent } from './features/auth/login/login.component';
 import { HomeComponent } from './features/organizationOwner/home/home.component';
 import { LandingComponent } from './features/landing/landing.component';
 import { DashboardLayoutComponent } from './layouts/dashboard-layout/dashboard-layout/dashboard-layout.component';
+import { ProjectComponent } from './features/organizationOwner/project/project/project.component';
 
 
 export const routes: Routes = [
@@ -31,6 +32,10 @@ export const routes: Routes = [
       {
         path: 'home',
         component: HomeComponent
+      },
+      {
+        path: 'projects',
+        component: ProjectComponent
       },
 
       // هتزودي الباقي هنا
