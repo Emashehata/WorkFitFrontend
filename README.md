@@ -1,59 +1,173 @@
-# WorkFitFrontend
+# TalentIQ — BI-Infused CRM Platform
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.27.
+**ITI Graduation Project** — Professional Diploma, Professional Development & BI-Infused CRM Track
+Information Technology Institute (ITI), Tanta Branch
 
-## Development server
+---
 
-To start a local development server, run:
+## 📖 Overview
 
+**TalentIQ** is a full-stack, modular platform designed to manage the complete talent lifecycle within an organization — from recruitment and onboarding to performance tracking and workforce analytics — with BI-driven insights for decision-makers.
+
+The system is built as a **modular monolith** using **Clean Architecture** and **CQRS**, with each business domain owned by a team member and integrated into one cohesive application: a shared **ASP.NET Core** backend and an **Angular** frontend.
+
+---
+
+## 🧩 Modules
+
+| Module | Description |
+|---|---|
+| Talent Management | Employee talent data, performance evaluation, and related workflows |
+| [Module 2] | *(fill in)* |
+| [Module 4] | *(fill in)* |
+| [Module 5] | *(fill in)* |
+
+> Each module has its own domain, application, infrastructure, and API layers on the backend, and its own set of Angular feature modules on the frontend.
+
+---
+
+## 🏗️ Architecture
+
+- **Style:** Modular Monolith
+- **Backend Pattern:** Clean Architecture + CQRS (MediatR)
+- **API Layer:** FastEndpoints
+- **Frontend:** Angular 19, standalone components, feature-based structure
+- **Auth:** JWT-based authentication & role/claims-based authorization
+- **BI Layer:** Power BI dashboards / analytics integration
+
+Each backend module contains:
+- **Domain** — entities, value objects, domain logic
+- **Application** — commands, queries, handlers, DTOs (CQRS)
+- **Infrastructure** — EF Core configurations, repositories, migrations
+- **Api** — FastEndpoints, module registration
+
+Each frontend feature contains:
+- **Components** — smart/dumb component split
+- **Services** — API communication layer
+- **State** — module-level state management
+- **Models** — TypeScript interfaces matching backend DTOs
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Angular 19, TypeScript, RxJS |
+| Backend | ASP.NET Core (.NET 9) |
+| Database | PostgreSQL / SQL Server |
+| ORM | Entity Framework Core |
+| API Style | CQRS with MediatR, FastEndpoints |
+| Auth | JWT |
+| Containerization | Docker / Docker Compose |
+| BI / Analytics | Power BI |
+
+---
+
+## 📁 Project Structure
+
+```
+TalentIQ/
+├── backend/                        # WorkFitBackend (ASP.NET Core)
+│   ├── src/
+│   │   ├── Modules/
+│   │   │   ├── TalentManagement/
+│   │   │   ├── [Module2]/
+│   │   │   └── [ModuleN]/
+│   │   ├── Shared/                 # Cross-cutting concerns
+│   │   └── Host/                   # Composition root / API host
+│   └── tests/
+│
+├── frontend/                       # Angular application
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── core/                # Auth, interceptors, guards
+│   │   │   ├── shared/              # Reusable UI components
+│   │   │   ├── features/
+│   │   │   │   ├── talent-management/
+│   │   │   │   ├── [module2]/
+│   │   │   │   └── [moduleN]/
+│   │   │   └── layout/
+│   │   └── environments/
+│   └── angular.json
+│
+└── docker-compose.yml
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- .NET 9 SDK
+- Node.js (LTS) & Angular CLI
+- PostgreSQL or SQL Server
+- Docker (optional, for containerized setup)
+
+### 1. Run the Backend
 ```bash
+cd backend/src/Host
+dotnet restore
+dotnet ef database update
+dotnet run
+```
+API will be available at `https://localhost:{port}`, with Swagger docs at `/swagger`.
+
+### 2. Run the Frontend
+```bash
+cd frontend
+npm install
 ng serve
 ```
+App will be available at `http://localhost:4200`.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
+### 3. Run with Docker (optional)
 ```bash
-ng generate component component-name
+docker-compose up --build
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+---
 
-```bash
-ng generate --help
+## 🔑 Environment Configuration
+
+Update the following before running:
+
+**Backend** (`appsettings.json`):
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=...;Database=TalentIQ;..."
+  },
+  "Jwt": {
+    "Issuer": "TalentIQ",
+    "Audience": "TalentIQ",
+    "Key": "your-secret-key"
+  }
+}
 ```
 
-## Building
-
-To build the project run:
-
-```bash
-ng build
+**Frontend** (`environments/environment.ts`):
+```typescript
+export const environment = {
+  production: false,
+  apiUrl: 'https://localhost:{port}/api'
+};
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+---
 
-## Running unit tests
+## 👥 Team
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+This project was developed collaboratively as part of the ITI Professional Diploma graduation requirements, with each team member owning a distinct module across the full stack.
 
-```bash
-ng test
-```
+| Name | Module |
+|---|---|
+| Eman Shehata | fill in |
+| Rawda Ashour | fill in |
+| [Name] | [Module] |
 
-## Running end-to-end tests
+---
 
-For end-to-end (e2e) testing, run:
+## 📄 License
 
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+This project was developed for educational purposes as part of the ITI Graduation Project.
