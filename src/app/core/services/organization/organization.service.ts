@@ -15,7 +15,7 @@ import { AuthService } from '../auth/auth.service';
 export class OrganizationService {
   private http = inject(HttpClient);
   private injector = inject(Injector);
-  private baseUrl = environment.baseUrl; 
+  private baseUrl = environment.baseUrl;
 
   private _organization = signal<Organization | null>(null);
   readonly organization = this._organization.asReadonly();
@@ -45,51 +45,62 @@ export class OrganizationService {
 
     const params = new HttpParams().set('userId', userId);
 
-    return this.http.get<Organization>(`${this.baseUrl}/organizations/me`, { params }).pipe(
-      tap((org) => {
-        this._organization.set(org);
-        this._hasOrganization.set(true);
-      }),
-      map(() => true),
-      catchError(() => {
-        this._hasOrganization.set(false);
-        return of(false);
-      })
-    );
+    return this.http
+      .get<Organization>(`${this.baseUrl}/organizations/me`, { params })
+      .pipe(
+        tap((org) => {
+          this._organization.set(org);
+          this._hasOrganization.set(true);
+        }),
+        map(() => true),
+        catchError(() => {
+          this._hasOrganization.set(false);
+          return of(false);
+        }),
+      );
   }
 
   getOrganization(): Observable<Organization> {
     const params = new HttpParams().set('userId', this.requireUserId());
-    return this.http.get<Organization>(`${this.baseUrl}/organizations/me`, { params }).pipe(
-      tap((org) => {
-        this._organization.set(org);
-        this._hasOrganization.set(true);
-      })
-    );
+    return this.http
+      .get<Organization>(`${this.baseUrl}/organizations/me`, { params })
+      .pipe(
+        tap((org) => {
+          this._organization.set(org);
+          this._hasOrganization.set(true);
+        }),
+      );
   }
 
   getOrganizationSettings(): Observable<OrganizationSettings> {
     const params = new HttpParams().set('userId', this.requireUserId());
     return this.http
-      .get<OrganizationSettings>(`${this.baseUrl}/organizations/me/settings`, { params })
+      .get<OrganizationSettings>(`${this.baseUrl}/organizations/me/settings`, {
+        params,
+      })
       .pipe(tap((settings) => this._organizationSettings.set(settings)));
   }
 
-  // No orgId param — the real route is /me, not /{id}. userId goes in the body, per Swagger.
-  updateOrganization(updateData: UpdateOrganizationRequest): Observable<Organization> {
+  updateOrganization(
+    updateData: UpdateOrganizationRequest,
+  ): Observable<Organization> {
     const body = { ...updateData, userId: this.requireUserId() };
     return this.http
       .put<Organization>(`${this.baseUrl}/organizations/me`, body)
       .pipe(tap((org) => this._organization.set(org)));
   }
 
-  updateOrganizationSettings(settings: OrganizationSettingsUpdate): Observable<OrganizationSettings> {
+  updateOrganizationSettings(
+    settings: OrganizationSettingsUpdate,
+  ): Observable<OrganizationSettings> {
     const body = { ...settings, userId: this.requireUserId() };
     return this.http
-      .put<OrganizationSettings>(`${this.baseUrl}/organizations/me/settings`, body)
+      .put<OrganizationSettings>(
+        `${this.baseUrl}/organizations/me/settings`,
+        body,
+      )
       .pipe(tap((updated) => this._organizationSettings.set(updated)));
   }
-
 
   clearOrganization(): void {
     this._organization.set(null);

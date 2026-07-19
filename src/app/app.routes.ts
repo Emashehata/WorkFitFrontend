@@ -1,56 +1,56 @@
 import { organizationGuard } from './core/guards/organization.guard';
 import { Routes } from '@angular/router';
-import { AuthGuard } from './core/guards/auth.guard';
-import { PublicGuard } from './core/guards/public.guard';
+import { RegisterOrganizationComponent } from './features/auth/register-organization/register-organization.component';
+import { LoginComponent } from './features/auth/login/login.component';
+import { HomeComponent } from './features/organizationOwner/home/home.component';
+import { LandingComponent } from './features/landing/landing.component';
+import { DashboardLayoutComponent } from './layouts/dashboard-layout/dashboard-layout/dashboard-layout.component';
+
 
 export const routes: Routes = [
+
+  // Public Routes
   {
     path: '',
-    loadComponent: () =>
-      import('./features/landing/landing.component').then(
-        (m) => m.LandingComponent,
-      ),
-    canActivate: [PublicGuard],
+    component: LandingComponent
   },
   {
     path: 'login',
-    loadComponent: () =>
-      import('./features/auth/login/login.component').then(
-        (m) => m.LoginComponent,
-      ),
-    canActivate: [PublicGuard],
+    component: LoginComponent
   },
   {
     path: 'register',
-    loadComponent: () =>
-      import('./features/auth/register-organization/register-organization.component').then(
-        (m) => m.RegisterOrganizationComponent,
-      ),
-    canActivate: [PublicGuard],
+    component: RegisterOrganizationComponent
   },
+
+  // Dashboard Layout
   {
-    path: 'home',
-    loadComponent: () =>
-      import('./features/home/home.component').then((m) => m.HomeComponent),
-    canActivate: [AuthGuard, organizationGuard],
-  },
-  {
-    path: 'settings',
-    loadComponent: () => import('./features/organization/organization-settings/organization-settings.component')
-      .then(m => m.OrganizationSettingsComponent),
-    canActivate: [AuthGuard],
-    data: { roles: ['TeamLeader'] }
-  },
-  {
-    path: 'unauthorized',
-    loadComponent: () =>
-      import('./features/unauthorized/unauthorized.component').then(
-        (m) => m.UnauthorizedComponent,
-      ),
+    path: '',
+    component: DashboardLayoutComponent,
+    children: [
+
+      {
+        path: 'home',
+        component: HomeComponent
+      },
+
+      // هتزودي الباقي هنا
+      // {
+      //   path:'employees',
+      //   component:EmployeesComponent
+      // },
+      //
+      // {
+      //   path:'projects',
+      //   component:ProjectsComponent
+      // }
+
+    ]
   },
 
   {
     path: '**',
-    redirectTo: '',
-  },
+    redirectTo: ''
+  }
+
 ];
