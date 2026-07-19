@@ -1,1 +1,13 @@
 @use "tailwindcss";
+@use "./styles/colors";
+/* Global Styles */
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-slate-50 text-slate-800;
+  font-family: "Inter", sans-serif;
+}
