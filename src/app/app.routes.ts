@@ -1,13 +1,56 @@
+import { organizationGuard } from './core/guards/organization.guard';
 import { Routes } from '@angular/router';
-import {RegisterOrganizationComponent} from '../app/features/auth/register-organization/register-organization.component'; 
-import {LoginComponent} from '../app/features/auth/login/login.component'; 
-import { HomeComponent } from './features/home/home.component';
-import { LandingComponent } from './features/landing/landing.component';
-
+import { AuthGuard } from './core/guards/auth.guard';
+import { PublicGuard } from './core/guards/public.guard';
 
 export const routes: Routes = [
-    { path: '', component: LandingComponent },
-  { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterOrganizationComponent },
-  { path: 'home', component: HomeComponent},
+  {
+    path: '',
+    loadComponent: () =>
+      import('./features/landing/landing.component').then(
+        (m) => m.LandingComponent,
+      ),
+    canActivate: [PublicGuard],
+  },
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./features/auth/login/login.component').then(
+        (m) => m.LoginComponent,
+      ),
+    canActivate: [PublicGuard],
+  },
+  {
+    path: 'register',
+    loadComponent: () =>
+      import('./features/auth/register-organization/register-organization.component').then(
+        (m) => m.RegisterOrganizationComponent,
+      ),
+    canActivate: [PublicGuard],
+  },
+  {
+    path: 'home',
+    loadComponent: () =>
+      import('./features/home/home.component').then((m) => m.HomeComponent),
+    canActivate: [AuthGuard, organizationGuard],
+  },
+  {
+    path: 'settings',
+    loadComponent: () => import('./features/organization/organization-settings/organization-settings.component')
+      .then(m => m.OrganizationSettingsComponent),
+    canActivate: [AuthGuard],
+    data: { roles: ['TeamLeader'] }
+  },
+  {
+    path: 'unauthorized',
+    loadComponent: () =>
+      import('./features/unauthorized/unauthorized.component').then(
+        (m) => m.UnauthorizedComponent,
+      ),
+  },
+
+  {
+    path: '**',
+    redirectTo: '',
+  },
 ];

@@ -1,7 +1,6 @@
-// core/auth/auth.service.ts
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, switchMap, map } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { Router } from '@angular/router';
 import { environment } from '../../../../environments/environment';
@@ -13,6 +12,7 @@ import {
   DecodedToken,
   CurrentUser,
 } from '../../models/auth.models';
+import { OrganizationService } from '../organization/organization.service';
 
 const TOKEN_KEY = 'workfit_token';
 
@@ -22,7 +22,9 @@ export class AuthService {
   private router = inject(Router);
   private baseUrl = environment.baseUrl;
 
-  private _currentUser = signal<CurrentUser | null>(this.readUserFromStoredToken());
+  private _currentUser = signal<CurrentUser | null>(
+    this.readUserFromStoredToken(),
+  );
   readonly currentUser = this._currentUser.asReadonly();
   readonly isAuthenticated = computed(() => this._currentUser() !== null);
 
@@ -33,15 +35,17 @@ export class AuthService {
         tap((token) => {
           localStorage.setItem(TOKEN_KEY, token);
           this._currentUser.set(this.decodeToUser(token));
-        })
+        }),
       );
   }
 
-  registerOrganization(req: RegisterOrganizationRequest): Observable<RegisterOrganizationResponse> {
+  registerOrganization(
+    req: RegisterOrganizationRequest,
+  ): Observable<RegisterOrganizationResponse> {
     return this.http.post(
       `${this.baseUrl}/workflow/organization/register`,
       req,
-      { responseType: 'text' }
+      { responseType: 'text' },
     );
   }
 
@@ -75,9 +79,14 @@ export class AuthService {
 
       // ASP.NET's role claim serializes under the full schema URI, not "role" —
       // handle both shapes defensively rather than assume one.
-      const roleClaimKey = 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role';
+      const roleClaimKey =
+        'http://schemas.microsoft.com/ws/2008/06/identity/claims/role';
       const rawRoles = decoded.role ?? (decoded as any)[roleClaimKey];
-      const roles = Array.isArray(rawRoles) ? rawRoles : rawRoles ? [rawRoles] : [];
+      const roles = Array.isArray(rawRoles)
+        ? rawRoles
+        : rawRoles
+          ? [rawRoles]
+          : [];
 
       return {
         userId: decoded.sub,
@@ -86,7 +95,7 @@ export class AuthService {
         roles,
       };
     } catch {
-      return null; 
+      return null;
     }
   }
 
@@ -97,5 +106,24 @@ export class AuthService {
     } catch {
       return true;
     }
+  }
+  // Get user roles
+  getUserRoles(): string[] {
+    return this._currentUser()?.roles || [];
+  }
+
+  // Check if user has a specific role
+  hasRole(role: string): boolean {
+    return this.getUserRoles().includes(role);
+  }
+
+  // Check if user has any of the specified roles
+  hasAnyRole(roles: string[]): boolean {
+    return roles.some((role) => this.hasRole(role));
+  }
+
+  // Check if user has all of the specified roles
+  hasAllRoles(roles: string[]): boolean {
+    return roles.every((role) => this.hasRole(role));
   }
 }
