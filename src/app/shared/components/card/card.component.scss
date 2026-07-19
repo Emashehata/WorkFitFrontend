@@ -1,0 +1,41 @@
+@use '../../../../styles/colors' as *;
+
+.card-container {
+  display: flex;
+  flex-direction: column;
+  background-color: $surface;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 10px 25px rgba(79, 70, 229, 0.1);
+  }
+}
+
+.card-header {
+  display: flex;
+  margin-bottom: 16px;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+ 
+
+ .card-footer {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid $border;
+
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}

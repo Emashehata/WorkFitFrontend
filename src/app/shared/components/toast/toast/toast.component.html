@@ -1,0 +1,56 @@
+<div class="toast-container">
+
+@for(toast of toastService.toasts();track toast.id){
+
+<div
+class="toast"
+[class.hide]="!toast.visible"
+[class.success]="toast.type==='success'"
+[class.error]="toast.type==='error'"
+[class.warning]="toast.type==='warning'"
+[class.info]="toast.type==='info'"
+(mouseenter)="toastService.pause(toast)"
+(mouseleave)="toastService.resume(toast)">
+
+<div class="icon-circle">
+
+<i [class]="icon(toast.type)"></i>
+
+</div>
+
+<div class="body">
+
+<div class="title">
+
+{{toast.title}}
+
+</div>
+
+<div class="message">
+
+{{toast.message}}
+
+</div>
+
+</div>
+
+<button
+class="close-btn"
+(click)="toastService.remove(toast.id)">
+
+<i class="fa-solid fa-xmark"></i>
+
+</button>
+
+<div
+class="progress"
+
+[style.width.%]="toast.progress">
+
+</div>
+
+</div>
+
+}
+
+</div>
