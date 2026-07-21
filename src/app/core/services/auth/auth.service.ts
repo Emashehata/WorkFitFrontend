@@ -12,7 +12,7 @@ import {
   DecodedToken,
   CurrentUser,
 } from '../../models/auth.models';
-import { OrganizationService } from '../organization/organization.service';
+import { API_ROUTES } from '../../constants/api-routes.constant.ts';
 
 const TOKEN_KEY = 'workfit_token';
 
@@ -30,7 +30,7 @@ export class AuthService {
 
   login(req: LoginRequest): Observable<LoginResponse> {
     return this.http
-      .post(`${this.baseUrl}/identity/login`, req, { responseType: 'text' })
+      .post(`${this.baseUrl}${API_ROUTES.identity.login}`, req, { responseType: 'text' })
       .pipe(
         tap((token) => {
           localStorage.setItem(TOKEN_KEY, token);
@@ -42,11 +42,8 @@ export class AuthService {
   registerOrganization(
     req: RegisterOrganizationRequest,
   ): Observable<RegisterOrganizationResponse> {
-    return this.http.post(
-      `${this.baseUrl}/workflow/organization/register`,
-      req,
-      { responseType: 'text' },
-    );
+      return this.http.post(`${this.baseUrl}${API_ROUTES.workflow.registerOrganization}`, req, { responseType: 'text' });
+
   }
 
   logout(): void {

@@ -10,6 +10,7 @@ import {
   OrganizationSettingsUpdate,
 } from '../../models/organization.models';
 import { AuthService } from '../auth/auth.service';
+import { API_ROUTES } from '../../constants/api-routes.constant.ts';
 
 @Injectable({ providedIn: 'root' })
 export class OrganizationService {
@@ -45,8 +46,7 @@ export class OrganizationService {
 
     const params = new HttpParams().set('userId', userId);
 
-    return this.http
-      .get<Organization>(`${this.baseUrl}/organizations/me`, { params })
+    return this.http.get<Organization>(`${this.baseUrl}${API_ROUTES.organizations.me}`, { params })
       .pipe(
         tap((org) => {
           this._organization.set(org);
@@ -63,7 +63,9 @@ export class OrganizationService {
   getOrganization(): Observable<Organization> {
     const params = new HttpParams().set('userId', this.requireUserId());
     return this.http
-      .get<Organization>(`${this.baseUrl}/organizations/me`, { params })
+      .get<Organization>(`${this.baseUrl}${API_ROUTES.organizations.me}`, {
+        params,
+      })
       .pipe(
         tap((org) => {
           this._organization.set(org);
@@ -75,9 +77,12 @@ export class OrganizationService {
   getOrganizationSettings(): Observable<OrganizationSettings> {
     const params = new HttpParams().set('userId', this.requireUserId());
     return this.http
-      .get<OrganizationSettings>(`${this.baseUrl}/organizations/me/settings`, {
-        params,
-      })
+      .get<OrganizationSettings>(
+        `${this.baseUrl}${API_ROUTES.organizations.meSettings}`,
+        {
+          params,
+        },
+      )
       .pipe(tap((settings) => this._organizationSettings.set(settings)));
   }
 
@@ -85,8 +90,7 @@ export class OrganizationService {
     updateData: UpdateOrganizationRequest,
   ): Observable<Organization> {
     const body = { ...updateData, userId: this.requireUserId() };
-    return this.http
-      .put<Organization>(`${this.baseUrl}/organizations/me`, body)
+    return this.http.put<Organization>(`${this.baseUrl}${API_ROUTES.organizations.me}`, body)
       .pipe(tap((org) => this._organization.set(org)));
   }
 
@@ -96,7 +100,7 @@ export class OrganizationService {
     const body = { ...settings, userId: this.requireUserId() };
     return this.http
       .put<OrganizationSettings>(
-        `${this.baseUrl}/organizations/me/settings`,
+        `${this.baseUrl}${API_ROUTES.organizations.meSettings}`,
         body,
       )
       .pipe(tap((updated) => this._organizationSettings.set(updated)));
