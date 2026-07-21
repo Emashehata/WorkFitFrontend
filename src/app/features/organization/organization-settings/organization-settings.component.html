@@ -1,13 +1,21 @@
-<!-- features/organization/organization-settings/organization-settings.component.html -->
-<div class="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
-    <!-- Navigation -->
-    <nav class="bg-white/80 backdrop-blur-xl border-b border-gray-200/50 sticky top-0 z-50">
+<div class="min-h-screen relative overflow-hidden">
+    <!-- Animated Background -->
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-indigo-200/30 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl"></div>
+        <div
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-pink-200/20 rounded-full blur-3xl">
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="relative z-10 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 sticky top-0">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
-                <div class="flex items-center space-x-3">
+                <div class="flex items-center gap-3">
                     <div
-                        class="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
+                        class="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200/50">
                         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -17,320 +25,367 @@
                         class="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">WorkFit</span>
                 </div>
 
-                <!-- Navigation Links -->
-                <div class="hidden md:flex items-center space-x-8">
-                    <a href="#"
-                        class="text-gray-700 hover:text-indigo-600 transition-colors text-sm font-medium">Dashboard</a>
-                    <a href="#"
-                        class="text-gray-700 hover:text-indigo-600 transition-colors text-sm font-medium">Employees</a>
-                    <a href="#"
-                        class="text-gray-700 hover:text-indigo-600 transition-colors text-sm font-medium">Projects</a>
-                    <a href="#"
-                        class="text-indigo-600 hover:text-indigo-700 transition-colors text-sm font-medium border-b-2 border-indigo-500 pb-1">Settings</a>
-                </div>
-
                 <!-- User Menu -->
-                <div class="flex items-center space-x-4">
-                    <button (click)="logout()" class="flex items-center space-x-3 text-sm focus:outline-none">
-                        <div
-                            class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-semibold shadow-md shadow-indigo-200">
-                            {{ getInitials(organization()?.name || 'O') }}
-                        </div>
-                        <span class="text-gray-700 font-medium hidden md:block">{{ organization()?.name ||
-                            'Organization' }}</span>
-                    </button>
-                </div>
+                <button (click)="logout()" class="flex items-center gap-3 text-sm focus:outline-none group">
+                    <div
+                        class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-semibold shadow-md shadow-indigo-200/50 group-hover:scale-105 transition-transform">
+                        {{ getInitials(organization()?.name || 'O') }}
+                    </div>
+                    <span
+                        class="text-gray-700 font-medium hidden md:block group-hover:text-indigo-600 transition-colors">{{
+                        organization()?.name || 'Organization' }}</span>
+                    <i class="fa-solid fa-chevron-down text-xs text-gray-400 hidden md:block"></i>
+                </button>
             </div>
         </div>
-    </nav>
+    </header>
 
     <!-- Main Content -->
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Loading State -->
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         @if (isLoading()) {
         <div class="flex items-center justify-center min-h-[400px]">
             <div class="text-center">
                 <div class="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto">
                 </div>
-                <p class="mt-4 text-gray-600">Loading organization details...</p>
+                <p class="mt-4 text-gray-600 font-medium">Loading your settings...</p>
             </div>
         </div>
         } @else {
-        <!-- Header -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">Organization Settings</h1>
-                <p class="text-sm text-gray-500 mt-1">Manage your organization details and preferences</p>
-            </div>
-            <div class="mt-4 md:mt-0 flex items-center space-x-3">
-                <span class="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full">Owner</span>
-            </div>
-        </div>
-
-        <!-- Success/Error Messages -->
-        @if (successMessage()) {
-        <div
-            class="mb-6 rounded-xl bg-emerald-50/80 backdrop-blur-sm border-2 border-emerald-200 px-4 py-3 text-sm text-emerald-700 flex items-start animate-slideDown">
-            <svg class="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-            <span>{{ successMessage() }}</span>
-        </div>
-        }
-
-        @if (errorMessage()) {
-        <div
-            class="mb-6 rounded-xl bg-red-50/80 backdrop-blur-sm border-2 border-red-200 px-4 py-3 text-sm text-red-700 flex items-start animate-slideDown">
-            <svg class="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>{{ errorMessage() }}</span>
-        </div>
-        }
-
-        <!-- Tabs -->
-        <div
-            class="bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg shadow-indigo-100/50 border border-white/50 overflow-hidden">
-            <div class="border-b border-gray-200/50 px-6">
-                <div class="flex space-x-8">
-                    <button (click)="switchTab('details')" class="py-4 text-sm font-medium transition-colors relative"
-                        [class.text-indigo-600]="activeTab() === 'details'"
-                        [class.text-gray-500]="activeTab() !== 'details'" [class.border-b-2]="activeTab() === 'details'"
-                        [class.border-indigo-500]="activeTab() === 'details'">
-                        <div class="flex items-center space-x-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                            </svg>
-                            <span>Organization Details</span>
-                        </div>
-                    </button>
-                    <button (click)="switchTab('settings')" class="py-4 text-sm font-medium transition-colors relative"
-                        [class.text-indigo-600]="activeTab() === 'settings'"
-                        [class.text-gray-500]="activeTab() !== 'settings'"
-                        [class.border-b-2]="activeTab() === 'settings'"
-                        [class.border-indigo-500]="activeTab() === 'settings'">
-                        <div class="flex items-center space-x-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <span>Preferences</span>
-                        </div>
-                    </button>
-                    <button (click)="switchTab('employees')" class="py-4 text-sm font-medium transition-colors relative"
-                        [class.text-indigo-600]="activeTab() === 'employees'"
-                        [class.text-gray-500]="activeTab() !== 'employees'"
-                        [class.border-b-2]="activeTab() === 'employees'"
-                        [class.border-indigo-500]="activeTab() === 'employees'">
-                        <div class="flex items-center space-x-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                            <span>Employees</span>
-                        </div>
-                    </button>
+        <!-- Page Header -->
+        <div class="mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Organization Settings</h1>
+                    <p class="text-sm text-gray-500 mt-1">Configure your organization's core settings and preferences
+                    </p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span
+                        class="px-3 py-1.5 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                        Active
+                    </span>
                 </div>
             </div>
+        </div>
 
-            <!-- Tab Content -->
-            <div class="p-6">
-                <!-- Details Tab -->
-                @if (activeTab() === 'details') {
-                <form [formGroup]="organizationForm" (ngSubmit)="onSaveOrganization()">
-                    <div class="space-y-6">
-                        <!-- Organization Name -->
-                        <div>
-                            <label for="name" class="block text-sm font-semibold text-gray-700 mb-1.5">
-                                Organization Name
-                            </label>
-                            <div class="relative">
-                                <input id="name" type="text" formControlName="name"
-                                    class="w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all duration-200 bg-white/50"
-                                    [class.border-red-400]="organizationForm.get('name')?.invalid && organizationForm.get('name')?.touched"
-                                    [class.border-emerald-400]="organizationForm.get('name')?.valid && organizationForm.get('name')?.touched" />
+        <!-- Settings Layout -->
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Sidebar Navigation -->
+            <aside class="lg:w-72 flex-shrink-0">
+                <nav
+                    class="bg-white/90 backdrop-blur-xl rounded-2xl shadow-lg shadow-indigo-100/30 border border-white/50 overflow-hidden sticky top-24">
+                    <div class="px-4 py-3 border-b border-gray-100/80">
+                        <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.15em]">Settings Menu</p>
+                    </div>
+                    <div class="p-2 space-y-1">
+                        @for (tab of settingsTabs; track tab.id) {
+                        <button (click)="switchTab(tab.id)"
+                            class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group relative"
+                            [class]="activeTab() === tab.id
+                    ? 'bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 shadow-sm'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-indigo-600'">
+                            <i [class]="tab.icon" class="w-5 text-center text-lg"></i>
+                            <div class="flex-1 text-left">
+                                <div class="flex items-center gap-2">
+                                    {{ tab.label }}
+                                    @if (tab.badge) {
+                                    <span
+                                        class="text-[9px] font-bold px-1.5 py-0.5 bg-indigo-100 text-indigo-600 rounded-full uppercase tracking-wider">{{
+                                        tab.badge }}</span>
+                                    }
+                                </div>
+                                <div class="text-xs text-gray-400 font-normal">{{ tab.description }}</div>
                             </div>
-                            @if (organizationForm.get('name')?.invalid && organizationForm.get('name')?.touched) {
-                            <p class="mt-1 text-xs text-red-600">Organization name is required.</p>
+                            @if (activeTab() === tab.id) {
+                            <div class="w-1 h-8 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></div>
                             }
-                        </div>
-
-                        <!-- Organization ID (read-only) -->
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">
-                                Organization ID
-                            </label>
-                            <div class="bg-gray-50/50 rounded-xl px-4 py-3 border-2 border-gray-100">
-                                <code class="text-sm text-gray-600">{{ organization()?.id }}</code>
-                            </div>
-                        </div>
-
-                        <!-- Created At (read-only) -->
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">
-                                Created At
-                            </label>
-                            <div class="bg-gray-50/50 rounded-xl px-4 py-3 border-2 border-gray-100">
-                                <span class="text-sm text-gray-600">{{ organization()?.createdAt | date:'medium'
-                                    }}</span>
-                            </div>
-                        </div>
-
-                        <!-- JSON Settings (advanced) -->
-                        <div>
-                            <label for="settingsJson" class="block text-sm font-semibold text-gray-700 mb-1.5">
-                                Settings JSON <span class="text-xs text-gray-400 font-normal">(advanced)</span>
-                            </label>
-                            <textarea id="settingsJson" formControlName="settingsJson" rows="4"
-                                class="w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-sm font-mono focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all duration-200 bg-white/50"
-                                placeholder="{}"></textarea>
-                        </div>
-
-                        <!-- Save Button -->
-                        <div class="flex justify-end">
-                            <button type="submit" [disabled]="isSaving() || organizationForm.invalid"
-                                class="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg shadow-indigo-200 hover:shadow-xl">
-                                @if (isSaving()) {
-                                <span class="flex items-center">
-                                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                            stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor"
-                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                        </path>
-                                    </svg>
-                                    Saving...
-                                </span>
-                                } @else {
-                                <span>Save Changes</span>
-                                }
-                            </button>
-                        </div>
+                        </button>
+                        }
                     </div>
-                </form>
-                }
+                </nav>
+            </aside>
 
-                <!-- Settings Tab -->
-                @if (activeTab() === 'settings') {
-                <form [formGroup]="settingsForm" (ngSubmit)="onSaveSettings()">
-                    <div class="space-y-6">
-                        <div class="grid md:grid-cols-2 gap-6">
-                            <!-- Timezone -->
-                            <div>
-                                <label for="timezone" class="block text-sm font-semibold text-gray-700 mb-1.5">
-                                    Timezone
-                                </label>
-                                <select id="timezone" formControlName="timezone"
-                                    class="w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all duration-200 bg-white/50">
-                                    <option value="UTC">UTC</option>
-                                    <option value="America/New_York">Eastern Time</option>
-                                    <option value="America/Chicago">Central Time</option>
-                                    <option value="America/Denver">Mountain Time</option>
-                                    <option value="America/Los_Angeles">Pacific Time</option>
-                                    <option value="Europe/London">London</option>
-                                    <option value="Europe/Paris">Paris</option>
-                                    <option value="Asia/Dubai">Dubai</option>
-                                    <option value="Asia/Tokyo">Tokyo</option>
-                                    <option value="Australia/Sydney">Sydney</option>
-                                </select>
+            <!-- Content Area -->
+            <main class="flex-1 min-w-0">
+                <div
+                    class="bg-white/90 backdrop-blur-xl rounded-2xl shadow-lg shadow-indigo-100/30 border border-white/50 overflow-hidden">
+                    <div class="p-6 md:p-8">
+                        @switch (activeTab()) {
+                        <!-- GENERAL TAB -->
+                        @case ('general') {
+                        <form [formGroup]="generalForm" (ngSubmit)="saveGeneral()">
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
+                                    <i class="fa-solid fa-building text-indigo-600 text-lg"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-bold text-gray-900">General Settings</h2>
+                                    <p class="text-sm text-gray-500">Core information about your organization</p>
+                                </div>
                             </div>
 
-                            <!-- Date Format -->
-                            <div>
-                                <label for="dateFormat" class="block text-sm font-semibold text-gray-700 mb-1.5">
-                                    Date Format
-                                </label>
-                                <select id="dateFormat" formControlName="dateFormat"
-                                    class="w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all duration-200 bg-white/50">
-                                    <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-                                    <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-                                    <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-                                    <option value="MMM D, YYYY">MMM D, YYYY</option>
-                                </select>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <!-- Name -->
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                        Organization Name <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" formControlName="name"
+                                        class="w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-sm focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all bg-white/70"
+                                        [class.border-red-400]="generalForm.get('name')?.invalid && generalForm.get('name')?.touched"
+                                        placeholder="Enter organization name" />
+                                    @if (generalForm.get('name')?.invalid && generalForm.get('name')?.touched) {
+                                    <p class="mt-1 text-xs text-red-600">Organization name is required.</p>
+                                    }
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Website</label>
+                                    <input type="url" formControlName="website" placeholder="https://example.com"
+                                        class="w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-sm focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all bg-white/70" />
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Industry</label>
+                                    <input type="text" formControlName="industry" placeholder="e.g., Technology"
+                                        class="w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-sm focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all bg-white/70" />
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Company Size</label>
+                                    <select formControlName="size"
+                                        class="w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-sm focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all bg-white/70">
+                                        <option value="">Select size</option>
+                                        <option value="1-10">1-10 employees</option>
+                                        <option value="11-50">11-50 employees</option>
+                                        <option value="51-200">51-200 employees</option>
+                                        <option value="201-500">201-500 employees</option>
+                                        <option value="501-1000">501-1000 employees</option>
+                                        <option value="1000+">1000+ employees</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Founded Year</label>
+                                    <input type="number" formControlName="foundedYear" placeholder="e.g., 2020"
+                                        class="w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-sm focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all bg-white/70" />
+                                </div>
                             </div>
 
-                            <!-- Language -->
-                            <div>
-                                <label for="language" class="block text-sm font-semibold text-gray-700 mb-1.5">
-                                    Language
-                                </label>
-                                <select id="language" formControlName="language"
-                                    class="w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all duration-200 bg-white/50">
-                                    <option value="en">English</option>
-                                    <option value="es">Spanish</option>
-                                    <option value="fr">French</option>
-                                    <option value="de">German</option>
-                                    <option value="zh">Chinese</option>
-                                    <option value="ja">Japanese</option>
-                                </select>
+                            <div class="flex justify-end pt-6 mt-6 border-t border-gray-100">
+                                <button type="submit" [disabled]="isSaving() || generalForm.invalid"
+                                    class="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-indigo-200/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300">
+                                    @if (isSaving()) {
+                                    <span class="flex items-center gap-2">
+                                        <i class="fa-solid fa-spinner fa-spin"></i>
+                                        Saving...
+                                    </span>
+                                    } @else {
+                                    <span><i class="fa-regular fa-floppy-disk mr-2"></i>Save Changes</span>
+                                    }
+                                </button>
+                            </div>
+                        </form>
+                        }
+
+                        <!-- PREFERENCES TAB -->
+                        @case ('preferences') {
+                        <form [formGroup]="preferencesForm" (ngSubmit)="savePreferences()">
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
+                                    <i class="fa-solid fa-sliders-h text-purple-600 text-lg"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-bold text-gray-900">Preferences</h2>
+                                    <p class="text-sm text-gray-500">Regional and language preferences</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Timezone</label>
+                                    <select formControlName="timezone"
+                                        class="w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-sm focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all bg-white/70">
+                                        <option value="UTC">UTC</option>
+                                        <option value="America/New_York">Eastern Time</option>
+                                        <option value="America/Chicago">Central Time</option>
+                                        <option value="America/Denver">Mountain Time</option>
+                                        <option value="America/Los_Angeles">Pacific Time</option>
+                                        <option value="Europe/London">London</option>
+                                        <option value="Europe/Paris">Paris</option>
+                                        <option value="Asia/Dubai">Dubai</option>
+                                        <option value="Asia/Tokyo">Tokyo</option>
+                                        <option value="Australia/Sydney">Sydney</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Language</label>
+                                    <select formControlName="language"
+                                        class="w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-sm focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all bg-white/70">
+                                        <option value="en">English</option>
+                                        <option value="es">Spanish</option>
+                                        <option value="fr">French</option>
+                                        <option value="de">German</option>
+                                        <option value="zh">Chinese</option>
+                                        <option value="ja">Japanese</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Date Format</label>
+                                    <select formControlName="dateFormat"
+                                        class="w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-sm focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all bg-white/70">
+                                        <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                                        <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                                        <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                                        <option value="MMM D, YYYY">MMM D, YYYY</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Time Format</label>
+                                    <select formControlName="timeFormat"
+                                        class="w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-sm focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all bg-white/70">
+                                        <option value="12h">12-hour (AM/PM)</option>
+                                        <option value="24h">24-hour</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Week Starts
+                                        On</label>
+                                    <select formControlName="weekStart"
+                                        class="w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-sm focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all bg-white/70">
+                                        <option value="Sunday">Sunday</option>
+                                        <option value="Monday">Monday</option>
+                                        <option value="Saturday">Saturday</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end pt-6 mt-6 border-t border-gray-100">
+                                <button type="submit" [disabled]="isSaving()"
+                                    class="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-indigo-200/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300">
+                                    @if (isSaving()) {
+                                    <span class="flex items-center gap-2">
+                                        <i class="fa-solid fa-spinner fa-spin"></i>
+                                        Saving...
+                                    </span>
+                                    } @else {
+                                    <span><i class="fa-regular fa-floppy-disk mr-2"></i>Save Preferences</span>
+                                    }
+                                </button>
+                            </div>
+                        </form>
+                        }
+
+                        <!-- EMPLOYEES TAB -->
+                        @case ('employees') {
+                        <div>
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                                    <i class="fa-solid fa-users text-emerald-600 text-lg"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-bold text-gray-900">Employees</h2>
+                                    <p class="text-sm text-gray-500">Manage your team members</p>
+                                </div>
+                            </div>
+
+                            <div
+                                class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-100 p-8 text-center">
+                                <div class="relative z-10">
+                                    <div
+                                        class="w-20 h-20 mx-auto bg-white rounded-2xl shadow-lg flex items-center justify-center mb-4">
+                                        <i class="fa-solid fa-users text-3xl text-indigo-500"></i>
+                                    </div>
+                                    <h3 class="text-lg font-semibold text-gray-900">Employee Management</h3>
+                                    <p class="text-sm text-gray-500 max-w-md mx-auto mt-1">
+                                        Manage team members, roles, permissions, and organizational structure.
+                                    </p>
+                                    <div
+                                        class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-white/70 rounded-full text-xs font-medium text-indigo-600">
+                                        <i class="fa-solid fa-clock"></i>
+                                        Coming soon
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                        }
 
-                        <!-- Save Button -->
-                        <div class="flex justify-end pt-4 border-t border-gray-200">
-                            <button type="submit" [disabled]="isSaving()"
-                                class="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg shadow-indigo-200 hover:shadow-xl">
-                                @if (isSaving()) {
-                                <span class="flex items-center">
-                                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                            stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor"
-                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                        </path>
-                                    </svg>
-                                    Saving...
-                                </span>
-                                } @else {
-                                <span>Save Settings</span>
-                                }
-                            </button>
-                        </div>
-                    </div>
-                </form>
-                }
+                        <!-- BILLING TAB -->
+                        @case ('billing') {
+                        <div>
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                                    <i class="fa-solid fa-credit-card text-emerald-600 text-lg"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-bold text-gray-900">Billing & Subscription</h2>
+                                    <p class="text-sm text-gray-500">Manage your plan and payment methods</p>
+                                </div>
+                            </div>
 
-                <!-- Employees Tab -->
-                @if (activeTab() === 'employees') {
-                <div class="space-y-6">
-                    <div class="bg-blue-50/50 rounded-xl p-4 border-2 border-blue-100">
-                        <div class="flex items-start space-x-3">
-                            <svg class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <div>
-                                <p class="text-sm text-blue-700">
-                                    <span class="font-semibold">Employee Management Coming Soon!</span>
-                                    <br />
-                                    <span class="text-xs">The employee management features are currently in development.
-                                        You'll be able to upload CVs, manage employee profiles, and more.</span>
-                                </p>
+                            <div
+                                class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-100 p-8 text-center">
+                                <div class="relative z-10">
+                                    <div
+                                        class="w-20 h-20 mx-auto bg-white rounded-2xl shadow-lg flex items-center justify-center mb-4">
+                                        <i class="fa-solid fa-receipt text-3xl text-emerald-500"></i>
+                                    </div>
+                                    <h3 class="text-lg font-semibold text-gray-900">Subscription Management</h3>
+                                    <p class="text-sm text-gray-500 max-w-md mx-auto mt-1">
+                                        View your current plan, billing history, and manage payment methods.
+                                    </p>
+                                    <div
+                                        class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-white/70 rounded-full text-xs font-medium text-emerald-600">
+                                        <i class="fa-solid fa-clock"></i>
+                                        Coming soon
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                        }
 
-                    <!-- Placeholder for employee management -->
-                    <div class="text-center py-12">
-                        <div class="w-20 h-20 mx-auto bg-gray-100 rounded-2xl flex items-center justify-center">
-                            <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
+                        <!-- SECURITY TAB -->
+                        @case ('security') {
+                        <div>
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
+                                    <i class="fa-solid fa-shield-halved text-red-600 text-lg"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-bold text-gray-900">Security</h2>
+                                    <p class="text-sm text-gray-500">Access control and security policies</p>
+                                </div>
+                            </div>
+
+                            <div
+                                class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-100 p-8 text-center">
+                                <div class="relative z-10">
+                                    <div
+                                        class="w-20 h-20 mx-auto bg-white rounded-2xl shadow-lg flex items-center justify-center mb-4">
+                                        <i class="fa-solid fa-lock text-3xl text-red-500"></i>
+                                    </div>
+                                    <h3 class="text-lg font-semibold text-gray-900">Security Settings</h3>
+                                    <p class="text-sm text-gray-500 max-w-md mx-auto mt-1">
+                                        Manage security policies, access controls, and compliance settings.
+                                    </p>
+                                    <div
+                                        class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-white/70 rounded-full text-xs font-medium text-red-600">
+                                        <i class="fa-solid fa-clock"></i>
+                                        Coming soon
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <h3 class="mt-4 text-sm font-medium text-gray-900">No employees yet</h3>
-                        <p class="mt-1 text-sm text-gray-500">Employee management features will be available soon.</p>
+                        }
+                        }
                     </div>
                 </div>
-                }
-            </div>
+            </main>
         </div>
         }
     </div>
