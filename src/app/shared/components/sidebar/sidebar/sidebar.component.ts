@@ -1,11 +1,7 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, inject, computed } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-
-interface MenuItem {
-  title: string;
-  icon: string;
-  route: string;
-}
+import { SidebarService } from '../../../../core/services/sidebar/sidebar.service';
+import { AuthService } from '../../../../core/services/auth/auth.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -14,44 +10,32 @@ interface MenuItem {
   templateUrl: './sidebar.component.html',
 })
 export class SidebarComponent {
+  private sidebarService = inject(SidebarService);
+  private authService = inject(AuthService);
 
-  // بيتحكم فيه الـ Layout
   opened = input(true);
-
-  // للموبايل
   close = output<void>();
 
-  menu: MenuItem[] = [
-    {
-      title: 'Dashboard',
-      icon: 'fa-solid fa-house',
-      route: '/home'
-    },
-    {
-      title: 'Employees',
-      icon: 'fa-solid fa-users',
-      route: '/employees'
-    },
-    {
-      title: 'Projects',
-      icon: 'fa-solid fa-diagram-project',
-      route: '/projects'
-    },
-    {
-      title: 'Organizations',
-      icon: 'fa-solid fa-building',
-      route: '/organizations'
-    },
-    {
-      title: 'Roles',
-      icon: 'fa-solid fa-user-shield',
-      route: '/roles'
-    },
-    {
-      title: 'Settings',
-      icon: 'fa-solid fa-gear',
-      route: '/oganization_settings'
-    }
-  ];
+  sections = this.sidebarService.menuSections;
+  expandedItems = new Set<string>();
 
+  // ⭐ Get user info from auth service
+  userName = computed(() => this.authService.currentUser()?.displayName || 'User');
+  userRole = computed(() => this.authService.currentUser()?.roles[0] || 'Employee');
+  userInitials = computed(() => {
+    const name = this.userName();
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  });
+
+  toggleItem(route: string): void {
+    if (this.expandedItems.has(route)) {
+      this.expandedItems.delete(route);
+    } else {
+      this.expandedItems.add(route);
+    }
+  }
+
+  isExpanded(route: string): boolean {
+    return this.expandedItems.has(route);
+  }
 }

@@ -38,7 +38,7 @@ export const routes: Routes = [
         component: ProjectComponent,
       },
       {
-        path: 'oganization_settings',
+        path: 'organization_settings',
         component: OrganizationSettingsComponent,
       },
 

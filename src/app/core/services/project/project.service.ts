@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { Observable } from 'rxjs';
 import { Project } from '../../models/project.models';
+import { API_ROUTES } from '../../constants/api-routes.constant.ts';
 
 @Injectable({
   providedIn: 'root'
@@ -32,12 +33,8 @@ export class ProjectService {
       params = params.set('departmentId', departmentId);
     }
 
-    return this.http.get<Project[]>(
-      `${this.baseUrl}/projects`,
-      {
-        params
-      }
-    );
+      return this.http.get<Project[]>(`${this.baseUrl}${API_ROUTES.projects.list}`, { params });
+
 
   }
 
