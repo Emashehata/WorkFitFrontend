@@ -1,29 +1,28 @@
-// features/organization/organization-settings/organization-settings.component.ts
-import { Component, inject, signal, OnInit, computed } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  ReactiveFormsModule,
-  FormBuilder,
-  Validators,
-  FormGroup,
-  AbstractControl,
-  ValidationErrors,
-} from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { OrganizationService } from '../../../core/services/organization/organization.service';
 import { AuthService } from '../../../core/services/auth/auth.service';
+import { ToastService } from '../../../core/services/toast/toast.service';
 import { Organization } from '../../../core/models/organization.models';
 
-// Prevents saving malformed JSON that would silently break rendering elsewhere
-// once brandingJson/settingsJson are read back and parsed.
-function validJson(control: AbstractControl): ValidationErrors | null {
-  const value = control.value?.trim();
-  if (!value) return null; // empty is fine, defaults to "{}" on save
+type SettingsTabId = 'general' | 'preferences' | 'employees' | 'billing' | 'security';
+
+interface SettingsTab {
+  id: SettingsTabId;
+  label: string;
+  description: string;
+  icon: string;
+  badge?: string;
+}
+
+function safeParse<T>(json: string | undefined, fallback: T): T {
+  if (!json) return fallback;
   try {
-    JSON.parse(value);
-    return null;
+    return { ...fallback, ...JSON.parse(json) };
   } catch {
-    return { invalidJson: true };
+    return fallback;
   }
 }
 
@@ -37,31 +36,64 @@ export class OrganizationSettingsComponent implements OnInit {
   private fb = inject(FormBuilder);
   private organizationService = inject(OrganizationService);
   private authService = inject(AuthService);
-  private router = inject(Router);
+  private toastService = inject(ToastService);
 
   organization = signal<Organization | null>(null);
   isLoading = signal(true);
   isSaving = signal(false);
-  loadError = signal<string | null>(null); // separate from save errors — needs its own retry path
-  successMessage = signal<string | null>(null);
-  errorMessage = signal<string | null>(null);
+  activeTab = signal<SettingsTabId>('general');
 
-  activeTab = signal<'details' | 'settings' | 'employees'>('details');
+  readonly settingsTabs: SettingsTab[] = [
+    { 
+      id: 'general', 
+      label: 'General', 
+      description: 'Core organization info', 
+      icon: 'fa-solid fa-building' 
+    },
+    { 
+      id: 'preferences', 
+      label: 'Preferences', 
+      description: 'Regional & language', 
+      icon: 'fa-solid fa-sliders-h' 
+    },
+    { 
+      id: 'employees', 
+      label: 'Employees', 
+      description: 'Team management', 
+      icon: 'fa-solid fa-users',
+      badge: 'Soon'
+    },
+    { 
+      id: 'billing', 
+      label: 'Billing', 
+      description: 'Subscription & payments', 
+      icon: 'fa-solid fa-credit-card' 
+    },
+    { 
+      id: 'security', 
+      label: 'Security', 
+      description: 'Access & compliance', 
+      icon: 'fa-solid fa-shield-halved' 
+    },
+  ];
 
-  organizationForm: FormGroup = this.fb.group({
+  generalForm: FormGroup = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
-    brandingJson: ['', validJson],
-    settingsJson: ['', validJson],
+    website: [''],
+    industry: [''],
+    size: [''],
+    foundedYear: [''],
   });
 
-  settingsForm: FormGroup = this.fb.group({
+  preferencesForm: FormGroup = this.fb.group({
     timezone: ['UTC'],
-    dateFormat: ['MM/DD/YYYY'],
     language: ['en'],
+    dateFormat: ['MM/DD/YYYY'],
+    weekStart: ['Sunday'],
+    timeFormat: ['12h'],
   });
 
-  // Surfaces "you have unsaved changes" without a separate boolean to keep in sync manually
-  formIsDirty = computed(() => this.organizationForm.dirty);
+  private latestSettingsData: any = {};
 
   ngOnInit(): void {
     this.loadOrganizationData();
@@ -69,119 +101,109 @@ export class OrganizationSettingsComponent implements OnInit {
 
   loadOrganizationData(): void {
     this.isLoading.set(true);
-    this.loadError.set(null);
 
     this.organizationService.getOrganization().subscribe({
       next: (org) => {
         this.organization.set(org);
-        this.organizationForm.reset(
-          {
-            name: org.name,
-            brandingJson: org.brandingJson || '',
-            settingsJson: org.settingsJson || '',
-          },
-          { emitEvent: false }, // avoids marking the form dirty immediately after loading real data
-        );
-        this.isLoading.set(false);
-      },
-      error: () => {
-        this.isLoading.set(false);
-        this.loadError.set('Failed to load organization details.');
-      },
-    });
+        
+        const settings = safeParse(org.settingsJson, {
+          website: '',
+          industry: '',
+          size: '',
+          foundedYear: '',
+          timezone: 'UTC',
+          language: 'en',
+          dateFormat: 'MM/DD/YYYY',
+          weekStart: 'Sunday',
+          timeFormat: '12h',
+        });
+        this.latestSettingsData = settings;
 
-    this.organizationService.getOrganizationSettings().subscribe({
-      next: (settings) => {
-        try {
-          const parsed = JSON.parse(settings.settingsJson || '{}');
-          this.settingsForm.patchValue(parsed, { emitEvent: false });
-        } catch {
-          // Malformed data already saved server-side — fall back to defaults silently,
-          // don't block the details tab from working over a settings-tab data issue.
-        }
+        this.generalForm.reset({
+          name: org.name,
+          website: settings.website,
+          industry: settings.industry,
+          size: settings.size,
+          foundedYear: settings.foundedYear,
+        }, { emitEvent: false });
+
+        this.preferencesForm.reset({
+          timezone: settings.timezone,
+          language: settings.language,
+          dateFormat: settings.dateFormat,
+          weekStart: settings.weekStart,
+          timeFormat: settings.timeFormat,
+        }, { emitEvent: false });
+
+        this.isLoading.set(false);
       },
       error: () => {
-        // Non-fatal: details tab still works even if settings fails to load.
-        // Deliberately no error banner here — one failed call shouldn't block the other tab.
+        this.isLoading.set(false);
+        this.toastService.error('Load Failed', 'Failed to load organization details.');
       },
     });
   }
 
-  onSaveOrganization(): void {
-    if (this.organizationForm.invalid) {
-      this.organizationForm.markAllAsTouched();
+  private mergedSettingsJson(patch: any): string {
+    this.latestSettingsData = { ...this.latestSettingsData, ...patch };
+    return JSON.stringify(this.latestSettingsData);
+  }
+
+  saveGeneral(): void {
+    if (this.generalForm.invalid) {
+      this.generalForm.markAllAsTouched();
+      this.toastService.warning('Invalid Form', 'Please fix all validation errors.');
       return;
     }
 
     this.isSaving.set(true);
-    this.errorMessage.set(null);
-    this.successMessage.set(null);
+    const { name, website, industry, size, foundedYear } = this.generalForm.getRawValue();
 
-    const { name, brandingJson, settingsJson } =
-      this.organizationForm.getRawValue();
-    const updateData = {
+    this.organizationService.updateOrganization({
       name,
-      brandingJson: brandingJson?.trim() || '{}',
-      settingsJson: settingsJson?.trim() || '{}',
-    };
-
-    this.organizationService.updateOrganization(updateData).subscribe({
+      settingsJson: this.mergedSettingsJson({ website, industry, size, foundedYear }),
+    }).subscribe({
       next: (updatedOrg) => {
         this.organization.set(updatedOrg);
-        this.organizationForm.markAsPristine(); // clears the "unsaved changes" state now that it's saved
+        this.generalForm.markAsPristine();
         this.isSaving.set(false);
-        this.successMessage.set('Organization details updated.');
-        setTimeout(() => this.successMessage.set(null), 4000);
+        this.toastService.success('Saved!', 'Organization details updated successfully.');
       },
       error: (err) => {
         this.isSaving.set(false);
-        this.errorMessage.set(
-          err.error?.userFriendlyMessage ??
-            'Failed to update organization. Please try again.',
-        );
+        this.toastService.error('Update Failed', err.error?.userFriendlyMessage ?? 'Failed to update organization.');
       },
     });
   }
 
-  onSaveSettings(): void {
+  savePreferences(): void {
     this.isSaving.set(true);
-    this.errorMessage.set(null);
-    this.successMessage.set(null);
+    const { timezone, language, dateFormat, weekStart, timeFormat } = this.preferencesForm.getRawValue();
+    const settingsJson = this.mergedSettingsJson({ timezone, language, dateFormat, weekStart, timeFormat });
 
-    const settingsJson = JSON.stringify(this.settingsForm.value);
-
-    this.organizationService
-      .updateOrganizationSettings({ settingsJson })
-      .subscribe({
-        next: () => {
-          this.settingsForm.markAsPristine();
-          this.isSaving.set(false);
-          this.successMessage.set('Preferences updated.');
-          setTimeout(() => this.successMessage.set(null), 4000);
-        },
-        error: (err) => {
-          this.isSaving.set(false);
-          this.errorMessage.set(
-            err.error?.userFriendlyMessage ??
-              'Failed to update settings. Please try again.',
-          );
-        },
-      });
+    this.organizationService.updateOrganizationSettings({ settingsJson }).subscribe({
+      next: () => {
+        this.preferencesForm.markAsPristine();
+        this.isSaving.set(false);
+        this.toastService.success('Settings Saved', 'Preferences updated successfully.');
+      },
+      error: (err) => {
+        this.isSaving.set(false);
+        this.toastService.error('Settings Failed', err.error?.userFriendlyMessage ?? 'Failed to update settings.');
+      },
+    });
   }
 
-  switchTab(tab: 'details' | 'settings' | 'employees'): void {
-    // Warn before losing unsaved edits when leaving the Details tab, rather than silently discarding them.
-    if (
-      this.activeTab() === 'details' &&
-      tab !== 'details' &&
-      this.organizationForm.dirty
-    ) {
+  switchTab(tabId: SettingsTabId): void {
+    const dirtyForms: Partial<Record<SettingsTabId, boolean>> = {
+      general: this.generalForm.dirty,
+      preferences: this.preferencesForm.dirty,
+    };
+    if (dirtyForms[this.activeTab()] && tabId !== this.activeTab()) {
       const proceed = confirm('You have unsaved changes. Switch tabs anyway?');
       if (!proceed) return;
     }
-    this.activeTab.set(tab);
-    this.errorMessage.set(null);
-    this.successMessage.set(null);
+    this.activeTab.set(tabId);
   }
 
   getInitials(name: string): string {
@@ -189,6 +211,7 @@ export class OrganizationSettingsComponent implements OnInit {
   }
 
   logout(): void {
-    this.authService.logout(); 
+    this.authService.logout();
+    this.toastService.info('Logged Out', 'You have been logged out successfully.');
   }
 }

@@ -50,7 +50,7 @@ export class SidebarComponent {
     {
       title: 'Settings',
       icon: 'fa-solid fa-gear',
-      route: '/settings'
+      route: '/oganization_settings'
     }
   ];
 

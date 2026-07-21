@@ -6,22 +6,22 @@ import { HomeComponent } from './features/organizationOwner/home/home.component'
 import { LandingComponent } from './features/landing/landing.component';
 import { DashboardLayoutComponent } from './layouts/dashboard-layout/dashboard-layout/dashboard-layout.component';
 import { ProjectComponent } from './features/organizationOwner/project/project/project.component';
+import { OrganizationSettingsComponent } from './features/organization/organization-settings/organization-settings.component';
 
 
 export const routes: Routes = [
-
   // Public Routes
   {
     path: '',
-    component: LandingComponent
+    component: LandingComponent,
   },
   {
     path: 'login',
-    component: LoginComponent
+    component: LoginComponent,
   },
   {
     path: 'register',
-    component: RegisterOrganizationComponent
+    component: RegisterOrganizationComponent,
   },
 
   // Dashboard Layout
@@ -29,14 +29,17 @@ export const routes: Routes = [
     path: '',
     component: DashboardLayoutComponent,
     children: [
-
       {
         path: 'home',
-        component: HomeComponent
+        component: HomeComponent,
       },
       {
         path: 'projects',
-        component: ProjectComponent
+        component: ProjectComponent,
+      },
+      {
+        path: 'oganization_settings',
+        component: OrganizationSettingsComponent,
       },
 
       // هتزودي الباقي هنا
@@ -49,13 +52,11 @@ export const routes: Routes = [
       //   path:'projects',
       //   component:ProjectsComponent
       // }
-
-    ]
+    ],
   },
 
   {
     path: '**',
-    redirectTo: ''
-  }
-
+    redirectTo: '',
+  },
 ];
