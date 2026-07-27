@@ -1,6 +1,6 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, switchMap, map } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { Router } from '@angular/router';
 import { environment } from '../../../../environments/environment';
@@ -13,6 +13,7 @@ import {
   CurrentUser,
 } from '../../models/auth.models';
 import { API_ROUTES } from '../../constants/api-routes.constant.ts';
+import { UserRole } from '../../enums/user-role.enum';
 
 const TOKEN_KEY = 'workfit_token';
 
@@ -25,12 +26,43 @@ export class AuthService {
   private _currentUser = signal<CurrentUser | null>(
     this.readUserFromStoredToken(),
   );
+
   readonly currentUser = this._currentUser.asReadonly();
   readonly isAuthenticated = computed(() => this._currentUser() !== null);
 
+  // Primary Role
+  readonly role = computed<UserRole | null>(() => {
+    return this.getUserRoles()[0] ?? null;
+  });
+
+  // Role Signals
+  readonly isSuperAdmin = computed(() =>
+    this.hasRole(UserRole.SuperAdmin)
+  );
+
+  readonly isAdmin = computed(() =>
+    this.hasRole(UserRole.Admin)
+  );
+
+  readonly isOrganizationOwner = computed(() =>
+    this.hasRole(UserRole.OrganizationOwner)
+  );
+
+  readonly isTeamLeader = computed(() =>
+    this.hasRole(UserRole.TeamLeader)
+  );
+
+  readonly isEmployee = computed(() =>
+    this.hasRole(UserRole.Employee)
+  );
+
   login(req: LoginRequest): Observable<LoginResponse> {
     return this.http
-      .post(`${this.baseUrl}${API_ROUTES.identity.login}`, req, { responseType: 'text' })
+      .post(
+        `${this.baseUrl}${API_ROUTES.identity.login}`,
+        req,
+        { responseType: 'text' }
+      )
       .pipe(
         tap((token) => {
           localStorage.setItem(TOKEN_KEY, token);
@@ -42,8 +74,11 @@ export class AuthService {
   registerOrganization(
     req: RegisterOrganizationRequest,
   ): Observable<RegisterOrganizationResponse> {
-      return this.http.post(`${this.baseUrl}${API_ROUTES.workflow.registerOrganization}`, req, { responseType: 'text' });
-
+    return this.http.post(
+      `${this.baseUrl}${API_ROUTES.workflow.registerOrganization}`,
+      req,
+      { responseType: 'text' }
+    );
   }
 
   logout(): void {
@@ -56,17 +91,22 @@ export class AuthService {
     return localStorage.getItem(TOKEN_KEY);
   }
 
-  // --- private helpers ---
+  // =========================
+  // Private Helpers
+  // =========================
 
   private readUserFromStoredToken(): CurrentUser | null {
     const token = localStorage.getItem(TOKEN_KEY);
+
     if (!token) return null;
 
     const user = this.decodeToUser(token);
+
     if (user && this.isExpired(token)) {
       localStorage.removeItem(TOKEN_KEY);
       return null;
     }
+
     return user;
   }
 
@@ -74,11 +114,12 @@ export class AuthService {
     try {
       const decoded = jwtDecode<DecodedToken & Record<string, unknown>>(token);
 
-      // ASP.NET's role claim serializes under the full schema URI, not "role" —
-      // handle both shapes defensively rather than assume one.
       const roleClaimKey =
         'http://schemas.microsoft.com/ws/2008/06/identity/claims/role';
-      const rawRoles = decoded.role ?? (decoded as any)[roleClaimKey];
+
+      const rawRoles =
+        decoded.role ?? (decoded as any)[roleClaimKey];
+
       const roles = Array.isArray(rawRoles)
         ? rawRoles
         : rawRoles
@@ -104,23 +145,24 @@ export class AuthService {
       return true;
     }
   }
-  // Get user roles
-  getUserRoles(): string[] {
-    return this._currentUser()?.roles || [];
+
+  // =========================
+  // Roles
+  // =========================
+
+  getUserRoles(): UserRole[] {
+    return (this._currentUser()?.roles as UserRole[]) || [];
   }
 
-  // Check if user has a specific role
-  hasRole(role: string): boolean {
+  hasRole(role: UserRole): boolean {
     return this.getUserRoles().includes(role);
   }
 
-  // Check if user has any of the specified roles
-  hasAnyRole(roles: string[]): boolean {
-    return roles.some((role) => this.hasRole(role));
+  hasAnyRole(roles: UserRole[]): boolean {
+    return roles.some(role => this.hasRole(role));
   }
 
-  // Check if user has all of the specified roles
-  hasAllRoles(roles: string[]): boolean {
-    return roles.every((role) => this.hasRole(role));
+  hasAllRoles(roles: UserRole[]): boolean {
+    return roles.every(role => this.hasRole(role));
   }
 }
