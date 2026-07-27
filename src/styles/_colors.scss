@@ -1,18 +1,35 @@
-// Brand
+// SCSS variables — used inside component .scss files (e.g. $primary, $text)
 $primary: #4F46E5;
 $primary-hover: #4338CA;
 $secondary: #7C3AED;
 
-// Status
 $success: #22C55E;
 $danger: #EF4444;
 $warning: #F59E0B;
 $info: #0EA5E9;
 
-// Neutral
 $background: #F8FAFC;
 $surface: #FFFFFF;
 
 $text: #0F172A;
 $text-secondary: #64748B;
 $border: #E2E8F0;
+
+// CSS custom properties — used by Tailwind's @theme inline (utility classes like bg-primary)
+:root {
+  --color-primary: #{$primary};
+  --color-primary-hover: #{$primary-hover};
+  --color-secondary: #{$secondary};
+
+  --color-success: #{$success};
+  --color-danger: #{$danger};
+  --color-warning: #{$warning};
+  --color-info: #{$info};
+
+  --color-background: #{$background};
+  --color-surface: #{$surface};
+
+  --color-text: #{$text};
+  --color-text-secondary: #{$text-secondary};
+  --color-border: #{$border};
+}
