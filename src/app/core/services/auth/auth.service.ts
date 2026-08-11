@@ -32,7 +32,7 @@ export class AuthService {
 
   // Primary Role
   readonly role = computed<UserRole | null>(() => {
-    return this.getUserRoles()[0] ?? null;
+    return this.getUserRoles()[1] ?? null;
   });
 
   // Role Signals

@@ -8,9 +8,7 @@ import { DashboardLayoutComponent } from './layouts/dashboard-layout/dashboard-l
 import { ProjectComponent } from './features/organizationOwner/project/project/project.component';
 import { OrganizationSettingsComponent } from './features/organization/organization-settings/organization-settings.component';
 
-
 export const routes: Routes = [
-  // Public Routes
   {
     path: '',
     component: LandingComponent,
@@ -24,7 +22,6 @@ export const routes: Routes = [
     component: RegisterOrganizationComponent,
   },
 
-  // Dashboard Layout
   {
     path: '',
     component: DashboardLayoutComponent,
@@ -42,16 +39,14 @@ export const routes: Routes = [
         component: OrganizationSettingsComponent,
       },
 
-      // هتزودي الباقي هنا
-      // {
-      //   path:'employees',
-      //   component:EmployeesComponent
-      // },
-      //
-      // {
-      //   path:'projects',
-      //   component:ProjectsComponent
-      // }
+      
+      {
+        path: '',
+        loadChildren: () =>
+          import('./features/assessments/assessment.routes').then(
+            (m) => m.ASSESSMENT_ROUTES
+          ),
+      },
     ],
   },
 
