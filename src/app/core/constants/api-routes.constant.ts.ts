@@ -16,4 +16,10 @@ export const API_ROUTES = {
   projects: {
     list: '/projects',
   },
+payments: {
+  process: '/payments',
+  byId: (paymentId: string) => `/payments/${paymentId}`,
+  checkoutSession: '/payments/checkout-session',
+  checkoutSessionCancel: '/payments/checkout-session/cancel',
+},
 } as const;

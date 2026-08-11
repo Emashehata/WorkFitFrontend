@@ -1,126 +1,142 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, tap, switchMap, map } from 'rxjs';
-import { jwtDecode } from 'jwt-decode';
-import { Router } from '@angular/router';
-import { environment } from '../../../../environments/environment';
-import {
-  LoginRequest,
-  LoginResponse,
-  RegisterOrganizationRequest,
-  RegisterOrganizationResponse,
-  DecodedToken,
-  CurrentUser,
-} from '../../models/auth.models';
-import { API_ROUTES } from '../../constants/api-routes.constant.ts';
+  import { Injectable, inject, signal, computed } from '@angular/core';
+  import { HttpClient } from '@angular/common/http';
+  import { Observable, tap, switchMap, map } from 'rxjs';
+  import { jwtDecode } from 'jwt-decode';
+  import { Router } from '@angular/router';
+  import { environment } from '../../../../environments/environment';
+  import {
+    LoginRequest,
+    LoginResponse,
+    RegisterOrganizationRequest,
+    RegisterOrganizationResponse,
+    DecodedToken,
+    CurrentUser,
+  } from '../../models/auth.models';
+  import { API_ROUTES } from '../../constants/api-routes.constant.ts';
 
-const TOKEN_KEY = 'workfit_token';
+  const TOKEN_KEY = 'workfit_token';
 
-@Injectable({ providedIn: 'root' })
-export class AuthService {
-  private http = inject(HttpClient);
-  private router = inject(Router);
-  private baseUrl = environment.baseUrl;
+  @Injectable({ providedIn: 'root' })
+  export class AuthService {
+    private http = inject(HttpClient);
+    private router = inject(Router);
+    // private baseUrl = environment.baseUrl;
+    private baseUrl = 'https://localhost:7296/api';
 
-  private _currentUser = signal<CurrentUser | null>(
-    this.readUserFromStoredToken(),
-  );
-  readonly currentUser = this._currentUser.asReadonly();
-  readonly isAuthenticated = computed(() => this._currentUser() !== null);
+    private _currentUser = signal<CurrentUser | null>(
+      this.readUserFromStoredToken(),
+    );
+    readonly currentUser = this._currentUser.asReadonly();
+    readonly isAuthenticated = computed(() => this._currentUser() !== null);
 
-  login(req: LoginRequest): Observable<LoginResponse> {
-    return this.http
-      .post(`${this.baseUrl}${API_ROUTES.identity.login}`, req, { responseType: 'text' })
-      .pipe(
-        tap((token) => {
-          localStorage.setItem(TOKEN_KEY, token);
-          this._currentUser.set(this.decodeToUser(token));
-        }),
-      );
+    login(req: LoginRequest): Observable<LoginResponse> {
+      return this.http
+        .post(`${this.baseUrl}${API_ROUTES.identity.login}`, req, { responseType: 'text' })
+        .pipe(
+          tap((token) => {
+            localStorage.setItem(TOKEN_KEY, token);
+            this._currentUser.set(this.decodeToUser(token));
+          }),
+        );
+    }
+
+    registerOrganization(
+      req: RegisterOrganizationRequest,
+    ): Observable<RegisterOrganizationResponse> {
+        return this.http.post(`${this.baseUrl}${API_ROUTES.workflow.registerOrganization}`, req, { responseType: 'text' });
+
+    }
+
+    logout(): void {
+      localStorage.removeItem(TOKEN_KEY);
+      this._currentUser.set(null);
+      this.router.navigate(['/login']);
+    }
+
+    getToken(): string | null {
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (!token) return null;
+  
+  // Remove quotes and trim
+  const cleanToken = token.replace(/^"|"$/g, '').trim();
+  
+  if (cleanToken && cleanToken.split('.').length === 3) {
+    return cleanToken;
   }
-
-  registerOrganization(
-    req: RegisterOrganizationRequest,
-  ): Observable<RegisterOrganizationResponse> {
-      return this.http.post(`${this.baseUrl}${API_ROUTES.workflow.registerOrganization}`, req, { responseType: 'text' });
-
-  }
-
-  logout(): void {
-    localStorage.removeItem(TOKEN_KEY);
-    this._currentUser.set(null);
-    this.router.navigate(['/login']);
-  }
-
-  getToken(): string | null {
-    return localStorage.getItem(TOKEN_KEY);
-  }
-
-  // --- private helpers ---
-
-  private readUserFromStoredToken(): CurrentUser | null {
+  
+  localStorage.removeItem(TOKEN_KEY);
+  return null;
+}Token(): string | null {
     const token = localStorage.getItem(TOKEN_KEY);
     if (!token) return null;
+    return token.replace(/"/g, ''); 
+  }
 
-    const user = this.decodeToUser(token);
-    if (user && this.isExpired(token)) {
-      localStorage.removeItem(TOKEN_KEY);
-      return null;
+    // --- private helpers ---
+
+    private readUserFromStoredToken(): CurrentUser | null {
+      const token = localStorage.getItem(TOKEN_KEY);
+      if (!token) return null;
+
+      const user = this.decodeToUser(token);
+      if (user && this.isExpired(token)) {
+        localStorage.removeItem(TOKEN_KEY);
+        return null;
+      }
+      return user;
     }
-    return user;
-  }
 
-  private decodeToUser(token: string): CurrentUser | null {
-    try {
-      const decoded = jwtDecode<DecodedToken & Record<string, unknown>>(token);
+    private decodeToUser(token: string): CurrentUser | null {
+      try {
+        const decoded = jwtDecode<DecodedToken & Record<string, unknown>>(token);
 
-      // ASP.NET's role claim serializes under the full schema URI, not "role" —
-      // handle both shapes defensively rather than assume one.
-      const roleClaimKey =
-        'http://schemas.microsoft.com/ws/2008/06/identity/claims/role';
-      const rawRoles = decoded.role ?? (decoded as any)[roleClaimKey];
-      const roles = Array.isArray(rawRoles)
-        ? rawRoles
-        : rawRoles
-          ? [rawRoles]
-          : [];
+        // ASP.NET's role claim serializes under the full schema URI, not "role" —
+        // handle both shapes defensively rather than assume one.
+        const roleClaimKey =
+          'http://schemas.microsoft.com/ws/2008/06/identity/claims/role';
+        const rawRoles = decoded.role ?? (decoded as any)[roleClaimKey];
+        const roles = Array.isArray(rawRoles)
+          ? rawRoles
+          : rawRoles
+            ? [rawRoles]
+            : [];
 
-      return {
-        userId: decoded.sub,
-        email: decoded.email,
-        displayName: decoded.name,
-        roles,
-      };
-    } catch {
-      return null;
+        return {
+          userId: decoded.sub,
+          email: decoded.email,
+          displayName: decoded.name,
+          roles,
+        };
+      } catch {
+        return null;
+      }
+    }
+
+    private isExpired(token: string): boolean {
+      try {
+        const decoded = jwtDecode<DecodedToken>(token);
+        return decoded.exp * 1000 < Date.now();
+      } catch {
+        return true;
+      }
+    }
+    // Get user roles
+    getUserRoles(): string[] {
+      return this._currentUser()?.roles || [];
+    }
+
+    // Check if user has a specific role
+    hasRole(role: string): boolean {
+      return this.getUserRoles().includes(role);
+    }
+
+    // Check if user has any of the specified roles
+    hasAnyRole(roles: string[]): boolean {
+      return roles.some((role) => this.hasRole(role));
+    }
+
+    // Check if user has all of the specified roles
+    hasAllRoles(roles: string[]): boolean {
+      return roles.every((role) => this.hasRole(role));
     }
   }
-
-  private isExpired(token: string): boolean {
-    try {
-      const decoded = jwtDecode<DecodedToken>(token);
-      return decoded.exp * 1000 < Date.now();
-    } catch {
-      return true;
-    }
-  }
-  // Get user roles
-  getUserRoles(): string[] {
-    return this._currentUser()?.roles || [];
-  }
-
-  // Check if user has a specific role
-  hasRole(role: string): boolean {
-    return this.getUserRoles().includes(role);
-  }
-
-  // Check if user has any of the specified roles
-  hasAnyRole(roles: string[]): boolean {
-    return roles.some((role) => this.hasRole(role));
-  }
-
-  // Check if user has all of the specified roles
-  hasAllRoles(roles: string[]): boolean {
-    return roles.every((role) => this.hasRole(role));
-  }
-}

@@ -122,7 +122,6 @@ export class SidebarService {
             icon: 'fa-solid fa-building',
             route: '/organizations',
           },
-          { title: 'Roles', icon: 'fa-solid fa-user-shield', route: '/roles' },
           {
             title: 'Settings',
             icon: 'fa-solid fa-gear',
