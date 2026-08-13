@@ -1,0 +1,31 @@
+@if (isOpen()) {
+  <div class="confirm-backdrop" (click)="onBackdropClick($event)">
+    <div class="confirm-container" role="alertdialog" aria-modal="true">
+
+      <!-- Icon bubble -->
+      <div class="confirm-icon-wrap" [class]="'icon-' + confirmVariant()">
+        <i [class]="headerIcon()"></i>
+      </div>
+
+      <!-- Text -->
+      <div class="confirm-body">
+        <h3 class="confirm-title">{{ title() }}</h3>
+        <p class="confirm-message">{{ message() }}</p>
+      </div>
+
+      <!-- Actions -->
+      <div class="confirm-actions">
+        <app-button variant="secondary" (click)="cancelled.emit()">
+          Cancel
+        </app-button>
+        <app-button
+          [variant]="confirmVariant()"
+          [icon]="confirmIcon()"
+          (click)="confirmed.emit()">
+          {{ confirmLabel() }}
+        </app-button>
+      </div>
+
+    </div>
+  </div>
+}

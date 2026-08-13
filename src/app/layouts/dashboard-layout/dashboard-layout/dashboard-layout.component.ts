@@ -39,7 +39,7 @@ export class DashboardLayoutComponent implements OnInit {
             {
               title: 'Dashboard',
               icon: 'fa-solid fa-house',
-              route: '/dashboard',
+              route: '/home',
             },
           ],
         },
@@ -74,7 +74,7 @@ export class DashboardLayoutComponent implements OnInit {
             {
               title: 'Dashboard',
               icon: 'fa-solid fa-house',
-              route: '/dashboard',
+              route: '/home',
             },
           ],
         },
@@ -109,7 +109,7 @@ export class DashboardLayoutComponent implements OnInit {
             {
               title: 'Dashboard',
               icon: 'fa-solid fa-house',
-              route: '/dashboard',
+              route: '/home',
             },
           ],
         },
@@ -150,7 +150,7 @@ export class DashboardLayoutComponent implements OnInit {
             {
               title: 'Dashboard',
               icon: 'fa-solid fa-house',
-              route: '/dashboard',
+              route: '/home',
             },
           ],
         },
@@ -180,7 +180,7 @@ export class DashboardLayoutComponent implements OnInit {
             {
               title: 'Dashboard',
               icon: 'fa-solid fa-house',
-              route: '/dashboard',
+              route: '/home',
             },
             {
               title: 'My Profile',

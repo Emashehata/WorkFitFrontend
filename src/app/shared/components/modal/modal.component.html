@@ -1,0 +1,15 @@
+@if (isOpen()) {
+  <div class="modal-backdrop" (click)="onBackdropClick($event)">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h2 class="modal-title">{{ title() }}</h2>
+        <button class="modal-close-btn" (click)="close.emit()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <ng-content></ng-content>
+      </div>
+    </div>
+  </div>
+}

@@ -5,6 +5,12 @@ import { SidebarMenuItem, SidebarSection } from '../../models/sidebar.models';
   providedIn: 'root',
 })
 export class SidebarService {
+  isCollapsed = signal<boolean>(false);
+
+  toggleCollapse(): void {
+    this.isCollapsed.update(val => !val);
+  }
+
   // ⭐ All menu sections - can be updated dynamically
   private menuSectionsSignal = signal<SidebarSection[]>([
     {

@@ -19,13 +19,13 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden md:flex items-center space-x-8">
-                    <a href="#"
+                    <a [routerLink]="'/home'"
                         class="text-gray-700 hover:text-indigo-600 transition-colors text-sm font-medium">Dashboard</a>
-                    <a href="#"
+                    <a [routerLink]="'/employees'"
                         class="text-gray-500 hover:text-indigo-600 transition-colors text-sm font-medium">Employees</a>
-                    <a href="#"
+                    <a [routerLink]="'/projects'"
                         class="text-gray-500 hover:text-indigo-600 transition-colors text-sm font-medium">Projects</a>
-                    <a href="#"
+                    <a [routerLink]="'/projects'"
                         class="text-gray-500 hover:text-indigo-600 transition-colors text-sm font-medium">Tasks</a>
                 </div>
 
@@ -124,7 +124,7 @@
             </h2>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 @for (action of quickActions(); track $index) {
-                <a [routerLink]="action.route" class="group">
+                <a [routerLink]="action.route" [queryParams]="action.queryParams" (click)="onActionClick(action, $event)" class="group">
                     <div
                         class="bg-gray-50/80 hover:bg-white rounded-xl p-4 text-center transition-all duration-300 hover:shadow-md hover:scale-[1.02] cursor-pointer">
                         <div
@@ -239,3 +239,9 @@
         </div>
     </div>
 </div>
+
+<app-add-employee-modal
+  [isOpen]="showAddEmployeeModal()"
+  (close)="showAddEmployeeModal.set(false)"
+  (created)="loadUserData()">
+</app-add-employee-modal>

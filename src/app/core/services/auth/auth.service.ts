@@ -12,7 +12,7 @@ import {
   DecodedToken,
   CurrentUser,
 } from '../../models/auth.models';
-import { API_ROUTES } from '../../constants/api-routes.constant.ts';
+import { API_ROUTES } from '../../constants/api-routes.constant';
 import { UserRole } from '../../enums/user-role.enum';
 
 const TOKEN_KEY = 'workfit_token';
@@ -88,7 +88,8 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem(TOKEN_KEY);
+    const token = localStorage.getItem(TOKEN_KEY);
+    return token ? token.replace(/^"|"$/g, '') : null;
   }
 
   // =========================
@@ -96,7 +97,7 @@ export class AuthService {
   // =========================
 
   private readUserFromStoredToken(): CurrentUser | null {
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = this.getToken();
 
     if (!token) return null;
 
@@ -131,6 +132,7 @@ export class AuthService {
         email: decoded.email,
         displayName: decoded.name,
         roles,
+        orgId: decoded.OrgId,
       };
     } catch {
       return null;

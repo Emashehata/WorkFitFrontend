@@ -1,0 +1,84 @@
+<div class="employees-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">Employees</h2>
+      <p class="page-subtitle">Manage organization team members and staff</p>
+    </div>
+    <button
+      type="button"
+      (click)="showAddEmployeeModal.set(true)"
+      class="add-emp-btn">
+      <i class="fa-solid fa-user-plus"></i>
+      Add Employee
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <div class="empty-state">
+      <i class="fa-solid fa-spinner animate-spin"></i>
+      <h3>Loading employees...</h3>
+    </div>
+  } @else {
+    <div class="table-card">
+      <div class="table-responsive">
+        <table class="emp-table">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Email</th>
+              <th>Job Title</th>
+              <th>Status</th>
+              <th>Allocation</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (emp of employees(); track emp.id) {
+              <tr>
+                <td>
+                  <div class="emp-identity">
+                    <div class="emp-avatar">
+                      {{ emp.name.charAt(0).toUpperCase() }}
+                    </div>
+                    <span class="emp-name">{{ emp.name }}</span>
+                  </div>
+                </td>
+                <td class="emp-email">{{ emp.email }}</td>
+                <td class="emp-title-cell">{{ emp.jobTitle }}</td>
+                <td>
+                  <span class="status-chip" [class.active]="emp.isActive">
+                    <span class="status-dot"></span>
+                    {{ emp.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td class="emp-alloc">
+                  <div class="alloc-bar-wrap">
+                    <div class="alloc-bar" [style.width.%]="emp.currentAllocationPercentage"></div>
+                  </div>
+                  <span>{{ emp.currentAllocationPercentage }}%</span>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="empty-table">
+                  <i class="fa-solid fa-users"></i>
+                  <h3>No employees found</h3>
+                  <p>Add your first employee to populate your organization team</p>
+                  <button type="button" class="add-emp-btn mt-3" (click)="showAddEmployeeModal.set(true)">
+                    <i class="fa-solid fa-user-plus"></i> Add Employee
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>
+
+<app-add-employee-modal
+  [isOpen]="showAddEmployeeModal()"
+  (close)="showAddEmployeeModal.set(false)"
+  (created)="loadEmployees()">
+</app-add-employee-modal>

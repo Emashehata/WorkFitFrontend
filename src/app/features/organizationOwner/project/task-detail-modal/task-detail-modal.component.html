@@ -1,0 +1,326 @@
+<app-modal [title]="'Task Details'" [isOpen]="isOpen()" (close)="close.emit()">
+
+  @if (isLoading()) {
+    <div class="loader-container">
+      <i class="fa-solid fa-spinner animate-spin"></i>
+      <span>Loading details...</span>
+    </div>
+  } @else {
+    @if (task(); as t) {
+      <!-- Tabs Header -->
+      <div class="tabs-nav">
+        <button
+          class="tab-btn"
+          [class.active]="activeTab() === 'details'"
+          (click)="activeTab.set('details')">
+          <i class="fa-solid fa-circle-info"></i> Task Info
+        </button>
+        @if (isTeamLeader()) {
+          <button
+            class="tab-btn"
+            [class.active]="activeTab() === 'assign'"
+            (click)="activeTab.set('assign')">
+            <i class="fa-solid fa-user-check"></i> Assign
+          </button>
+          <button
+            class="tab-btn"
+            [class.active]="activeTab() === 'edit'"
+            (click)="activeTab.set('edit')">
+            <i class="fa-solid fa-pen"></i> Edit
+          </button>
+        }
+        <button
+          class="tab-btn"
+          [class.active]="activeTab() === 'assignee'"
+          (click)="activeTab.set('assignee')">
+          <i class="fa-solid fa-user"></i> Assignee
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeTab() === 'creator'"
+          (click)="activeTab.set('creator')">
+          <i class="fa-solid fa-user-pen"></i> Creator
+        </button>
+      </div>
+
+      <!-- Tab Content Area -->
+      <div class="tab-content">
+
+        <!-- 1. Task Details Tab -->
+        @if (activeTab() === 'details') {
+          <div class="task-info-tab">
+            <div class="task-header-row">
+              <span class="task-type-badge">
+                {{ t.taskType }}
+              </span>
+              <div class="badges-row">
+                <app-badge [variant]="getStatusConfig(t.status).variant" [icon]="getStatusConfig(t.status).icon">
+                  {{ t.status }}
+                </app-badge>
+                <app-badge [variant]="getPriorityConfig(t.priority).variant" [icon]="getPriorityConfig(t.priority).icon">
+                  {{ t.priority }}
+                </app-badge>
+              </div>
+            </div>
+
+            <h3 class="task-title-detail">{{ t.title }}</h3>
+
+            <div class="task-field">
+              <h5 class="field-label">Description</h5>
+              <p class="field-value description-text">
+                {{ t.description || 'No description provided.' }}
+              </p>
+            </div>
+
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="item-label"><i class="fa-solid fa-star"></i> Story Points</span>
+                <span class="item-value font-semibold">{{ t.storyPoints || '—' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="item-label"><i class="fa-solid fa-chart-pie"></i> Allocation %</span>
+                <span class="item-value font-semibold">{{ t.allocationPercentage ? t.allocationPercentage + '%' : '—' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="item-label"><i class="fa-regular fa-calendar-days"></i> Due Date</span>
+                <span class="item-value font-semibold">{{ t.dueDate ? (t.dueDate | date:'MMM d, y') : '—' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="item-label"><i class="fa-solid fa-calendar-plus"></i> Created At</span>
+                <span class="item-value">{{ t.createdAt | date:'MMM d, y HH:mm' }}</span>
+              </div>
+            </div>
+
+            @if (isEmployee() && t.status !== 'Done') {
+              <div class="details-actions">
+                <app-button variant="success" icon="fa-solid fa-check" [loading]="isSaving()" (click)="onComplete()">
+                  Complete Task
+                </app-button>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- 2. Assign Tab -->
+        @if (activeTab() === 'assign') {
+          <div class="assign-tab">
+            <h4 class="tab-title">Assign this task</h4>
+            <form [formGroup]="assignForm" (ngSubmit)="onAssign()" class="assign-form">
+
+              <div class="form-group">
+                <label class="form-label" for="assign-employee">Employee *</label>
+                <select id="assign-employee" class="form-input" formControlName="assigneeId">
+                  <option value="">Select employee…</option>
+                  @for (emp of employees(); track emp.id) {
+                    <option [value]="emp.id">{{ emp.name }} ({{ emp.jobTitle }})</option>
+                  }
+                </select>
+                @if (assignForm.controls.assigneeId.touched && assignForm.controls.assigneeId.errors) {
+                  <span class="form-error">Please select an employee</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="assign-allocation">Allocation %</label>
+                <input
+                  id="assign-allocation"
+                  type="number"
+                  class="form-input"
+                  formControlName="allocationPercentage"
+                  min="0"
+                  max="100">
+              </div>
+
+              <div class="form-actions">
+                <app-button variant="secondary" (click)="activeTab.set('details')">Back</app-button>
+                <app-button variant="primary" type="submit" icon="fa-solid fa-user-check" [loading]="isSaving()" [disabled]="assignForm.invalid">
+                  Assign
+                </app-button>
+              </div>
+            </form>
+          </div>
+        }
+
+        <!-- 3. Edit Tab -->
+        @if (activeTab() === 'edit') {
+          <div class="edit-tab">
+            <h4 class="tab-title">Edit task</h4>
+            <form [formGroup]="editForm" (ngSubmit)="onSaveEdit()" class="edit-form">
+
+              <div class="form-group">
+                <label class="form-label" for="edit-title">Title *</label>
+                <input id="edit-title" class="form-input" formControlName="title">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="edit-description">Description</label>
+                <textarea id="edit-description" class="form-input form-textarea" formControlName="description" rows="3"></textarea>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="edit-status">Status</label>
+                  <select id="edit-status" class="form-input" formControlName="status">
+                    @for (status of taskStatuses; track status) {
+                      <option [value]="status">{{ status }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="edit-priority">Priority</label>
+                  <select id="edit-priority" class="form-input" formControlName="priority">
+                    @for (p of priorities; track p) {
+                      <option [value]="p">{{ p }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="edit-due-date">Due Date</label>
+                  <input id="edit-due-date" type="date" class="form-input" formControlName="dueDate">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="edit-story-points">Story Points</label>
+                  <input id="edit-story-points" type="number" class="form-input" formControlName="storyPoints" min="0">
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <app-button variant="secondary" (click)="activeTab.set('details')">Back</app-button>
+                <app-button variant="primary" type="submit" icon="fa-solid fa-save" [loading]="isSaving()" [disabled]="editForm.invalid">
+                  Save
+                </app-button>
+              </div>
+            </form>
+          </div>
+        }
+
+        <!-- 4. Assignee Tab -->
+        @if (activeTab() === 'assignee') {
+          <div class="profile-tab">
+            @if (assignee(); as profile) {
+              <div class="profile-card">
+                <div class="profile-avatar-row">
+                  <div class="profile-avatar">{{ getInitials(profile.name) }}</div>
+                  <div class="profile-title-col">
+                    <h4 class="profile-name">{{ profile.name }}</h4>
+                    <span class="profile-job">{{ profile.jobTitle }}</span>
+                  </div>
+                </div>
+
+                <div class="profile-info-list">
+                  <div class="profile-info-item">
+                    <span class="profile-info-label">Email</span>
+                    <span class="profile-info-value">{{ profile.email }}</span>
+                  </div>
+                  @if (profile.bio) {
+                    <div class="profile-info-item">
+                      <span class="profile-info-label">Bio</span>
+                      <span class="profile-info-value">{{ profile.bio }}</span>
+                    </div>
+                  }
+                  <div class="profile-info-item">
+                    <span class="profile-info-label">Allocation</span>
+                    <span class="profile-info-value text-emerald-600 font-semibold">{{ profile.currentAllocationPercentage }}% occupied</span>
+                  </div>
+                  @if (profile.linkedInUrl) {
+                    <div class="profile-info-item">
+                      <span class="profile-info-label">LinkedIn</span>
+                      <a [href]="profile.linkedInUrl" target="_blank" class="profile-info-link">
+                        <i class="fa-brands fa-linkedin"></i> View Profile
+                      </a>
+                    </div>
+                  }
+                </div>
+
+                @if (profile.skills && profile.skills.length > 0) {
+                  <div class="skills-section">
+                    <h5 class="skills-title">Skills & Expertise</h5>
+                    <div class="skills-grid">
+                      @for (s of profile.skills; track s.id) {
+                        <div class="skill-tag">
+                          <span class="skill-name">{{ s.skillName }}</span>
+                          <span class="skill-score">{{ s.confidenceScore }}/100</span>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="empty-tab-state">
+                <i class="fa-solid fa-user-slash"></i>
+                <p>No employee is currently assigned to this task.</p>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- 5. Creator Tab -->
+        @if (activeTab() === 'creator') {
+          <div class="profile-tab">
+            @if (creator(); as profile) {
+              <div class="profile-card">
+                <div class="profile-avatar-row">
+                  <div class="profile-avatar">{{ getInitials(profile.name) }}</div>
+                  <div class="profile-title-col">
+                    <h4 class="profile-name">{{ profile.name }}</h4>
+                    <span class="profile-job">{{ profile.jobTitle }}</span>
+                  </div>
+                </div>
+
+                <div class="profile-info-list">
+                  <div class="profile-info-item">
+                    <span class="profile-info-label">Email</span>
+                    <span class="profile-info-value">{{ profile.email }}</span>
+                  </div>
+                  @if (profile.bio) {
+                    <div class="profile-info-item">
+                      <span class="profile-info-label">Bio</span>
+                      <span class="profile-info-value">{{ profile.bio }}</span>
+                    </div>
+                  }
+                  <div class="profile-info-item">
+                    <span class="profile-info-label">Allocation</span>
+                    <span class="profile-info-value text-emerald-600 font-semibold">{{ profile.currentAllocationPercentage }}% occupied</span>
+                  </div>
+                  @if (profile.linkedInUrl) {
+                    <div class="profile-info-item">
+                      <span class="profile-info-label">LinkedIn</span>
+                      <a [href]="profile.linkedInUrl" target="_blank" class="profile-info-link">
+                        <i class="fa-brands fa-linkedin"></i> View Profile
+                      </a>
+                    </div>
+                  }
+                </div>
+
+                @if (profile.skills && profile.skills.length > 0) {
+                  <div class="skills-section">
+                    <h5 class="skills-title">Skills & Expertise</h5>
+                    <div class="skills-grid">
+                      @for (s of profile.skills; track s.id) {
+                        <div class="skill-tag">
+                          <span class="skill-name">{{ s.skillName }}</span>
+                          <span class="skill-score">{{ s.confidenceScore }}/100</span>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="empty-tab-state">
+                <i class="fa-solid fa-user-slash"></i>
+                <p>Loading creator profile details...</p>
+              </div>
+            }
+          </div>
+        }
+
+      </div>
+    }
+  }
+
+</app-modal>

@@ -1,14 +1,14 @@
-// features/home/home.component.ts
 import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { CurrentUser } from '../../../core/models/auth.models';
+import { AddEmployeeModalComponent } from '../../../shared/components/add-employee-modal/add-employee-modal.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, AddEmployeeModalComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
 })
@@ -22,6 +22,7 @@ export class HomeComponent implements OnInit {
   organizationName = signal<string>('Your Organization');
   currentDate = signal<string>('');
   currentTime = signal<string>('');
+  showAddEmployeeModal = signal<boolean>(false);
 
   // Dashboard statistics
   stats = signal([
@@ -92,26 +93,37 @@ export class HomeComponent implements OnInit {
       icon: 'user-plus',
       color: 'bg-indigo-500',
       route: '/employees/add',
+      queryParams: undefined as Record<string, string> | undefined
     },
     {
       label: 'Create Project',
       icon: 'folder-plus',
       color: 'bg-purple-500',
-      route: '/projects/create',
+      route: '/projects',
+      queryParams: { create: 'true' } as Record<string, string> | undefined
     },
     {
       label: 'Assign Tasks',
       icon: 'clipboard-list',
       color: 'bg-green-500',
       route: '/tasks/assign',
+      queryParams: undefined as Record<string, string> | undefined
     },
     {
       label: 'Generate Report',
       icon: 'chart-bar',
       color: 'bg-orange-500',
       route: '/reports/generate',
+      queryParams: undefined as Record<string, string> | undefined
     },
   ]);
+
+  onActionClick(action: any, event: MouseEvent): void {
+    if (action.label === 'Add Employee') {
+      event.preventDefault();
+      this.showAddEmployeeModal.set(true);
+    }
+  }
 
   ngOnInit(): void {
     this.updateDateTime();

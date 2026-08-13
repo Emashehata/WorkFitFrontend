@@ -1,0 +1,200 @@
+@use '../../../../styles/colors' as *;
+
+.employees-page {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: $text;
+  margin: 0;
+}
+
+.page-subtitle {
+  font-size: 14px;
+  color: $text-secondary;
+  margin: 4px 0 0;
+}
+
+.add-emp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: $primary;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba($primary, 0.25);
+
+  &:hover {
+    background: $primary-hover;
+    transform: translateY(-1px);
+  }
+}
+
+.table-card {
+  background: $surface;
+  border-radius: 20px;
+  border: 1px solid $border;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.emp-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+
+  th {
+    background: $background;
+    padding: 14px 20px;
+    font-size: 12px;
+    font-weight: 700;
+    color: $text-secondary;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid $border;
+  }
+
+  td {
+    padding: 16px 20px;
+    border-bottom: 1px solid $border;
+    color: $text;
+    vertical-align: middle;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr:hover {
+    background: rgba($primary, 0.02);
+  }
+}
+
+.emp-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.emp-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba($primary, 0.1);
+  color: $primary;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emp-name {
+  font-weight: 700;
+  color: $text;
+}
+
+.emp-email {
+  color: $text-secondary;
+}
+
+.emp-title-cell {
+  font-weight: 500;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #F1F5F9;
+  color: $text-secondary;
+
+  &.active {
+    background: rgba($success, 0.1);
+    color: $success;
+
+    .status-dot {
+      background: $success;
+    }
+  }
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: $text-secondary;
+}
+
+.emp-alloc {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: $text-secondary;
+}
+
+.alloc-bar-wrap {
+  width: 80px;
+  height: 6px;
+  border-radius: 999px;
+  background: $border;
+  overflow: hidden;
+}
+
+.alloc-bar {
+  height: 100%;
+  background: $primary;
+  border-radius: 999px;
+}
+
+.empty-state, .empty-table {
+  padding: 60px 20px;
+  text-align: center;
+  color: $text-secondary;
+
+  i {
+    font-size: 32px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+  }
+
+  h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: $text;
+    margin: 0 0 4px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}

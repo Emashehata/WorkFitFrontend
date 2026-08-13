@@ -1,0 +1,415 @@
+@use '../../../../../styles/colors' as *;
+
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 20px;
+  color: $text-secondary;
+  font-size: 14px;
+
+  i {
+    font-size: 28px;
+    color: $primary;
+  }
+}
+
+// ─── Tabs Navigation ──────────────────────────────
+.tabs-nav {
+  display: flex;
+  border-b: 1.5px solid $border;
+  margin-bottom: 24px;
+  gap: 8px;
+}
+
+.tab-btn {
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: $text-secondary;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  position: relative;
+  outline: none;
+}
+
+.tab-btn::after {
+  content: '';
+  position: absolute;
+  bottom: -1.5px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: $primary;
+}
+
+.tab-btn.active {
+  color: $primary;
+}
+
+.tab-btn.active::after {
+  background: $primary;
+}
+
+// ─── Tab Content Area ─────────────────────────────
+.tab-content {
+  min-height: 250px;
+}
+
+// ─── Task Info Tab ────────────────────────────────
+.task-info-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.task-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.task-type-badge {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: $primary;
+  background: rgba($primary, 0.08);
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
+}
+
+.badges-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.task-title-detail {
+  font-size: 20px;
+  font-weight: 700;
+  color: $text;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.task-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: $text-secondary;
+  margin: 0;
+  letter-spacing: 0.05em;
+}
+
+.field-value {
+  font-size: 14px;
+  color: $text;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.description-text {
+  background: $background;
+  border-radius: 12px;
+  padding: 12px 16px;
+  border: 1px solid $border;
+  white-space: pre-wrap;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+
+.item-label {
+  font-size: 11px;
+  color: $text-secondary;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  i {
+    color: $primary;
+    font-size: 12px;
+  }
+}
+
+.item-value {
+  font-size: 14px;
+  color: $text;
+}
+
+// ─── Profile Tab ──────────────────────────────────
+.profile-card {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.profile-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.profile-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: gradient-to-br from-indigo-500 to-purple-500;
+  background-color: $primary;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.profile-title-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.profile-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: $text;
+  margin: 0;
+}
+
+.profile-job {
+  font-size: 13px;
+  color: $text-secondary;
+}
+
+.profile-info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: $background;
+  border-radius: 14px;
+  border: 1px solid $border;
+  padding: 14px 18px;
+}
+
+.profile-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-bottom: 1px solid rgba($border, 0.5);
+  padding-bottom: 8px;
+}
+
+.profile-info-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.profile-info-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: $text-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.profile-info-value {
+  font-size: 13px;
+  color: $text;
+}
+
+.profile-info-link {
+  font-size: 13px;
+  color: $primary;
+  text-decoration: none;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+}
+
+.profile-info-link:hover {
+  text-decoration: underline;
+}
+
+// ─── Skills Section ───────────────────────────────
+.skills-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skills-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: $text;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.skills-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.skill-name {
+  font-weight: 600;
+  color: $text;
+}
+
+.skill-score {
+  font-size: 11px;
+  color: $primary;
+  background: rgba($primary, 0.08);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+// ─── Empty Tab State ──────────────────────────────
+.empty-tab-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 50px 20px;
+  text-align: center;
+  color: $text-secondary;
+
+  i {
+    font-size: 32px;
+    opacity: 0.3;
+  }
+
+  p {
+    font-size: 14px;
+    margin: 0;
+    max-width: 280px;
+  }
+}
+
+// ─── Assign / Edit Tabs ───────────────────────────
+.tab-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 16px;
+}
+
+.assign-form,
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: $text;
+  letter-spacing: 0.02em;
+}
+
+.form-input {
+  padding: 10px 14px;
+  border: 1.5px solid $border;
+  border-radius: 12px;
+  font-size: 14px;
+  color: $text;
+  background: $surface;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: $primary;
+  box-shadow: 0 0 0 3px rgba($primary, 0.1);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-error {
+  font-size: 12px;
+  color: $danger;
+  font-weight: 500;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.details-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}

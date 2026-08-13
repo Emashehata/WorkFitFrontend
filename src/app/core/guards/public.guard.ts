@@ -24,7 +24,7 @@ export class PublicGuard implements CanActivate {
 
     if (storedHasOrg === 'true') {
       // User is authenticated and has organization - redirect to settings
-      this.router.navigate(['/settings']);
+          this.router.navigate(['/home']);
       return false;
     }
 
@@ -37,7 +37,7 @@ export class PublicGuard implements CanActivate {
     return this.organizationService.checkUserHasOrganization().pipe(
       map((hasOrganization) => {
         if (hasOrganization) {
-          this.router.navigate(['/settings']);
+              this.router.navigate(['/home']);
           return false;
         }
         return true;
