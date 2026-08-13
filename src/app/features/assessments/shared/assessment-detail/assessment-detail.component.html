@@ -1,0 +1,225 @@
+<div class="p-6 max-w-4xl mx-auto">
+
+  @if (loading()) {
+
+    <div class="p-8 text-center text-text-secondary">
+      Loading...
+    </div>
+
+  } @else {
+
+    @if (assessment(); as a) {
+
+      <div class="flex items-center gap-4 mb-4">
+
+        <button
+          class="text-text-secondary hover:text-primary text-sm"
+          (click)="goBack()"
+        >
+          ← Back
+        </button>
+
+        <h1 class="text-xl font-bold text-text flex-1">
+          Assessment — {{ a.employeeName || a.employeeId }}
+        </h1>
+
+        <span
+          class="px-3 py-1 rounded-full text-xs font-semibold"
+          [ngClass]="{
+            'bg-warning/15 text-warning': a.status === 'Pending' || !a.status,
+            'bg-success/15 text-success': a.status === 'Approved',
+            'bg-danger/15 text-danger': a.status === 'Rejected'
+          }"
+        >
+          {{ a.status || 'Pending' }}
+        </span>
+
+      </div>
+
+      <div class="text-text-secondary mb-4">
+        Task:
+        <strong class="text-text">
+          {{ a.taskName || a.taskId }}
+        </strong>
+      </div>
+
+      <div class="border border-border rounded-xl overflow-hidden">
+
+        <div
+          class="grid gap-2 px-4 py-3 text-sm font-semibold text-text-secondary bg-background border-b border-border"
+          [class]="
+            isAltering()
+              ? 'grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_2fr]'
+              : 'grid-cols-[1.2fr_0.8fr_0.8fr_2fr]'
+          "
+        >
+          <span>Skill</span>
+          <span>Old Score</span>
+          <span>Proposed Score</span>
+
+          @if (isAltering()) {
+            <span>New Score</span>
+          }
+
+          <span>Evidence</span>
+        </div>
+
+        @for (sc of a.skillChanges; track sc.skillChangeId) {
+
+          <div
+            class="grid gap-2 px-4 py-3 text-sm border-b border-border items-center last:border-b-0"
+            [class]="
+              isAltering()
+                ? 'grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_2fr]'
+                : 'grid-cols-[1.2fr_0.8fr_0.8fr_2fr]'
+            "
+          >
+
+            <span class="text-text">
+              {{ sc.skillName }}
+            </span>
+
+            <span class="text-text-secondary">
+              {{ sc.oldScore }}
+            </span>
+
+            <span class="text-text-secondary">
+              {{ sc.proposedScore }}
+            </span>
+
+            @if (isAltering()) {
+
+              <span>
+                <input
+                  type="number"
+                  class="w-[70px] px-2 py-1 rounded-md border border-border text-sm bg-surface text-text"
+                  [value]="alteredScores()[sc.skillChangeId]"
+                  (input)="
+                    updateScore(
+                      sc.skillChangeId,
+                      $any($event.target).value
+                    )
+                  "
+                />
+              </span>
+
+            }
+
+            <span class="text-text-secondary text-xs">
+              {{ sc.evidence }}
+            </span>
+
+          </div>
+
+        }
+
+      </div>
+
+      @if (isAltering()) {
+
+        <div class="mt-4 flex flex-col gap-1.5">
+
+          <label
+            for="alterNote"
+            class="text-xs text-text-secondary"
+          >
+            Alter note
+          </label>
+
+          <textarea
+            id="alterNote"
+            rows="2"
+            class="p-2 rounded-lg border border-border resize-y text-sm bg-surface text-text"
+            [ngModel]="alterNote()"
+            (ngModelChange)="alterNote.set($event)"
+          ></textarea>
+
+        </div>
+
+      }
+
+      @if (isTeamLead() && a.status === 'Pending') {
+
+        <div class="flex gap-3 mt-6">
+
+          @if (!isAltering()) {
+
+            <button
+              class="px-5 py-2 rounded-lg text-sm font-semibold bg-surface text-text border border-border hover:bg-background"
+              (click)="toggleAlterMode()"
+            >
+              Alter Scores
+            </button>
+
+            <button
+              class="px-5 py-2 rounded-lg text-sm font-semibold bg-success text-white hover:opacity-90"
+              (click)="showApproveConfirm.set(true)"
+            >
+              Approve
+            </button>
+
+            <button
+              class="px-5 py-2 rounded-lg text-sm font-semibold bg-danger text-white hover:opacity-90"
+              (click)="showRejectConfirm.set(true)"
+            >
+              Reject
+            </button>
+
+          } @else {
+
+            <button
+              class="px-5 py-2 rounded-lg text-sm font-semibold bg-surface text-text border border-border hover:bg-background"
+              (click)="toggleAlterMode()"
+            >
+              Cancel
+            </button>
+
+            <button
+              class="px-5 py-2 rounded-lg text-sm font-semibold bg-primary text-white disabled:opacity-60 disabled:cursor-not-allowed hover:bg-primary-hover"
+              [disabled]="submitting()"
+              (click)="submitAlter()"
+            >
+              Save Alterations
+            </button>
+
+          }
+
+        </div>
+
+      }
+
+    }
+
+  }
+
+  @if (showApproveConfirm()) {
+
+    <app-confirm-dialog
+      title="Approve Assessment"
+      message="Are you sure you want to approve this assessment?"
+      [showInput]="true"
+      inputLabel="Note (optional)"
+      confirmLabel="Approve"
+      (inputChange)="approveNote.set($event)"
+      (confirmed)="confirmApprove()"
+      (cancelled)="showApproveConfirm.set(false)"
+    />
+
+  }
+
+  @if (showRejectConfirm()) {
+
+    <app-confirm-dialog
+      title="Reject Assessment"
+      message="Are you sure you want to reject this assessment?"
+      [showInput]="true"
+      inputLabel="Reason for rejection"
+      confirmLabel="Reject"
+      (inputChange)="rejectNote.set($event)"
+      (confirmed)="confirmReject()"
+      (cancelled)="showRejectConfirm.set(false)"
+    />
+
+  }
+
+</div>

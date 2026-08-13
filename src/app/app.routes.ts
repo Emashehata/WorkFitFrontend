@@ -1,4 +1,6 @@
 import { organizationGuard } from './core/guards/organization.guard';
+import { AuthGuard } from './core/guards/auth.guard';
+import { PublicGuard } from './core/guards/public.guard';
 import { Routes } from '@angular/router';
 import { RegisterOrganizationComponent } from './features/auth/register-organization/register-organization.component';
 import { LoginComponent } from './features/auth/login/login.component';
@@ -10,11 +12,7 @@ import { ProjectDetailComponent } from './features/organizationOwner/project/pro
 import { OrganizationSettingsComponent } from './features/organization/organization-settings/organization-settings.component';
 import { EmployeesComponent } from './features/employee/employees/employees.component';
 
-import { AuthGuard } from './core/guards/auth.guard';
-import { PublicGuard } from './core/guards/public.guard';
-
 export const routes: Routes = [
-  // Public Routes
   {
     path: '',
     component: LandingComponent,
@@ -37,7 +35,6 @@ export const routes: Routes = [
     pathMatch: 'full',
   },
 
-  // Dashboard Layout
   {
     path: '',
     component: DashboardLayoutComponent,
@@ -62,6 +59,15 @@ export const routes: Routes = [
       {
         path: 'organization_settings',
         component: OrganizationSettingsComponent,
+      },
+
+
+      {
+        path: '',
+        loadChildren: () =>
+          import('./features/assessments/assessment.routes').then(
+            (m) => m.ASSESSMENT_ROUTES
+          ),
       },
     ],
   },
