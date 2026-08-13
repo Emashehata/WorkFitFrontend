@@ -1,10 +1,16 @@
 @if (isOpen()) {
   <div class="modal-backdrop" (click)="onBackdropClick($event)">
-    <div class="modal-container">
+    <div
+      #dialog
+      class="modal-container"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-labelledby]="'modal-title'"
+      tabindex="-1">
       <div class="modal-header">
-        <h2 class="modal-title">{{ title() }}</h2>
-        <button class="modal-close-btn" (click)="close.emit()">
-          <i class="fa-solid fa-xmark"></i>
+        <h2 id="modal-title" class="modal-title">{{ title() }}</h2>
+        <button type="button" class="modal-close-btn" (click)="close.emit()" aria-label="Close dialog" title="Close">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
         </button>
       </div>
       <div class="modal-body">

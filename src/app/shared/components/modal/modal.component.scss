@@ -27,7 +27,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 28px 0;
+  padding: 20px 24px 0;
 }
 
 .modal-title {
@@ -57,8 +57,25 @@
   color: $danger;
 }
 
+.modal-close-btn:focus-visible,
+.modal-container:focus-visible {
+  outline: 3px solid rgba($primary, .22);
+  outline-offset: 2px;
+}
+
 .modal-body {
-  padding: 24px 28px 28px;
+  padding: 22px 24px 24px;
+}
+
+@media (max-width: 600px) {
+  .modal-backdrop { align-items: flex-end; }
+  .modal-container { border-radius: 16px 16px 0 0; max-height: 92vh; width: 100%; }
+  .modal-header { padding: 18px 18px 0; }
+  .modal-body { padding: 20px 18px 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-backdrop, .modal-container { animation: none; }
 }
 
 @keyframes fadeIn {

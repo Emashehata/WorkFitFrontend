@@ -119,11 +119,10 @@
     </div>
 
     <div class="form-actions">
-      <app-button variant="secondary" (click)="close.emit()">Cancel</app-button>
+      <app-button variant="secondary" type="button" (click)="close.emit()">Cancel</app-button>
       <app-button
         variant="primary"
         type="submit"
-        (click)="onSubmit()"
         [loading]="isSubmitting()"
         [disabled]="form.invalid"
       >

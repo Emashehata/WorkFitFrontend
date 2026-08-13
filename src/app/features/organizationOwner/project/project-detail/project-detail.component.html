@@ -1,10 +1,21 @@
 <div class="project-detail-page">
 
+  @if (projectError()) {
+    <section class="load-error" role="alert">
+      <span class="error-icon"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></span>
+      <div>
+        <h2>Project details are unavailable</h2>
+        <p>Check your connection and try loading this project again.</p>
+      </div>
+      <button type="button" (click)="retryProject()"><i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Retry</button>
+    </section>
+  }
+
   <!-- Header -->
   <div class="detail-header">
     <div class="header-left">
-      <button class="back-btn" (click)="goBack()">
-        <i class="fa-solid fa-arrow-left"></i>
+      <button class="back-btn" (click)="goBack()" aria-label="Back to projects" title="Back to projects">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
       </button>
       @if (project(); as proj) {
         <div class="header-info">
@@ -19,7 +30,7 @@
             @if (proj.startDate || proj.endDate) {
               <span class="date-range">
                 <i class="fa-regular fa-calendar"></i>
-                {{ proj.startDate | date:'MMM d, y' }} — {{ proj.endDate | date:'MMM d, y' }}
+                 {{ proj.startDate | date:'MMM d, y' }} - {{ proj.endDate | date:'MMM d, y' }}
               </span>
             }
             @if (proj.coveragePct !== undefined && proj.coveragePct !== null) {
@@ -47,7 +58,7 @@
       }
     </div>
 
-    @if (isTeamLeader()) {
+    @if (canManageProject()) {
       <div class="header-actions">
         @if (allowedNextStatuses().length > 0) {
           <select
@@ -72,6 +83,7 @@
     }
   </div>
 
+  @if (project()) {
   <section class="project-stats" aria-label="Project summary">
     <div class="stat-card stat-card-primary">
       <i class="fa-solid fa-list-check"></i>
@@ -100,9 +112,27 @@
       </div>
     }
   </section>
+  }
 
   <!-- Kanban Board -->
-  <div class="kanban-board">
+  <div class="board-heading">
+    <div>
+      <span class="section-label">Delivery board</span>
+      <h2>Tasks</h2>
+    </div>
+    @if (isLoading()) {
+      <span class="board-status"><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Loading tasks</span>
+    }
+  </div>
+
+  @if (tasksError()) {
+    <section class="load-error compact-error" role="alert">
+      <span class="error-icon"><i class="fa-solid fa-cloud-arrow-down" aria-hidden="true"></i></span>
+      <div><h2>Tasks could not be loaded</h2><p>Your project details are safe. Retry to restore the board.</p></div>
+      <button type="button" (click)="retryTasks()"><i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Retry</button>
+    </section>
+  } @else {
+  <div class="kanban-board" aria-label="Project task board" [attr.aria-busy]="isLoading()">
     @for (col of columns; track col.status) {
       <div class="kanban-column" [class]="col.colorClass">
         <div class="column-header">
@@ -119,20 +149,24 @@
           [cdkDropListData]="getTasksByStatus(col.status)"
           [cdkDropListConnectedTo]="columnIds"
           (cdkDropListDropped)="onDrop($event)"
-          [cdkDropListDisabled]="!isTeamLeader()"
+          [cdkDropListDisabled]="!canManageProject()"
           class="task-list">
 
           @for (task of getTasksByStatus(col.status); track task.id) {
-            <div
-              class="task-card"
-              cdkDrag
-              [cdkDragDisabled]="!canDrag(task)"
-              (click)="onViewTask(task)">
+             <article
+               class="task-card"
+               cdkDrag
+               tabindex="0"
+               role="button"
+               [attr.aria-label]="'Open task ' + task.title"
+               [cdkDragDisabled]="!canDrag(task)"
+               (keydown)="onTaskKeydown($event, task)"
+               (click)="onViewTask(task)">
 
               <!-- Drag handle placeholder for visual cue -->
               <div class="drag-placeholder" *cdkDragPlaceholder></div>
 
-              <div class="task-card-header">
+               <div class="task-card-header">
                 <div class="task-type-icon">
                   <i [class]="getTaskTypeIcon(task.taskType)"></i>
                 </div>
@@ -164,20 +198,19 @@
               <!-- Task Actions -->
               <div class="task-actions" (click)="$event.stopPropagation()">
                 @if (task.status !== 'Done' && isEmployee()) {
-                  <button class="task-action-btn complete-btn" title="Mark Complete"
+                   <button class="task-action-btn complete-btn" title="Mark complete" aria-label="Mark task complete"
                     (click)="onCompleteTask(task)">
                     <i class="fa-solid fa-check"></i>
                   </button>
                 }
-                @if (isTeamLeader()) {
-                  <button class="task-action-btn delete-btn" title="Delete Task"
+                @if (canManageProject()) {
+                   <button class="task-action-btn delete-btn" title="Delete task" aria-label="Delete task"
                     (click)="onDeleteTask(task)">
                     <i class="fa-solid fa-trash"></i>
                   </button>
                 }
               </div>
-
-            </div>
+             </article>
           } @empty {
             <div class="empty-column">
               <i class="fa-regular fa-folder-open"></i>
@@ -189,6 +222,7 @@
       </div>
     }
   </div>
+  }
 
 </div>
 

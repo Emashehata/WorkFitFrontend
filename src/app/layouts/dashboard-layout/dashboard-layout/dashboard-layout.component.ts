@@ -167,6 +167,7 @@ export class DashboardLayoutComponent implements OnInit {
               icon: 'fa-solid fa-diagram-project',
               route: '/projects',
             },
+             { title: 'Assessments', icon: 'fa-solid fa-clipboard-check', route: '/team-assessments' },
           ],
         },
       ];
@@ -202,6 +203,7 @@ export class DashboardLayoutComponent implements OnInit {
               icon: 'fa-solid fa-gear',
               route: '/settings',
             },
+            { title: 'My Assessments', icon: 'fa-solid fa-clipboard-check', route: '/my-assessments' },
           ],
         },
       ];

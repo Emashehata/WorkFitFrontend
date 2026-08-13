@@ -5,7 +5,6 @@ import { ProjectService } from '../../../../core/services/project/project.servic
 import { AuthService } from '../../../../core/services/auth/auth.service';
 import { OrganizationService } from '../../../../core/services/organization/organization.service';
 import { ToastService } from '../../../../core/services/toast/toast.service';
-import { CardComponent } from "../../../../shared/components/card/card.component";
 import { BadgeComponent } from "../../../../shared/components/badge/badge.component";
 import { ButtonComponent } from "../../../../shared/components/button/button/button.component";
 import { DatePipe } from '@angular/common';
@@ -20,7 +19,7 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
 
 @Component({
   selector: 'app-project',
-  imports: [CardComponent, BadgeComponent, ButtonComponent, DatePipe, CreateProjectModalComponent, EditProjectModalComponent, JiraIntegrationModalComponent, ConfirmDialogComponent],
+  imports: [BadgeComponent, ButtonComponent, DatePipe, CreateProjectModalComponent, EditProjectModalComponent, JiraIntegrationModalComponent, ConfirmDialogComponent],
   templateUrl: './project.component.html',
   styleUrl: './project.component.scss'
 })
@@ -71,6 +70,8 @@ export class ProjectComponent implements OnInit {
       }
     });
   });
+
+  hasActiveFilters = computed(() => !!this.searchTerm().trim() || !!this.selectedStatus());
 
   private projectService = inject(ProjectService);
   private router = inject(Router);
@@ -130,6 +131,12 @@ export class ProjectComponent implements OnInit {
   onSortChange(event: Event) {
     const value = (event.target as HTMLSelectElement).value as 'name' | 'startDate' | 'status';
     this.sortBy.set(value);
+  }
+
+  clearFilters() {
+    this.searchTerm.set('');
+    this.selectedStatus.set('');
+    this.getProjects();
   }
 
   onView(project: Project) {

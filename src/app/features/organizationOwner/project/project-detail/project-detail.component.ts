@@ -54,6 +54,8 @@ export class ProjectDetailComponent implements OnInit {
   allTasks = signal<TaskListItem[]>([]);
   employees = signal<EmployeeListItemDto[]>([]);
   isLoading = signal(true);
+  projectError = signal(false);
+  tasksError = signal(false);
   isChangingStatus = signal(false);
   showCreateTaskModal = signal(false);
   showTaskDetailModal = signal(false);
@@ -71,6 +73,16 @@ export class ProjectDetailComponent implements OnInit {
   private _pendingAction: (() => void) | null = null;
 
   isTeamLeader = computed(() => this.authService.isTeamLeader() || this.authService.isOrganizationOwner());
+  canManageProject = computed(() => {
+    if (this.authService.isOrganizationOwner()) return true;
+    const project = this.project();
+    const currentUser = this.authService.currentUser();
+    return this.authService.isTeamLeader()
+      && !!project
+      && (!!currentUser?.orgId
+        ? project.organizationId === currentUser.orgId
+        : project.teamLeaderId === currentUser?.userId);
+  });
   isEmployee = this.authService.isEmployee;
 
   employeeMap = computed(() => {
@@ -145,16 +157,21 @@ export class ProjectDetailComponent implements OnInit {
   }
 
   loadProject(id: string) {
+    this.projectError.set(false);
     this.projectService.getProjectById(id).subscribe({
       next: (project) => {
         this.project.set(project);
       },
-      error: (err) => console.error('Failed to load project', err),
+      error: (err) => {
+        this.projectError.set(true);
+        console.error('Failed to load project', err);
+      },
     });
   }
 
   loadTasks(id: string) {
     this.isLoading.set(true);
+    this.tasksError.set(false);
     this.taskService.getProjectTasks(id).subscribe({
       next: (tasks) => {
         this.allTasks.set(tasks);
@@ -162,6 +179,7 @@ export class ProjectDetailComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to load tasks', err);
+        this.tasksError.set(true);
         this.isLoading.set(false);
       },
     });
@@ -226,7 +244,7 @@ export class ProjectDetailComponent implements OnInit {
 
   onChangeStatus(next: string) {
     const project = this.project();
-    if (!project || this.isChangingStatus()) return;
+    if (!project || !this.canManageProject() || this.isChangingStatus()) return;
 
     this.isChangingStatus.set(true);
     this.projectService.updateProjectStatus(project.id, toApiProjectStatus(next)).subscribe({
@@ -306,10 +324,12 @@ export class ProjectDetailComponent implements OnInit {
       // Call API
       const updateReq: UpdateTaskRequest = { status: newStatus };
       this.taskService.updateTask(task.id, updateReq).subscribe({
+        next: () => this.toast.success('Task moved', `Task moved to ${newStatus}`),
         error: (err) => {
           // Revert on error
           console.error('Failed to update task status', err);
           task.status = oldStatus;
+          this.toast.error('Move failed', 'The task could not be moved. The board has been refreshed.');
           this.reloadTasks();
         },
       });
@@ -327,6 +347,7 @@ export class ProjectDetailComponent implements OnInit {
       error: (err) => {
         console.error('Failed to complete task', err);
         task.status = oldStatus;
+        this.toast.error('Update failed', 'The task could not be completed.');
         this.reloadTasks();
       },
     });
@@ -343,7 +364,10 @@ export class ProjectDetailComponent implements OnInit {
       action: () => {
         this.taskService.deleteTask(task.id).subscribe({
           next: () => this.reloadTasks(),
-          error: (err) => console.error('Failed to delete task', err),
+          error: (err) => {
+            this.toast.error('Delete failed', 'The task could not be deleted.');
+            console.error('Failed to delete task', err);
+          },
         });
       },
     });
@@ -400,8 +424,25 @@ export class ProjectDetailComponent implements OnInit {
     this.showTaskDetailModal.set(true);
   }
 
+  onTaskKeydown(event: KeyboardEvent, task: TaskListItem) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.onViewTask(task);
+    }
+  }
+
+  retryProject() {
+    const id = this.projectId();
+    if (id) this.loadProject(id);
+  }
+
+  retryTasks() {
+    const id = this.projectId();
+    if (id) this.loadTasks(id);
+  }
+
   canDrag(task: TaskListItem): boolean {
     // Only TeamLeader can drag, and Done tasks can't be moved
-    return this.isTeamLeader() && task.status !== TaskStatus.Done;
+    return this.canManageProject() && task.status !== TaskStatus.Done;
   }
 }
