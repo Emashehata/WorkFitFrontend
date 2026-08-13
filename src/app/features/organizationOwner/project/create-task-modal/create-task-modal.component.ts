@@ -1,4 +1,4 @@
-import { Component, inject, input, output, signal, OnInit, effect } from '@angular/core';
+import { Component, inject, input, output, signal, computed, OnInit, effect } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { ButtonComponent } from '../../../../shared/components/button/button/button.component';
@@ -28,6 +28,17 @@ export class CreateTaskModalComponent implements OnInit {
   isSubmitting = signal(false);
   isLoadingEmployees = signal(false);
   employees = signal<EmployeeListItemDto[]>([]);
+  employeeSearch = signal<string>('');
+
+  filteredEmployees = computed(() => {
+    const search = this.employeeSearch().trim().toLowerCase();
+    if (!search) return this.employees();
+    return this.employees().filter(e =>
+      e.name.toLowerCase().includes(search) ||
+      (e.jobTitle && e.jobTitle.toLowerCase().includes(search)) ||
+      (e.email && e.email.toLowerCase().includes(search))
+    );
+  });
 
   taskTypes = Object.values(TaskType);
   priorities = Object.values(TaskPriority);

@@ -23,6 +23,52 @@ export class HomeComponent implements OnInit {
   currentDate = signal<string>('');
   currentTime = signal<string>('');
   showAddEmployeeModal = signal<boolean>(false);
+  showAllActivitiesModal = signal<boolean>(false);
+
+  upcomingTasks = signal([
+    {
+      title: 'Backend API Deployment & Migration',
+      dueDate: new Date(Date.now() + 86400000 * 1),
+      dueLabel: 'Due Tomorrow',
+      priority: 'High Priority',
+      priorityClass: 'bg-orange-100 text-orange-700',
+      dotClass: 'bg-orange-500',
+      bgClass: 'bg-orange-50/50 border-orange-100',
+    },
+    {
+      title: 'Task Kanban & Drag-and-Drop Review',
+      dueDate: new Date(Date.now() + 86400000 * 2),
+      dueLabel: 'Due in 2 days',
+      priority: 'High Priority',
+      priorityClass: 'bg-orange-100 text-orange-700',
+      dotClass: 'bg-orange-500',
+      bgClass: 'bg-orange-50/50 border-orange-100',
+    },
+    {
+      title: 'Sprint Planning & Team Allocation',
+      dueDate: new Date(Date.now() + 86400000 * 4),
+      dueLabel: 'Due in 4 days',
+      priority: 'Medium Priority',
+      priorityClass: 'bg-blue-100 text-blue-700',
+      dotClass: 'bg-blue-500',
+      bgClass: 'bg-blue-50/50 border-blue-100',
+    },
+    {
+      title: 'Jira Integration Final Sign-off',
+      dueDate: new Date(Date.now() + 86400000 * 6),
+      dueLabel: 'Due in 6 days',
+      priority: 'Low Priority',
+      priorityClass: 'bg-green-100 text-green-700',
+      dotClass: 'bg-green-500',
+      bgClass: 'bg-green-50/50 border-green-100',
+    },
+  ]);
+
+  sortedUpcomingTasks = computed(() => {
+    return [...this.upcomingTasks()].sort(
+      (a, b) => a.dueDate.getTime() - b.dueDate.getTime(),
+    );
+  });
 
   // Dashboard statistics
   stats = signal([

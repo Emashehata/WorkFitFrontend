@@ -1,4 +1,4 @@
-import { Component, inject, input, output, signal, effect } from '@angular/core';
+import { Component, inject, input, output, signal, computed, effect } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
@@ -33,6 +33,17 @@ export class TaskDetailModalComponent {
   assignee = signal<EmployeeDetailsDto | null>(null);
   creator = signal<EmployeeDetailsDto | null>(null);
   employees = signal<EmployeeListItemDto[]>([]);
+  employeeSearch = signal<string>('');
+
+  filteredEmployees = computed(() => {
+    const search = this.employeeSearch().trim().toLowerCase();
+    if (!search) return this.employees();
+    return this.employees().filter(e =>
+      e.name.toLowerCase().includes(search) ||
+      (e.jobTitle && e.jobTitle.toLowerCase().includes(search)) ||
+      (e.email && e.email.toLowerCase().includes(search))
+    );
+  });
 
   isLoading = signal(false);
   isSaving = signal(false);

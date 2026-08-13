@@ -108,11 +108,20 @@
             <form [formGroup]="assignForm" (ngSubmit)="onAssign()" class="assign-form">
 
               <div class="form-group">
-                <label class="form-label" for="assign-employee">Employee *</label>
+                <label class="form-label" for="assign-employee">Employee * (Organization)</label>
+                <div style="margin-bottom: 6px;">
+                  <input
+                    type="text"
+                    class="form-input"
+                    style="font-size: 13px; padding: 6px 12px;"
+                    placeholder="Type name to filter organization employees..."
+                    [value]="employeeSearch()"
+                    (input)="employeeSearch.set($any($event.target).value)" />
+                </div>
                 <select id="assign-employee" class="form-input" formControlName="assigneeId">
                   <option value="">Select employee…</option>
-                  @for (emp of employees(); track emp.id) {
-                    <option [value]="emp.id">{{ emp.name }} ({{ emp.jobTitle }})</option>
+                  @for (emp of filteredEmployees(); track emp.id) {
+                    <option [value]="emp.id">{{ emp.name }} ({{ emp.jobTitle || 'Employee' }})</option>
                   }
                 </select>
                 @if (assignForm.controls.assigneeId.touched && assignForm.controls.assigneeId.errors) {

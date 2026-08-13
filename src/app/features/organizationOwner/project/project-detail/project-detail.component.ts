@@ -59,6 +59,17 @@ export class ProjectDetailComponent implements OnInit {
   showTaskDetailModal = signal(false);
   showEditProjectModal = signal(false);
   selectedTaskId = signal<string>('');
+  employeeSearch = signal<string>('');
+
+  filteredEmployees = computed(() => {
+    const search = this.employeeSearch().trim().toLowerCase();
+    if (!search) return this.employees();
+    return this.employees().filter((e: EmployeeListItemDto) =>
+      e.name.toLowerCase().includes(search) ||
+      (e.jobTitle && e.jobTitle.toLowerCase().includes(search)) ||
+      (e.email && e.email.toLowerCase().includes(search))
+    );
+  });
 
   // ── Confirm dialog state ───────────────────────────────────
   showConfirm       = signal(false);

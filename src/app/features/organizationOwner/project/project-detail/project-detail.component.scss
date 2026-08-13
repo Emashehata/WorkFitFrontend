@@ -502,3 +502,147 @@
   }
   .project-stats { grid-template-columns: 1fr 1fr; }
 }
+
+// ─── Employees Section ─────────────────────────────────────
+.employees-section {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 18px 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.employees-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+
+  .employees-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    i {
+      color: $primary;
+      font-size: 18px;
+    }
+
+    h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: $text;
+      margin: 0;
+    }
+
+    .employee-count-badge {
+      background: rgba($primary, 0.1);
+      color: $primary;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+  }
+
+  .employee-search-box {
+    position: relative;
+    width: 280px;
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: $text-secondary;
+      font-size: 14px;
+      pointer-events: none;
+    }
+
+    .employee-search-input {
+      padding-left: 36px;
+      height: 38px;
+      font-size: 13px;
+      border-radius: 10px;
+    }
+  }
+}
+
+.employee-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.employee-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba($surface, 0.7);
+  border: 1px solid rgba($border, 0.6);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: $primary;
+    background: rgba($primary, 0.03);
+  }
+
+  .avatar-md {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, $primary 0%, lighten($primary, 15%) 100%);
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .employee-info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    .employee-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: $text;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .employee-title {
+      font-size: 11px;
+      color: $text-secondary;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+.empty-employees {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  color: $text-secondary;
+  font-size: 14px;
+
+  i {
+    font-size: 18px;
+  }
+}
