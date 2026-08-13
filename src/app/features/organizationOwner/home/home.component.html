@@ -142,7 +142,7 @@
 
         <!-- Recent Activity & Tasks -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Recent Activities -->
+            <!-- Project Activity Log -->
             <div
                 class="bg-white/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg shadow-indigo-100/50 border border-white/50">
                 <div class="flex justify-between items-center mb-4">
@@ -151,7 +151,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        Recent Activity
+                        Project Activity Log
                     </h2>
                     <button (click)="showAllActivitiesModal.set(true)" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium cursor-pointer transition-colors">View All</button>
                 </div>
@@ -167,7 +167,6 @@
                                 <span class="font-medium">{{ activity.user }}</span>
                                 <span class="text-gray-500"> {{ activity.action }}</span>
                             </p>
-                            <p class="text-xs text-gray-400 mt-0.5">{{ activity.time }}</p>
                         </div>
                         <div class="w-2 h-2 rounded-full bg-indigo-400 mt-2"></div>
                     </div>
@@ -192,7 +191,11 @@
                             <div class="w-2.5 h-2.5 rounded-full {{ task.dotClass }}"></div>
                             <div>
                                 <p class="text-sm font-medium text-gray-800">{{ task.title }}</p>
-                                <p class="text-xs text-gray-500">{{ task.dueLabel }}</p>
+                                <div class="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
+                                    <span><i class="fa-solid fa-user-code text-indigo-500 mr-1"></i>{{ task.developer }}</span>
+                                    <span>•</span>
+                                    <span>{{ task.dueLabel }}</span>
+                                </div>
                             </div>
                         </div>
                         <span class="text-xs px-2.5 py-1 rounded-full font-medium {{ task.priorityClass }}">{{ task.priority }}</span>
@@ -232,7 +235,6 @@
                         <span class="font-medium">{{ activity.user }}</span>
                         <span class="text-gray-500"> {{ activity.action }}</span>
                     </p>
-                    <p class="text-xs text-gray-400 mt-0.5">{{ activity.time }}</p>
                 </div>
             </div>
             }

@@ -2,8 +2,8 @@
   <!-- Page Header -->
   <div class="page-header">
     <div>
-      <h2 class="page-title">Employees</h2>
-      <p class="page-subtitle">Manage organization team members and staff</p>
+      <h2 class="page-title">My Teams</h2>
+      <p class="page-subtitle">Project teams and developers assigned under your project leadership</p>
     </div>
     <button
       type="button"
@@ -17,68 +17,143 @@
   @if (isLoading()) {
     <div class="empty-state">
       <i class="fa-solid fa-spinner animate-spin"></i>
-      <h3>Loading employees...</h3>
+      <h3>Loading project teams...</h3>
     </div>
   } @else {
-    <div class="table-card">
-      <div class="table-responsive">
-        <table class="emp-table">
-          <thead>
-            <tr>
-              <th>Employee</th>
-              <th>Email</th>
-              <th>Job Title</th>
-              <th>Status</th>
-              <th>Allocation</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (emp of employees(); track emp.id) {
+    @if (isTeamLeader() && projectTeams().length > 0) {
+      <!-- Render separate team section for each project -->
+      @for (team of projectTeams(); track team.project.id) {
+        <div class="project-team-card">
+          <div class="project-team-header">
+            <div class="team-info">
+              <i class="fa-solid fa-diagram-project text-indigo-600"></i>
+              <h3 class="team-project-name">{{ team.project.name }}</h3>
+              <span class="project-status-badge">{{ team.project.status }}</span>
+            </div>
+            <span class="team-count-chip">
+              <i class="fa-solid fa-users"></i> {{ team.members.length }} Developers
+            </span>
+          </div>
+
+          <div class="table-responsive">
+            <table class="emp-table">
+              <thead>
+                <tr>
+                  <th>Developer</th>
+                  <th>Email</th>
+                  <th>Job Title</th>
+                  <th>Assigned Tasks</th>
+                  <th>Status</th>
+                  <th>Allocation</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (emp of team.members; track emp.id) {
+                  <tr>
+                    <td>
+                      <div class="emp-identity">
+                        <div class="emp-avatar">
+                          {{ emp.name.charAt(0).toUpperCase() }}
+                        </div>
+                        <span class="emp-name">{{ emp.name }}</span>
+                      </div>
+                    </td>
+                    <td class="emp-email">{{ emp.email }}</td>
+                    <td class="emp-title-cell">{{ emp.jobTitle || 'Developer' }}</td>
+                    <td>
+                      <span class="task-count-badge">
+                        <i class="fa-solid fa-list-check"></i> {{ emp.taskCount }} Tasks
+                      </span>
+                    </td>
+                    <td>
+                      <span class="status-chip" [class.active]="emp.isActive">
+                        <span class="status-dot"></span>
+                        {{ emp.isActive ? 'Active' : 'Inactive' }}
+                      </span>
+                    </td>
+                    <td class="emp-alloc">
+                      <div class="alloc-bar-wrap">
+                        <div class="alloc-bar" [style.width.%]="emp.currentAllocationPercentage"></div>
+                      </div>
+                      <span>{{ emp.currentAllocationPercentage }}%</span>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="6" class="empty-table">
+                      <i class="fa-solid fa-user-slash"></i>
+                      <h3>No developers assigned yet</h3>
+                      <p>Assign tasks to developers on this project to add them to this project's team.</p>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    } @else {
+      <!-- Organization Employees View -->
+      <div class="table-card">
+        <div class="table-responsive">
+          <table class="emp-table">
+            <thead>
               <tr>
-                <td>
-                  <div class="emp-identity">
-                    <div class="emp-avatar">
-                      {{ emp.name.charAt(0).toUpperCase() }}
+                <th>Employee</th>
+                <th>Email</th>
+                <th>Job Title</th>
+                <th>Status</th>
+                <th>Allocation</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (emp of employees(); track emp.id) {
+                <tr>
+                  <td>
+                    <div class="emp-identity">
+                      <div class="emp-avatar">
+                        {{ emp.name.charAt(0).toUpperCase() }}
+                      </div>
+                      <span class="emp-name">{{ emp.name }}</span>
                     </div>
-                    <span class="emp-name">{{ emp.name }}</span>
-                  </div>
-                </td>
-                <td class="emp-email">{{ emp.email }}</td>
-                <td class="emp-title-cell">{{ emp.jobTitle }}</td>
-                <td>
-                  <span class="status-chip" [class.active]="emp.isActive">
-                    <span class="status-dot"></span>
-                    {{ emp.isActive ? 'Active' : 'Inactive' }}
-                  </span>
-                </td>
-                <td class="emp-alloc">
-                  <div class="alloc-bar-wrap">
-                    <div class="alloc-bar" [style.width.%]="emp.currentAllocationPercentage"></div>
-                  </div>
-                  <span>{{ emp.currentAllocationPercentage }}%</span>
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="5" class="empty-table">
-                  <i class="fa-solid fa-users"></i>
-                  <h3>No employees found</h3>
-                  <p>Add your first employee to populate your organization team</p>
-                  <button type="button" class="add-emp-btn mt-3" (click)="showAddEmployeeModal.set(true)">
-                    <i class="fa-solid fa-user-plus"></i> Add Employee
-                  </button>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+                  </td>
+                  <td class="emp-email">{{ emp.email }}</td>
+                  <td class="emp-title-cell">{{ emp.jobTitle }}</td>
+                  <td>
+                    <span class="status-chip" [class.active]="emp.isActive">
+                      <span class="status-dot"></span>
+                      {{ emp.isActive ? 'Active' : 'Inactive' }}
+                    </span>
+                  </td>
+                  <td class="emp-alloc">
+                    <div class="alloc-bar-wrap">
+                      <div class="alloc-bar" [style.width.%]="emp.currentAllocationPercentage"></div>
+                    </div>
+                    <span>{{ emp.currentAllocationPercentage }}%</span>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="5" class="empty-table">
+                    <i class="fa-solid fa-users"></i>
+                    <h3>No employees found</h3>
+                    <p>Add your first employee to populate your organization team</p>
+                    <button type="button" class="add-emp-btn mt-3" (click)="showAddEmployeeModal.set(true)">
+                      <i class="fa-solid fa-user-plus"></i> Add Employee
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    }
   }
 </div>
 
 <app-add-employee-modal
   [isOpen]="showAddEmployeeModal()"
   (close)="showAddEmployeeModal.set(false)"
-  (created)="loadEmployees()">
+  (created)="loadEmployeesAndTeams()">
 </app-add-employee-modal>

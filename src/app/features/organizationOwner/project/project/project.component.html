@@ -80,11 +80,11 @@
         }
 
         <div card-footer class="card-footer-actions">
-          <app-button variant="outline" icon="fa-solid fa-eye" (click)="onView(project)">View</app-button>
           @if (isTeamLeader()) {
             <app-button variant="secondary" icon="fa-solid fa-pen" (click)="onEdit(project)">Edit</app-button>
             <app-button variant="danger" icon="fa-solid fa-box-archive" (click)="onArchive(project)">Archive</app-button>
           }
+          <app-button class="view-action" variant="outline" icon="fa-solid fa-eye" (click)="onView(project)">View project</app-button>
         </div>
       </app-card>
     } @empty {

@@ -49,6 +49,10 @@ export const routes: Routes = [
         component: EmployeesComponent,
       },
       {
+        path: 'my-team',
+        component: EmployeesComponent,
+      },
+      {
         path: 'projects',
         component: ProjectComponent,
       },

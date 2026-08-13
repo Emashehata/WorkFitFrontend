@@ -28,6 +28,7 @@ export class HomeComponent implements OnInit {
   upcomingTasks = signal([
     {
       title: 'Backend API Deployment & Migration',
+      developer: 'Alex Morgan',
       dueDate: new Date(Date.now() + 86400000 * 1),
       dueLabel: 'Due Tomorrow',
       priority: 'High Priority',
@@ -37,6 +38,7 @@ export class HomeComponent implements OnInit {
     },
     {
       title: 'Task Kanban & Drag-and-Drop Review',
+      developer: 'Jordan Lee',
       dueDate: new Date(Date.now() + 86400000 * 2),
       dueLabel: 'Due in 2 days',
       priority: 'High Priority',
@@ -46,6 +48,7 @@ export class HomeComponent implements OnInit {
     },
     {
       title: 'Sprint Planning & Team Allocation',
+      developer: 'Taylor Swift',
       dueDate: new Date(Date.now() + 86400000 * 4),
       dueLabel: 'Due in 4 days',
       priority: 'Medium Priority',
@@ -55,6 +58,7 @@ export class HomeComponent implements OnInit {
     },
     {
       title: 'Jira Integration Final Sign-off',
+      developer: 'Chris Evan',
       dueDate: new Date(Date.now() + 86400000 * 6),
       dueLabel: 'Due in 6 days',
       priority: 'Low Priority',
@@ -102,32 +106,27 @@ export class HomeComponent implements OnInit {
   recentActivities = signal([
     {
       user: 'John Doe',
-      action: 'completed a task',
-      time: '2 min ago',
+      action: 'completed a task on Project',
       type: 'task',
     },
     {
       user: 'Jane Smith',
-      action: 'joined the organization',
-      time: '15 min ago',
+      action: 'joined the project team',
       type: 'user',
     },
     {
       user: 'Mike Johnson',
-      action: 'updated the project',
-      time: '1 hour ago',
+      action: 'updated project status to Active',
       type: 'project',
     },
     {
       user: 'Sarah Wilson',
-      action: 'submitted a report',
-      time: '2 hours ago',
+      action: 'submitted a code review',
       type: 'report',
     },
     {
       user: 'Robert Brown',
-      action: 'commented on a task',
-      time: '3 hours ago',
+      action: 'assigned a task to developer',
       type: 'comment',
     },
   ]);

@@ -4,8 +4,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 24px 0;
-  gap: 16px;
+  padding: 28px 24px 0;
+  gap: 20px;
   flex-wrap: wrap;
 }
 
@@ -19,7 +19,7 @@
 .status-filter {
   padding: 10px 14px;
   border: 1.5px solid $border;
-  border-radius: 12px;
+  border-radius: 8px;
   font-size: 14px;
   color: $text;
   background: $surface;
@@ -32,7 +32,7 @@
 .sort-select {
   padding: 10px 14px;
   border: 1.5px solid $border;
-  border-radius: 12px;
+  border-radius: 8px;
   font-size: 14px;
   color: $text;
   background: $surface;
@@ -53,14 +53,26 @@
 }
 
 .card-footer-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   width: 100%;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  margin-top: 14px;
-  padding-top: 12px;
-  border-t: 1px solid rgba($border, 0.5);
+
+  app-button {
+    display: flex;
+    min-width: 0;
+  }
+
+  .view-action {
+    grid-column: 1 / -1;
+  }
+
+  app-button ::ng-deep button {
+    width: 100%;
+    min-height: 44px;
+    margin: 0;
+    border-radius: 8px;
+  }
 }
 
 .page-title {
@@ -73,8 +85,19 @@
 .projects-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 24px;
+  align-items: stretch;
+  gap: 20px;
   padding: 24px;
+}
+
+.projects-grid app-card {
+  display: flex;
+  min-width: 0;
+}
+
+.projects-grid app-card ::ng-deep .card-container {
+  width: 100%;
+  border-radius: 8px;
 }
 
 .card-header-row {
@@ -166,4 +189,57 @@
 .empty-state p {
   font-size: 14px;
   margin: 0;
+}
+
+@media (max-width: 760px) {
+  .page-header {
+    align-items: stretch;
+    padding: 20px 16px 0;
+  }
+
+  .header-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+  }
+
+  .project-search {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+
+  .project-search,
+  .sort-select,
+  .status-filter {
+    width: 100%;
+  }
+
+  .header-actions app-button {
+    display: flex;
+  }
+
+  .header-actions app-button ::ng-deep button {
+    width: 100%;
+    margin: 0;
+  }
+
+  .projects-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    padding: 20px 16px;
+  }
+}
+
+@media (max-width: 420px) {
+  .header-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .project-search {
+    grid-column: auto;
+  }
+
+  .project-meta {
+    grid-template-columns: 1fr;
+  }
 }
