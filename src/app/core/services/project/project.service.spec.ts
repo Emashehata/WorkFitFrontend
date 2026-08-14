@@ -31,4 +31,37 @@ describe('ProjectService', () => {
     expect(request.request.method).toBe('GET');
     request.flush([]);
   });
+
+  it('gets members for the selected project', () => {
+    const projectId = '9c72029a-42fb-4f53-a099-54ab2b6572a2';
+
+    service.getProjectMembers(projectId).subscribe();
+
+    const request = httpTesting.expectOne(request =>
+      request.url.endsWith(`/api/projects/${projectId}/members`)
+    );
+    expect(request.request.method).toBe('GET');
+    request.flush([]);
+  });
+
+  it('adds an employee to the selected project', () => {
+    const projectId = '9c72029a-42fb-4f53-a099-54ab2b6572a2';
+    const employeeId = 'd9730f48-e774-4089-bf6b-eb738a246d2e';
+
+    service.addProjectMember(projectId, employeeId).subscribe();
+
+    const request = httpTesting.expectOne(request =>
+      request.url.endsWith(`/api/projects/${projectId}/members`)
+    );
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({ employeeId });
+    request.flush({
+      id: employeeId,
+      name: 'Developer',
+      email: 'developer@example.com',
+      jobTitle: 'Engineer',
+      isActive: true,
+      currentAllocationPercentage: 0,
+    });
+  });
 });

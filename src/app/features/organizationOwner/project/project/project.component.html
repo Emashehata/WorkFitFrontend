@@ -115,7 +115,7 @@
 <!-- Jira Integration Modal -->
 <app-jira-integration-modal
   [isOpen]="showJiraModal()"
-  (close)="showJiraModal.set(false)"
+  (close)="onJiraModalClosed()"
   (synced)="onProjectCreated()">
 </app-jira-integration-modal>
 

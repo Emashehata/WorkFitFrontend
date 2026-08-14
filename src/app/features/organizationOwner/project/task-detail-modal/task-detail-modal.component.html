@@ -108,13 +108,13 @@
             <form [formGroup]="assignForm" (ngSubmit)="onAssign()" class="assign-form">
 
               <div class="form-group">
-                <label class="form-label" for="assign-employee">Employee * (Organization)</label>
+                <label class="form-label" for="assign-employee">Employee * (Project Member)</label>
                 <div style="margin-bottom: 6px;">
                   <input
                     type="text"
                     class="form-input"
                     style="font-size: 13px; padding: 6px 12px;"
-                    placeholder="Type name to filter organization employees..."
+                    placeholder="Type name to filter project members..."
                     [value]="employeeSearch()"
                     (input)="employeeSearch.set($any($event.target).value)" />
                 </div>

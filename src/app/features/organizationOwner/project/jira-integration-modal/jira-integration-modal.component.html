@@ -1,6 +1,7 @@
 <app-modal
   [title]="'Integrate & Sync Jira Project'"
   [isOpen]="isOpen()"
+  size="wide"
   (close)="close.emit()"
 >
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-grid">
@@ -100,21 +101,72 @@
             <span class="result-lbl">Developers</span>
           </div>
           <div class="result-item">
-            <span class="result-val">{{ res.skillsSynced }}</span>
+            <span class="result-val">{{ res.skillSignalsSynced }}</span>
             <span class="result-lbl">Skill Signals</span>
           </div>
         </div>
-        @if (res.errorCount > 0) {
+        @if (res.errors > 0) {
           <div class="result-errors">
-            <p class="error-title"><i class="fa-solid fa-triangle-exclamation"></i> {{ res.errorCount }} warning(s) occurred:</p>
+            <p class="error-title"><i class="fa-solid fa-triangle-exclamation"></i> {{ res.errors }} warning(s) occurred:</p>
             <ul>
-              @for (err of res.errors; track err) {
+              @for (err of res.errorMessages; track err) {
                 <li>{{ err }}</li>
               }
             </ul>
           </div>
         }
       </div>
+
+      @if (res.unknownDevelopers.length > 0) {
+        <section class="unknown-developers" aria-labelledby="unknown-developers-title">
+          <div class="unknown-heading">
+            <div>
+              <h4 id="unknown-developers-title">Developers needing invitations</h4>
+              <p>Confirm an email address, then request organization owner approval.</p>
+            </div>
+            <span class="unknown-count" aria-label="Unknown developer count">{{ res.unknownDevelopers.length }}</span>
+          </div>
+
+          <div class="developer-list">
+            @for (developer of res.unknownDevelopers; track developerKey(developer)) {
+              <div class="developer-row">
+                <div class="developer-details">
+                  <strong>{{ developer.displayName }}</strong>
+                  <span>{{ developer.issueCount }} Jira issue(s)</span>
+                </div>
+
+                <div class="developer-email">
+                  <label [for]="'invite-email-' + developerKey(developer)">Invitation email</label>
+                  <input
+                    [id]="'invite-email-' + developerKey(developer)"
+                    type="email"
+                    [value]="invitationEmails()[developerKey(developer)]"
+                    (input)="updateInvitationEmail(developer, $event)"
+                    [disabled]="invitationState(developer) === 'pending'"
+                  />
+                  @if (invitationErrors()[developerKey(developer)]) {
+                    <span class="form-error" role="alert">{{ invitationErrors()[developerKey(developer)] }}</span>
+                  }
+                </div>
+
+                <div class="developer-action">
+                  <span class="status-label" [class.status-pending]="invitationState(developer) === 'pending'" role="status">
+                    <i class="fa-solid" [class.fa-clock]="invitationState(developer) === 'pending'" [class.fa-circle-question]="invitationState(developer) !== 'pending'"></i>
+                    {{ invitationState(developer) === 'NotRequested' ? 'Not requested' : invitationState(developer) === 'pending' ? 'Pending approval' : invitationState(developer) }}
+                  </span>
+                  <app-button
+                    variant="outline"
+                    icon="fa-solid fa-paper-plane"
+                    [loading]="invitationState(developer) === 'submitting'"
+                    [disabled]="invitationState(developer) === 'pending'"
+                    (click)="requestInvitation(developer)"
+                  >Request invite</app-button>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      }
     }
 
     <div class="form-actions">

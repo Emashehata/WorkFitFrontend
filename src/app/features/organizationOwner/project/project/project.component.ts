@@ -191,6 +191,11 @@ export class ProjectComponent implements OnInit {
     this.getProjects();
   }
 
+  onJiraModalClosed() {
+    this.showJiraModal.set(false);
+    this.getProjects();
+  }
+
   getStatusConfig(status: string) {
   return this.statusConfig[status] ?? { variant: 'neutral' as BadgeVariant, icon: 'fa-solid fa-circle-question' };
 }

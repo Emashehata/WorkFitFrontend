@@ -179,8 +179,11 @@ export class ProjectDetailComponent implements OnInit {
   }
 
   loadEmployees() {
-    this.taskService.getEmployees().subscribe({
-      next: (employees) => this.employees.set(employees),
+    this.projectService.getProjectMembers(this.projectId()).subscribe({
+      next: (employees) => this.employees.set(employees.map(employee => ({
+        ...employee,
+        email: employee.email ?? '',
+      }))),
       error: (err) => console.warn('Failed to load employees', err),
     });
   }
@@ -212,6 +215,10 @@ export class ProjectDetailComponent implements OnInit {
 
   getAssigneeName(task: TaskListItem): string {
     return task.assigneeId ? (this.employeeMap().get(task.assigneeId) ?? 'Unassigned') : 'Unassigned';
+  }
+
+  getCreatorName(task: TaskListItem): string {
+    return task.createdById ? (this.employeeMap().get(task.createdById) ?? 'System') : 'System';
   }
 
   getInitials(employeeId: string): string {

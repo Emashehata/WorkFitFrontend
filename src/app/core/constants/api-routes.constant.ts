@@ -21,6 +21,7 @@ export const API_ROUTES = {
     status: (id: string) => `/projects/${id}/status`,
     archive: (id: string) => `/projects/${id}/archive`,
     tasks: (id: string) => `/projects/${id}/tasks`,
+    members: (id: string) => `/projects/${id}/members`,
   },
   tasks: {
     byId: (id: string) => `/tasks/${id}`,
@@ -41,5 +42,12 @@ export const API_ROUTES = {
   integration: {
     jiraSettings: (orgId: string) => `/integration/${orgId}/jira-settings`,
     sync: '/integration/sync',
+  },
+  developerInvitations: {
+    create: '/developer-invitations',
+    pending: '/developer-invitations/pending',
+    review: (id: string) => `/developer-invitations/${id}/review`,
+    token: (token: string) => `/developer-invitations/token/${encodeURIComponent(token)}`,
+    accept: '/developer-invitations/accept',
   },
 } as const;

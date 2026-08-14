@@ -133,6 +133,11 @@ export class DashboardLayoutComponent implements OnInit {
               route: '/teams',
             },
             {
+              title: 'Invitation approvals',
+              icon: 'fa-solid fa-user-check',
+              route: '/invitation-approvals',
+            },
+            {
               title: 'Settings',
               icon: 'fa-solid fa-gear',
               route: '/organization_settings',

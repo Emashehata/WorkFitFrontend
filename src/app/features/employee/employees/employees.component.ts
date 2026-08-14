@@ -7,7 +7,7 @@ import { AuthService } from '../../../core/services/auth/auth.service';
 import { EmployeeListItemDto } from '../../../core/models/task.models';
 import { Project } from '../../../core/models/project.models';
 import { AddEmployeeModalComponent } from '../../../shared/components/add-employee-modal/add-employee-modal.component';
-
+import { DeveloperProfileModalComponent } from '../../../shared/components/developer-profile-modal/developer-profile-modal.component';
 import { UserRole } from '../../../core/enums/user-role.enum';
 
 export interface ProjectTeam {
@@ -18,7 +18,7 @@ export interface ProjectTeam {
 @Component({
   selector: 'app-employees',
   standalone: true,
-  imports: [CommonModule, AddEmployeeModalComponent],
+  imports: [CommonModule, AddEmployeeModalComponent, DeveloperProfileModalComponent],
   templateUrl: './employees.component.html',
   styleUrl: './employees.component.scss'
 })
@@ -33,6 +33,10 @@ export class EmployeesComponent implements OnInit {
   isLoading = signal(true);
   showAddEmployeeModal = signal(false);
 
+  showProfileModal = signal(false);
+  selectedDeveloperId = signal('');
+  selectedDeveloperName = signal('');
+
   isTeamLeader = computed(() => this.authService.isTeamLeader() || this.authService.hasRole(UserRole.TeamLeader));
 
   ngOnInit() {
@@ -42,6 +46,12 @@ export class EmployeesComponent implements OnInit {
         this.showAddEmployeeModal.set(true);
       }
     });
+  }
+
+  openDeveloperProfile(empId: string, empName: string) {
+    this.selectedDeveloperId.set(empId);
+    this.selectedDeveloperName.set(empName);
+    this.showProfileModal.set(true);
   }
 
   loadEmployeesAndTeams() {
@@ -63,28 +73,45 @@ export class EmployeesComponent implements OnInit {
 
             const teamPromises = projects.map(proj => {
               return new Promise<ProjectTeam>((resolve) => {
+                let projectMembers: EmployeeListItemDto[] = [];
+                let taskCounts = new Map<string, number>();
+                let completedRequests = 0;
+
+                const finish = () => {
+                  completedRequests++;
+                  if (completedRequests < 2) return;
+
+                  resolve({
+                    project: proj,
+                    members: projectMembers.map(member => ({
+                      ...member,
+                      taskCount: taskCounts.get(member.id) || 0,
+                    })),
+                  });
+                };
+
+                this.projectService.getProjectMembers(proj.id).subscribe({
+                  next: members => {
+                    projectMembers = members.map(member => ({
+                      ...member,
+                      email: member.email ?? '',
+                    }));
+                    finish();
+                  },
+                  error: finish,
+                });
+
                 this.taskService.getProjectTasks(proj.id).subscribe({
-                  next: (tasks) => {
-                    const assigneeMap = new Map<string, number>();
-                    for (const t of tasks) {
-                      if (t.assigneeId) {
-                        assigneeMap.set(t.assigneeId, (assigneeMap.get(t.assigneeId) || 0) + 1);
+                  next: tasks => {
+                    taskCounts = new Map<string, number>();
+                    for (const task of tasks) {
+                      if (task.assigneeId) {
+                        taskCounts.set(task.assigneeId, (taskCounts.get(task.assigneeId) || 0) + 1);
                       }
                     }
-
-                    const members: (EmployeeListItemDto & { taskCount: number })[] = [];
-                    allEmps.forEach(emp => {
-                      if (assigneeMap.has(emp.id)) {
-                        members.push({
-                          ...emp,
-                          taskCount: assigneeMap.get(emp.id) || 0
-                        });
-                      }
-                    });
-
-                    resolve({ project: proj, members });
+                    finish();
                   },
-                  error: () => resolve({ project: proj, members: [] })
+                  error: finish,
                 });
               });
             });

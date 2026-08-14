@@ -4,7 +4,21 @@
   (close)="close.emit()"
 >
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-grid">
-    
+    <div class="form-group">
+      <label class="form-label" for="project-select">Project *</label>
+      <select
+        id="project-select"
+        class="form-input"
+        formControlName="projectId"
+        (change)="onProjectChange($event)"
+      >
+        <option value="">{{ isLoadingProjects() ? 'Loading projects...' : 'Select a project' }}</option>
+        @for (project of projects(); track project.id) {
+          <option [value]="project.id">{{ project.name }}</option>
+        }
+      </select>
+    </div>
+
     <!-- Searchable Select Employee Field -->
     <div class="form-group">
       <label class="form-label" for="emp-select-input">Select Employee *</label>
@@ -16,7 +30,8 @@
           [value]="searchQuery()"
           (input)="onSearchInput($event)"
           (focus)="isDropdownOpen.set(true)"
-          placeholder="Type to search employee by name or email…"
+          [placeholder]="selectedProjectId() ? 'Type to search employee by name or email' : 'Select a project first'"
+          [disabled]="!selectedProjectId() || isLoadingMembers()"
           autocomplete="off"
         />
         <i class="fa-solid fa-magnifying-glass input-icon text-text-secondary"></i>
@@ -25,7 +40,7 @@
       <!-- Dropdown Results -->
       @if (isDropdownOpen() && !selectedEmployee()) {
         <div class="dropdown-menu">
-          @if (isLoadingEmployees()) {
+          @if (isLoadingEmployees() || isLoadingMembers()) {
             <div class="dropdown-item empty-text">
               <i class="fa-solid fa-spinner animate-spin"></i> Loading employees…
             </div>
@@ -42,7 +57,7 @@
               </div>
             } @empty {
               <div class="dropdown-item empty-text">
-                No matching organization employees found
+                No available organization employees found
               </div>
             }
           }
@@ -82,7 +97,7 @@
         type="submit"
         icon="fa-solid fa-user-check"
         [loading]="isSubmitting()"
-        [disabled]="!selectedEmployee()"
+        [disabled]="form.invalid || !selectedEmployee()"
       >
         Assign Employee
       </app-button>

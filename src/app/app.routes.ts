@@ -11,6 +11,10 @@ import { ProjectComponent } from './features/organizationOwner/project/project/p
 import { ProjectDetailComponent } from './features/organizationOwner/project/project-detail/project-detail.component';
 import { OrganizationSettingsComponent } from './features/organization/organization-settings/organization-settings.component';
 import { EmployeesComponent } from './features/employee/employees/employees.component';
+import { roleGuard } from './core/guards/role.guard';
+import { UserRole } from './core/enums/user-role.enum';
+import { InvitationApprovalsComponent } from './features/organizationOwner/invitation-approvals/invitation-approvals.component';
+import { AcceptInvitationComponent } from './features/invitations/accept-invitation/accept-invitation.component';
 
 export const routes: Routes = [
   {
@@ -28,6 +32,10 @@ export const routes: Routes = [
     path: 'register',
     component: RegisterOrganizationComponent,
     canActivate: [PublicGuard],
+  },
+  {
+    path: 'invitations/accept',
+    component: AcceptInvitationComponent,
   },
   {
     path: 'dashboard',
@@ -63,6 +71,12 @@ export const routes: Routes = [
       {
         path: 'organization_settings',
         component: OrganizationSettingsComponent,
+      },
+      {
+        path: 'invitation-approvals',
+        component: InvitationApprovalsComponent,
+        canActivate: [roleGuard],
+        data: { roles: [UserRole.OrganizationOwner] },
       },
 
 

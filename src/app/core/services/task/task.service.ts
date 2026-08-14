@@ -12,6 +12,7 @@ import {
   AssignTaskRequest,
   SetTaskAllocationRequest,
   SetTaskGitHubRequest,
+  DeveloperTask,
 } from '../../models/task.models';
 import { API_ROUTES } from '../../constants/api-routes.constant';
 
@@ -25,6 +26,12 @@ export class TaskService {
   getProjectTasks(projectId: string): Observable<TaskListItem[]> {
     return this.http.get<TaskListItem[]>(
       `${this.baseUrl}${API_ROUTES.projects.tasks(projectId)}`,
+    );
+  }
+
+  getDeveloperAssignedTasks(employeeId: string): Observable<DeveloperTask[]> {
+    return this.http.get<DeveloperTask[]>(
+      `${this.baseUrl}/api/employees/${employeeId}/assigned-tasks`
     );
   }
 

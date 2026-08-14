@@ -156,8 +156,11 @@
                     <i class="fa-regular fa-clock"></i> {{ task.dueDate | date:'MMM d' }}
                   </span>
                 }
-                <span class="meta-chip">
+                <span class="meta-chip" title="Assignee">
                   <i class="fa-solid fa-user"></i> {{ getAssigneeName(task) }}
+                </span>
+                <span class="meta-chip" title="Created by">
+                  <i class="fa-solid fa-user-pen"></i> {{ getCreatorName(task) }}
                 </span>
               </div>
 

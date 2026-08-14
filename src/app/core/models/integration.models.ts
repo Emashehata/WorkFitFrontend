@@ -21,8 +21,19 @@ export interface SyncResult {
   projectsSynced: number;
   tasksSynced: number;
   developersSynced: number;
-  skillsSynced: number;
-  errorCount: number;
-  errors: string[];
+  skillSignalsSynced: number;
+  errors: number;
+  errorMessages: string[];
   syncedAt: string;
+  unknownDevelopers: UnknownDeveloper[];
+}
+
+export interface UnknownDeveloper {
+  employeeProfileId: string;
+  projectId: string;
+  sourceAccountId: string;
+  displayName: string;
+  email: string | null;
+  issueCount: number;
+  invitationStatus: string;
 }
