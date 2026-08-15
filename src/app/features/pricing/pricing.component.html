@@ -1,0 +1,140 @@
+<div class="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-12">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <h1 class="text-4xl font-bold text-gray-900 mb-3">Choose Your Plan</h1>
+      <p class="text-lg text-gray-600">
+        Upgrade to unlock premium features and grow your organization.
+      </p>
+
+      <!-- Billing Toggle -->
+      <div class="flex items-center justify-center gap-4 mt-6">
+        <span class="text-sm font-medium" [class.text-indigo-600]="billingCycle() === 'month'">
+          Monthly
+        </span>
+        <button
+          (click)="toggleBillingCycle()"
+          class="relative w-14 h-7 bg-gray-300 rounded-full transition-colors duration-300 focus:outline-none"
+          [class.bg-indigo-600]="billingCycle() === 'year'"
+        >
+          <span
+            class="absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform duration-300"
+            [class.translate-x-7]="billingCycle() === 'year'"
+          ></span>
+        </button>
+        <span class="text-sm font-medium" [class.text-indigo-600]="billingCycle() === 'year'">
+          Annual
+          <span class="text-xs text-emerald-600 font-semibold ml-1">Save 10%</span>
+        </span>
+      </div>
+
+      @if (isPaid()) {
+        <div class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-semibold">
+          <i class="fa-solid fa-check-circle"></i>
+          Current Plan: {{ currentPlan() }}
+        </div>
+      }
+    </div>
+
+    <!-- Loading State -->
+    @if (isLoading()) {
+      <div class="flex justify-center py-12">
+        <div class="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+      </div>
+    }
+
+    <!-- Plans Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      @for (plan of plans; track plan.id) {
+        <div
+          class="relative bg-white/80 backdrop-blur-xl rounded-2xl p-8 border transition-all duration-300 hover:shadow-xl"
+          [class.border-indigo-500]="plan.isPopular"
+          [class.shadow-lg]="plan.isPopular"
+          [class.border-gray-200]="!plan.isPopular"
+          [class.opacity-75]="plan.isCurrent"
+        >
+          <!-- Popular Badge -->
+          @if (plan.isPopular) {
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-indigo-600 text-white text-xs font-semibold rounded-full">
+              Most Popular
+            </div>
+          }
+
+          <!-- Current Plan Badge -->
+          @if (plan.isCurrent) {
+            <div class="absolute top-4 right-4 px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full">
+              Current
+            </div>
+          }
+
+          <!-- Plan Header -->
+          <div class="text-center mb-6">
+            <h3 class="text-xl font-bold text-gray-900">{{ plan.name }}</h3>
+            <p class="text-sm text-gray-500 mt-1">{{ plan.subtitle }}</p>
+          </div>
+
+          <!-- Price -->
+          <div class="text-center mb-4">
+            <span class="text-4xl font-bold text-gray-900">
+              {{ getPriceDisplay(plan) }}
+            </span>
+            <span class="text-sm text-gray-500">
+              {{ getIntervalDisplay(plan) }}
+            </span>
+          </div>
+
+          <!-- Description -->
+          <p class="text-sm text-gray-600 text-center mb-6">
+            {{ plan.description }}
+          </p>
+
+          <!-- Divider -->
+          <div class="border-t border-gray-200 my-4"></div>
+
+          <!-- Features -->
+          <ul class="space-y-3 mb-6">
+            @for (feature of plan.features; track feature) {
+              <li class="flex items-start gap-3 text-sm text-gray-600">
+                <i class="fa-solid fa-check text-indigo-500 mt-0.5"></i>
+                <span>{{ feature }}</span>
+              </li>
+            }
+          </ul>
+
+          <!-- Button -->
+          <button
+            (click)="selectPlan(plan)"
+            [disabled]="plan.isCurrent || isLoading()"
+            class="w-full py-3 rounded-xl font-semibold transition-all duration-300"
+            [class]="
+              plan.isCurrent
+                ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                : plan.isPopular
+                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:shadow-lg'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            "
+          >
+            @if (plan.isCurrent) {
+              Current Plan
+            } @else if (isLoading()) {
+              <i class="fa-solid fa-spinner fa-spin"></i> Processing...
+            } @else {
+              {{ plan.buttonText }}
+            }
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center mt-12">
+      <p class="text-sm text-gray-500">
+        All plans include a 14-day free trial. No credit card required to start.
+        <br />
+        <a href="#" class="text-indigo-600 hover:text-indigo-800 font-medium">
+          Compare all features →
+        </a>
+      </p>
+    </div>
+  </div>
+</div>

@@ -16,6 +16,8 @@ import { JiraIntegrationModalComponent } from '../jira-integration-modal/jira-in
 import { PROJECT_STATUSES } from '../../../../core/models/project.models';
 import { toApiProjectStatus } from '../../../../core/models/project.models';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { TaskService } from '../../../../core/services/task/task.service';
+import { catchError, forkJoin, map, of, switchMap } from 'rxjs';
 
 
 @Component({
@@ -77,9 +79,11 @@ export class ProjectComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private authService = inject(AuthService);
   private organizationService = inject(OrganizationService);
+  private taskService = inject(TaskService);
   private toast = inject(ToastService);
 
   isTeamLeader = computed(() => this.authService.isTeamLeader() || this.authService.isOrganizationOwner());
+  isEmployee = this.authService.isEmployee;
 
   ngOnInit() {
     this.getProjects();
@@ -98,7 +102,9 @@ export class ProjectComponent implements OnInit {
 
     const request = this.authService.isTeamLeader()
       ? this.projectService.getProjectsForTeamLead(status)
-      : this.projectService.getProjects(1, 100, status, orgId);
+      : this.authService.isEmployee()
+        ? this.getAssignedProjects(status, orgId)
+        : this.projectService.getProjects(1, 100, status, orgId);
 
     request.subscribe({
       next: (res) => {
@@ -117,6 +123,33 @@ export class ProjectComponent implements OnInit {
         this.toast.error('Error', 'Failed to load projects');
       }
     });
+  }
+
+  private getAssignedProjects(status?: string, organizationId?: string) {
+    return forkJoin({
+      projects: this.projectService.getProjects(1, 100, status, organizationId),
+      employees: this.taskService.getEmployees(),
+    }).pipe(
+      switchMap(({ projects, employees }) => {
+        const currentUser = this.authService.currentUser();
+        const employee = employees.find(item =>
+          item.email.toLowerCase() === currentUser?.email.toLowerCase() || item.id === currentUser?.userId
+        );
+
+        if (!employee || projects.length === 0) return of([] as Project[]);
+
+        return forkJoin(projects.map(project =>
+          this.taskService.getProjectTasks(project.id).pipe(
+            map(tasks => ({ project, tasks: tasks.filter(task => task.assigneeId === employee.id) })),
+            catchError(() => of({ project, tasks: [] })),
+          )
+        )).pipe(
+          map(results => results
+            .filter(result => result.tasks.length > 0)
+            .map(result => ({ ...result.project, memberCount: 1, taskCount: result.tasks.length })))
+        );
+      }),
+    );
   }
 
   onStatusFilterChange() {

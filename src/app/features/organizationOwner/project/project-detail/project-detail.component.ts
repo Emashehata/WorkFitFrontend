@@ -23,6 +23,7 @@ import { CreateTaskModalComponent } from '../create-task-modal/create-task-modal
 import { TaskDetailModalComponent } from '../task-detail-modal/task-detail-modal.component';
 import { EditProjectModalComponent } from '../edit-project-modal/edit-project-modal.component';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { map, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-project-detail',
@@ -159,7 +160,7 @@ export class ProjectDetailComponent implements OnInit {
       this.projectId.set(id);
       this.loadProject(id);
       this.loadTasks(id);
-      this.loadEmployees();
+      if (!this.authService.isEmployee()) this.loadEmployees();
     }
     this.route.queryParams.subscribe(params => {
       if (params['highlightTaskId']) {
@@ -215,7 +216,22 @@ export class ProjectDetailComponent implements OnInit {
 
   loadTasks(id: string) {
     this.isLoading.set(true);
-    this.taskService.getProjectTasks(id).subscribe({
+    const request = this.authService.isEmployee()
+      ? this.taskService.getEmployees().pipe(
+          switchMap(employees => {
+            this.employees.set(employees);
+            const currentUser = this.authService.currentUser();
+            const employee = employees.find(item =>
+              item.email.toLowerCase() === currentUser?.email.toLowerCase() || item.id === currentUser?.userId
+            );
+            return this.taskService.getProjectTasks(id).pipe(
+              map(tasks => employee ? tasks.filter(task => task.assigneeId === employee.id) : [])
+            );
+          })
+        )
+      : this.taskService.getProjectTasks(id);
+
+    request.subscribe({
       next: (tasks) => {
         this.allTasks.set(tasks);
         this.isLoading.set(false);
