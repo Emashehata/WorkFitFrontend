@@ -68,6 +68,7 @@
   return null;
 }Token(): string | null {
     const token = localStorage.getItem(TOKEN_KEY);
+
     if (!token) return null;
     return token.replace(/"/g, ''); 
   }
