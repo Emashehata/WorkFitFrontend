@@ -8,6 +8,7 @@ export const API_ROUTES = {
   organizations: {
     me: '/organizations/me',
     meSettings: '/organizations/me/settings',
+    meGithub: '/organizations/me/github', 
   },
   employees: {
     list: '/employees',

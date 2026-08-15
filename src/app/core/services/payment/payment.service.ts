@@ -1,11 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../../environments/environment';
+// import { environment } from '../../../../environments/environment';
 import { API_ROUTES } from '../../constants/api-routes.constant.ts';
 import { AuthService } from '../auth/auth.service';
 import {
-  PaymentRequest,
   PaymentResponse,
   CheckoutSessionRequest,
   CheckoutSessionResponse,
@@ -18,43 +17,45 @@ export class PaymentService {
   private authService = inject(AuthService);
   private baseUrl = 'https://localhost:7296/api';
 
-  // ⭐ STEP 1: Process payment - POST /api/payments
-  processPayment(payment: PaymentRequest): Observable<PaymentResponse> {
-    return this.http.post<PaymentResponse>(
-      `${this.baseUrl}${API_ROUTES.payments.process}`,
-      payment,
-    );
-  }
-
-  // ⭐ STEP 2: Get payment details by ID - GET /api/payments/{paymentId}
   getPaymentById(paymentId: string): Observable<PaymentResponse> {
     return this.http.get<PaymentResponse>(
-      `${this.baseUrl}${API_ROUTES.payments.byId(paymentId)}`,
+      `${this.baseUrl}${API_ROUTES.payments.byId(paymentId)}`
     );
   }
 
-  // ⭐ STEP 3: Create checkout session - POST /api/payments/checkout-session
   createCheckoutSession(
-    request: CheckoutSessionRequest,
+    request: CheckoutSessionRequest
   ): Observable<CheckoutSessionResponse> {
     return this.http.post<CheckoutSessionResponse>(
       `${this.baseUrl}${API_ROUTES.payments.checkoutSession}`,
-      request,
+      request
     );
   }
 
   // ⭐ Cancel checkout session
   cancelCheckoutSession(
-    request: CancelCheckoutSessionRequest,
+    request: CancelCheckoutSessionRequest
   ): Observable<PaymentResponse> {
     return this.http.post<PaymentResponse>(
       `${this.baseUrl}${API_ROUTES.payments.checkoutSessionCancel}`,
-      request,
+      request
     );
   }
 
-  // ⭐ ==================== HELPER METHODS ====================
+  // ⭐ Redirect to checkout
+  redirectToCheckout(checkoutUrl: string): void {
+    if (checkoutUrl) {
+      window.location.href = checkoutUrl;
+    }
+  }
 
+  openCheckoutInNewTab(checkoutUrl: string): void {
+    if (checkoutUrl) {
+      window.open(checkoutUrl, '_blank');
+    }
+  }
+
+  // ⭐ Helper methods
   isPaymentSuccessful(status: string): boolean {
     return status === 'Success' || status === 'Processing';
   }
@@ -65,18 +66,6 @@ export class PaymentService {
 
   isPaymentFailed(status: string): boolean {
     return status === 'Failed';
-  }
-
-  getStatusLabel(status: string): string {
-    const labels: Record<string, string> = {
-      Success: '✅ Success',
-      Failed: '❌ Failed',
-      Pending: '⏳ Pending',
-      Processing: '🔄 Processing',
-      Cancelled: '🚫 Cancelled',
-      Refunded: '↩️ Refunded',
-    };
-    return labels[status] || status;
   }
 
   getStatusClass(status: string): string {
@@ -120,25 +109,13 @@ export class PaymentService {
     });
   }
 
-  redirectToCheckout(checkoutUrl: string): void {
-    if (checkoutUrl) {
-      window.location.href = checkoutUrl;
-    }
-  }
-
-  openCheckoutInNewTab(checkoutUrl: string): void {
-    if (checkoutUrl) {
-      window.open(checkoutUrl, '_blank');
-    }
-  }
-
   canManagePayments(): boolean {
     const roles = this.authService.getUserRoles();
     return roles.some(
       (role) =>
         role === 'SuperAdmin' ||
         role === 'OrganizationOwner' ||
-        role === 'Admin',
+        role === 'Admin'
     );
   }
 }

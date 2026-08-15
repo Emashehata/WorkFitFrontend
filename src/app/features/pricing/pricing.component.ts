@@ -5,10 +5,7 @@ import { PaymentService } from '../../core/services/payment/payment.service';
 import { PaymentStatusService } from '../../core/services/payment/payment-status.service';
 import { OrganizationService } from '../../core/services/organization/organization.service';
 import { ToastService } from '../../core/services/toast/toast.service';
-import {
-  PaymentRequest,
-  CheckoutSessionRequest,
-} from '../../core/models/payment.models';
+import { CheckoutSessionRequest } from '../../core/models/payment.models';
 
 interface PricingPlan {
   id: string;
@@ -39,18 +36,13 @@ export class PricingComponent implements OnInit {
   private toast = inject(ToastService);
 
   isLoading = signal(false);
-  isProcessingPayment = signal(false);
   isOrganizationLoading = signal(true);
   currentPlan = this.paymentStatusService.currentPlan;
   isPaid = this.paymentStatusService.isPaid;
   organizationId = signal<string | null>(null);
-  paymentId = signal<string | null>(null);
 
   billingCycle = signal<'month' | 'year'>('month');
 
-
- 
-  // ⭐ Plans
   plans: PricingPlan[] = [
     {
       id: 'free',
@@ -97,8 +89,7 @@ export class PricingComponent implements OnInit {
       price: 999.99,
       currency: 'EGP',
       interval: 'month',
-      description:
-        'Save personal context with an AI assistant for ongoing work',
+      description: 'Save personal context with an AI assistant for ongoing work',
       isPopular: true,
       features: [
         'Advanced models',
@@ -120,8 +111,7 @@ export class PricingComponent implements OnInit {
       price: 5400,
       currency: 'EGP',
       interval: 'month',
-      description:
-        'State-of-the-art intelligence to automate your most ambitious work',
+      description: 'State-of-the-art intelligence to automate your most ambitious work',
       features: [
         'Everything in Pro and:',
         '5x or 20x more usage than Pro',
@@ -193,9 +183,9 @@ export class PricingComponent implements OnInit {
     return `/ ${plan.interval}`;
   }
 
-  // ⭐ ==================== COMPLETE PAYMENT FLOW ====================
+  // ⭐ ==================== PAYMENT FLOW ====================
 
-  async selectPlan(plan: PricingPlan): Promise<void> {
+  selectPlan(plan: PricingPlan): void {
     if (plan.id === 'free') {
       this.toast.info('Free Plan', 'You are already on the free plan.');
       return;
@@ -217,79 +207,31 @@ export class PricingComponent implements OnInit {
 
     this.isLoading.set(true);
 
-    try {
-      // ⭐ STEP 1: Create payment record in database
-      const paymentData: PaymentRequest = {
-        referenceId: orgId,
-        referenceType: 'OrganizationSubscription',
-        amount: plan.price,
-        currency: plan.currency.toLowerCase(),
-        description: `${plan.name} Plan - ${plan.billingCycle}`,
-        mockOutcome: 'Success',
-      };
-
-      console.log('📝 STEP 1: Creating payment record:', paymentData);
-
-      this.paymentService.processPayment(paymentData).subscribe({
-        next: (paymentResponse) => {
-          console.log('✅ Payment record created:', paymentResponse);
-          this.paymentId.set(paymentResponse.id);
-          this.isProcessingPayment.set(false);
-
-          // ⭐ STEP 2: Create checkout session
-          this.createCheckoutSession(plan, paymentResponse.id);
-        },
-        error: (err) => {
-          this.isLoading.set(false);
-          this.isProcessingPayment.set(false);
-          console.error('❌ Payment creation failed:', err);
-          this.toast.error(
-            'Payment Creation Failed',
-            err.error?.message || 'Failed to create payment record.'
-          );
-        },
-      });
-    } catch (error) {
-      this.isLoading.set(false);
-      this.isProcessingPayment.set(false);
-      console.error('❌ Unexpected error:', error);
-      this.toast.error('Error', 'Something went wrong. Please try again.');
-    }
-  }
-
-  // ⭐ STEP 2: Create checkout session after payment is saved
-  private createCheckoutSession(plan: PricingPlan, paymentId: string): void {
-    const orgId = this.organizationId();
-    if (!orgId) {
-      this.toast.error('Error', 'Organization not found.');
-      this.isLoading.set(false);
-      return;
-    }
-
-    console.log('📝 STEP 2: Creating checkout session for payment:', paymentId);
-
+    // ⭐ Create checkout session directly - No separate processPayment call!
     const checkoutData: CheckoutSessionRequest = {
       referenceId: orgId,
-      referenceType: 'Subscription',
+      referenceType: 'OrganizationSubscription',
       amount: plan.price,
       currency: plan.currency.toLowerCase(),
       description: `${plan.name} Plan - ${plan.billingCycle}`,
     };
 
+    console.log('🚀 Creating checkout session:', checkoutData);
+
     this.paymentService.createCheckoutSession(checkoutData).subscribe({
       next: (response) => {
         this.isLoading.set(false);
         console.log('✅ Checkout session created:', response);
-
+        
         // ⭐ Save payment ID for status check
-        localStorage.setItem('last_payment_id', paymentId);
-
+        localStorage.setItem('last_payment_id', response.paymentId);
+        
         // ⭐ Redirect to Stripe checkout
         this.paymentService.redirectToCheckout(response.checkoutUrl);
       },
       error: (err) => {
         this.isLoading.set(false);
-        console.error('❌ Checkout session failed:', err);
+        console.error('❌ Checkout error:', err);
         this.toast.error(
           'Checkout Failed',
           err.error?.message || 'Failed to create checkout session.'

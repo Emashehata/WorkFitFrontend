@@ -1,10 +1,14 @@
 // ⭐ Checkout Session Request - MATCH SWAGGER
 export interface CheckoutSessionRequest {
-  referenceId: string;      // Organization ID
-  referenceType: string;    // e.g., "Subscription"
-  amount: number;           // e.g., 999.99
-  currency: string;         // e.g., "usd" or "egp"
-  description: string;      // e.g., "Pro Plan - monthly"
+  referenceId: string; // Organization ID
+  referenceType: string; // e.g., "Subscription"
+  amount: number; // e.g., 999.99
+  currency: string; // e.g., "usd" or "egp"
+  description: string; // e.g., "Pro Plan - monthly"
+}
+export interface CancelCheckoutSessionRequest {
+  referenceId: string;
+  referenceType: string;
 }
 
 export interface CheckoutSessionResponse {
@@ -31,7 +35,13 @@ export interface PaymentResponse {
   referenceType: string;
   amount: number;
   currency: string;
-  status: 'Success' | 'Failed' | 'Pending' | 'Processing' | 'Cancelled' | 'Refunded';
+  status:
+    | 'Succeeded'
+    | 'Failed'
+    | 'Pending'
+    | 'Processing'
+    | 'Cancelled'
+    | 'Refunded';
   provider: string;
   providerPaymentId?: string;
   transactionId?: string;
@@ -45,16 +55,10 @@ export interface PaymentRequest {
   amount: number;
   currency: string;
   description: string;
-  mockOutcome?: 'Success' | 'Failed' | 'Pending';
+  mockOutcome?: 'Succeeded' | 'Failed' | 'Pending';
 }
 
 
-
-
-export interface CancelCheckoutSessionRequest {
-  referenceId: string;
-  referenceType: string;
-}
 // ⭐ ==================== PAYMENT STATUS ====================
 
 export interface PaymentStatus {

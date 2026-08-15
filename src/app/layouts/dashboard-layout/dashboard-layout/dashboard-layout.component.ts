@@ -4,7 +4,7 @@ import { SidebarComponent } from '../../../shared/components/sidebar/sidebar/sid
 import { HeaderComponent } from '../../../shared/components/header/header/header.component';
 import { ToastComponent } from '../../../shared/components/toast/toast/toast.component';
 import { SidebarService } from '../../../core/services/sidebar/sidebar.service';
-import { SidebarSection } from '../../../core/models/sidebar.models';
+import { AuthService } from '../../../core/services/auth/auth.service';
 
 @Component({
   selector: 'app-dashboard-layout',
@@ -14,89 +14,17 @@ import { SidebarSection } from '../../../core/models/sidebar.models';
 })
 export class DashboardLayoutComponent implements OnInit {
   private sidebarService = inject(SidebarService);
+  private authService = inject(AuthService);
 
   sidebarOpen = signal(true);
   isMobile = signal(window.innerWidth < 992);
 
   ngOnInit(): void {
-    // ⭐ Layout decides what menu items to show!
-    this.configureMenu();
-  }
+    // ⭐ Ensure menu is initialized based on user roles
+    this.sidebarService.initializeMenu();
 
-  configureMenu(): void {
-    // ⭐ Example: Different menus based on user role
-    const userRole = 'Manager'; // Get from auth service
-
-    let sections: SidebarSection[] = [];
-
-    if (userRole === 'Manager') {
-      sections = [
-        {
-          title: 'Main',
-          items: [
-            { title: 'Dashboard', icon: 'fa-solid fa-house', route: '/home' },
-          ],
-        },
-        {
-          title: 'Management',
-          items: [
-            {
-              title: 'Employees',
-              icon: 'fa-solid fa-users',
-              route: '/employees',
-            },
-            {
-              title: 'Projects',
-              icon: 'fa-solid fa-diagram-project',
-              route: '/projects',
-            },
-            {
-              title: 'Roles',
-              icon: 'fa-solid fa-user-shield',
-              route: '/roles',
-            },
-            {
-              title: 'Settings',
-              icon: 'fa-solid fa-gear',
-              route: '/organization_settings',
-            },
-          ],
-        }
-      ];
-    } else {
-      // Default: Employee
-      sections = [
-        {
-          title: 'Main',
-          items: [
-            { title: 'Dashboard', icon: 'fa-solid fa-house', route: '/home' },
-            {
-              title: 'My Profile',
-              icon: 'fa-solid fa-user',
-              route: '/profile',
-            },
-            {
-              title: 'My Projects',
-              icon: 'fa-solid fa-diagram-project',
-              route: '/my-projects',
-            },
-          ],
-        },
-        {
-          title: 'Settings',
-          items: [
-            { title: 'Settings', icon: 'fa-solid fa-gear', route: '/settings' },
-          ],
-        },
-      ];
-    }
-
-    this.sidebarService.setMenuSections(sections);
-  }
-
-  // ⭐ Reset menu when user changes
-  resetMenu(): void {
-    this.configureMenu();
+    // ⭐ Listen for auth changes
+    this.authService.currentUser();
   }
 
   @HostListener('window:resize')

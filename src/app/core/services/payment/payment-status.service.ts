@@ -70,7 +70,7 @@ export class PaymentStatusService {
    */
   private mapPaymentToStatus(payment: PaymentResponse): PaymentStatus {
     const isSuccessful =
-      payment.status === 'Success' || payment.status === 'Processing';
+      payment.status === 'Succeeded' || payment.status === 'Processing';
     const plan = this.determinePlan(payment.amount);
 
     return {
