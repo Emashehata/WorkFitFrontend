@@ -110,35 +110,7 @@
             }
         </div>
 
-        <!-- Quick Actions -->
-        <div
-            class="bg-white/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg shadow-indigo-100/50 border border-white/50 mb-8">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                Quick Actions
-            </h2>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                @for (action of quickActions(); track $index) {
-                <a [routerLink]="action.route" [queryParams]="action.queryParams" (click)="onActionClick(action, $event)" class="group">
-                    <div
-                        class="bg-gray-50/80 hover:bg-white rounded-xl p-4 text-center transition-all duration-300 hover:shadow-md hover:scale-[1.02] cursor-pointer">
-                        <div
-                            class="w-12 h-12 {{ action.color }} rounded-xl flex items-center justify-center mx-auto mb-2 shadow-lg shadow-{{ action.color }}/20">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 4v16m8-8H4" />
-                            </svg>
-                        </div>
-                        <span class="text-xs font-medium text-gray-700 group-hover:text-indigo-600 transition-colors">{{
-                            action.label }}</span>
-                    </div>
-                </a>
-                }
-            </div>
-        </div>
+
 
         <!-- Recent Activity & Tasks -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -155,7 +127,7 @@
                     </h2>
                     <button (click)="showAllActivitiesModal.set(true)" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium cursor-pointer transition-colors">View All</button>
                 </div>
-                <div class="space-y-4">
+                <div class="space-y-4 max-h-[320px] overflow-y-auto pr-1 custom-scrollbar">
                     @for (activity of recentActivities(); track $index) {
                     <div class="flex items-start space-x-3 p-3 hover:bg-gray-50/50 rounded-xl transition-colors">
                         <div
@@ -169,6 +141,12 @@
                             </p>
                         </div>
                         <div class="w-2 h-2 rounded-full bg-indigo-400 mt-2"></div>
+                    </div>
+                    } @empty {
+                    <div class="py-6 text-center text-gray-400 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
+                        <i class="fa-solid fa-list-check text-2xl text-gray-300 mb-2"></i>
+                        <p class="text-sm font-medium text-gray-600">No recent activity</p>
+                        <p class="text-xs text-gray-400 mt-0.5">Project activity logs will appear here.</p>
                     </div>
                     }
                 </div>
@@ -184,13 +162,16 @@
                     </svg>
                     Upcoming Tasks
                 </h2>
-                <div class="space-y-3">
+                <div class="space-y-3 max-h-[320px] overflow-y-auto pr-1 custom-scrollbar">
                     @for (task of sortedUpcomingTasks(); track $index) {
-                    <div class="flex items-center justify-between p-3 rounded-xl border {{ task.bgClass }}">
+                    <div
+                        class="flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all duration-200 hover:scale-[1.01] hover:shadow-md hover:border-indigo-300 {{ task.bgClass }}"
+                        (click)="onUpcomingTaskClick(task)"
+                        title="Click to view in Project Management">
                         <div class="flex items-center space-x-3">
                             <div class="w-2.5 h-2.5 rounded-full {{ task.dotClass }}"></div>
                             <div>
-                                <p class="text-sm font-medium text-gray-800">{{ task.title }}</p>
+                                <p class="text-sm font-medium text-gray-800 hover:text-indigo-600 transition-colors">{{ task.title }}</p>
                                 <div class="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
                                     <span><i class="fa-solid fa-user-code text-indigo-500 mr-1"></i>{{ task.developer }}</span>
                                     <span>•</span>
@@ -198,7 +179,16 @@
                                 </div>
                             </div>
                         </div>
-                        <span class="text-xs px-2.5 py-1 rounded-full font-medium {{ task.priorityClass }}">{{ task.priority }}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs px-2.5 py-1 rounded-full font-medium {{ task.priorityClass }}">{{ task.priority }}</span>
+                            <i class="fa-solid fa-chevron-right text-xs text-gray-400"></i>
+                        </div>
+                    </div>
+                    } @empty {
+                    <div class="py-6 text-center text-gray-400 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
+                        <i class="fa-solid fa-calendar-check text-2xl text-gray-300 mb-2"></i>
+                        <p class="text-sm font-medium text-gray-600">No upcoming tasks</p>
+                        <p class="text-xs text-gray-400 mt-0.5">Create a project or task to start tracking work.</p>
                     </div>
                     }
                 </div>

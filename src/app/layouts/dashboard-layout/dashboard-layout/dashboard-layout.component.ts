@@ -1,8 +1,10 @@
-import { Component, HostListener, signal, OnInit, inject } from '@angular/core';
+import { Component, HostListener, signal, OnInit, inject, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { SidebarComponent } from '../../../shared/components/sidebar/sidebar/sidebar.component';
 import { HeaderComponent } from '../../../shared/components/header/header/header.component';
 import { ToastComponent } from '../../../shared/components/toast/toast/toast.component';
+import { AgentChatWidgetComponent } from '../../../shared/components/agent-chat-widget/agent-chat-widget.component';
 import { SidebarService } from '../../../core/services/sidebar/sidebar.service';
 import { SidebarSection } from '../../../core/models/sidebar.models';
 import { AuthService } from '../../../core/services/auth/auth.service';
@@ -11,7 +13,7 @@ import { UserRole } from '../../../core/enums/user-role.enum';
 @Component({
   selector: 'app-dashboard-layout',
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent, HeaderComponent, ToastComponent],
+  imports: [CommonModule, RouterOutlet, SidebarComponent, HeaderComponent, ToastComponent, AgentChatWidgetComponent],
   templateUrl: './dashboard-layout.component.html',
 })
 export class DashboardLayoutComponent implements OnInit {
@@ -20,6 +22,13 @@ export class DashboardLayoutComponent implements OnInit {
 
   sidebarOpen = signal(true);
   isMobile = signal(window.innerWidth < 992);
+
+  isTeamLeaderOrOwner = computed(() =>
+    this.authService.isTeamLeader() ||
+    this.authService.isOrganizationOwner() ||
+    this.authService.isAdmin() ||
+    this.authService.hasRole(UserRole.TeamLeader)
+  );
 
   ngOnInit(): void {
     this.configureMenu();
@@ -121,7 +130,7 @@ export class DashboardLayoutComponent implements OnInit {
               icon: 'fa-solid fa-users',
               route: '/employees',
             },
-            
+
             {
               title: 'Projects',
               icon: 'fa-solid fa-diagram-project',

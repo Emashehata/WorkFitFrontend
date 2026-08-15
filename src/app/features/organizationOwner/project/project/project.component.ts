@@ -104,6 +104,12 @@ export class ProjectComponent implements OnInit {
       next: (res) => {
         this.projects.set(res);
         this.isLoading.set(false);
+
+        // Auto-navigate to first project detail if highlight params exist
+        const params = this.route.snapshot.queryParams;
+        if ((params['highlightTaskId'] || params['highlightTaskTitle']) && res.length > 0) {
+          this.router.navigate(['/projects', res[0].id], { queryParams: params });
+        }
       },
       error: (err) => {
         console.error(err);

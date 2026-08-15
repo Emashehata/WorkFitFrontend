@@ -11,26 +11,35 @@
     [class.-translate-x-full]="!opened()">
 
     <!-- Logo & Collapse Toggle -->
-    <div class="border-b border-border p-4 flex items-center justify-between">
+    <div class="border-b border-border p-4 flex items-center justify-between" [class.justify-center]="isCollapsed()">
+        @if (!isCollapsed()) {
         <div class="flex items-center gap-3 overflow-hidden">
             <div
                 class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-secondary shadow-lg shadow-primary/20">
                 <span class="text-xl font-bold text-white">W</span>
             </div>
-            @if (!isCollapsed()) {
             <div class="truncate">
                 <h2 class="text-lg font-bold text-text truncate">WorkFit</h2>
                 <p class="text-[10px] text-text-secondary truncate">Workforce Platform</p>
             </div>
-            }
         </div>
         <button
             type="button"
             (click)="toggleCollapse()"
             class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-border bg-background text-text-secondary hover:text-primary hover:border-primary transition-all hidden lg:flex"
-            [title]="isCollapsed() ? 'Expand Sidebar' : 'Collapse Sidebar'">
-            <i class="fa-solid" [class.fa-chevron-left]="!isCollapsed()" [class.fa-chevron-right]="isCollapsed()"></i>
+            title="Collapse Sidebar">
+            <i class="fa-solid fa-chevron-left"></i>
         </button>
+        } @else {
+        <!-- When Collapsed: W logo disappears, centered arrow button extends sidebar -->
+        <button
+            type="button"
+            (click)="toggleCollapse()"
+            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 to-secondary/10 text-primary hover:bg-primary hover:text-white transition-all shadow-sm cursor-pointer hidden lg:flex"
+            title="Expand Sidebar">
+            <i class="fa-solid fa-angles-right text-base animate-pulse"></i>
+        </button>
+        }
     </div>
 
     <!-- Menu Navigation -->

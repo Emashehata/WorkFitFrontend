@@ -4,6 +4,7 @@ import { TaskType } from '../enums/task-type.enum';
 
 export interface TaskListItem {
   id: string;
+  projectId?: string;
   title: string;
   taskType: TaskType;
   status: TaskStatus;
