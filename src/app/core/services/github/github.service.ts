@@ -18,7 +18,7 @@ const GITHUB_STATUS_CACHE_KEY = 'github_status_cache';
 export class GitHubService {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
-  private baseUrl = 'https://localhost:7296/api';
+  private baseUrl = environment.baseUrl;
 
   private plainHttp: HttpClient;
 

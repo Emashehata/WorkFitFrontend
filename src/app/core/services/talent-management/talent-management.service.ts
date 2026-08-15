@@ -3,6 +3,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { Observable, tap, finalize } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { EmployeeProfile, EmployeeSkillDetail } from '../../models/talent-management.model';
+import { API_ROUTES } from '../../constants/api-routes.constant';
 
 
 @Injectable({ providedIn: 'root' })
@@ -16,7 +17,7 @@ export class TalentManagementService {
 
   getEmployeeById(id: string): Observable<EmployeeProfile> {
     this.loading.set(true);
-    return this.http.get<EmployeeProfile>(`${this.baseUrl}/employees/${id}`).pipe(
+    return this.http.get<EmployeeProfile>(`${this.baseUrl}${API_ROUTES.talent.employeeById(id)}`).pipe(
       tap((res) => this.currentEmployee.set(res)),
       finalize(() => this.loading.set(false))
     );

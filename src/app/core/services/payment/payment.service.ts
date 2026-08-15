@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-// import { environment } from '../../../../environments/environment';
+import { environment } from '../../../../environments/environment';
 import { API_ROUTES } from '../../constants/api-routes.constant';
 import { AuthService } from '../auth/auth.service';
 import {
@@ -15,7 +15,7 @@ import {
 export class PaymentService {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
-  private baseUrl = 'https://localhost:7296/api';
+  private baseUrl = environment.baseUrl;
 
   getPaymentById(paymentId: string): Observable<PaymentResponse> {
     return this.http.get<PaymentResponse>(
