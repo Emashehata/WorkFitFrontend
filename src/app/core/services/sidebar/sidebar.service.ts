@@ -35,83 +35,101 @@ export class SidebarService {
    * Initialize menu based on user roles
    */
   initializeMenu(): void {
-    const user = this.authService.currentUser();
-    const roles = user?.roles || [];
+  const user = this.authService.currentUser();
+  const roles = user?.roles || [];
 
-    // ⭐ Build menu based on roles
-    const sections: SidebarSection[] = [];
+  const sections: SidebarSection[] = [];
 
-    // ⭐ Main section - visible to everyone
-    const mainItems: SidebarMenuItem[] = [
-      { title: 'Dashboard', icon: 'fa-solid fa-house', route: '/home' },
-    ];
+  const mainItems: SidebarMenuItem[] = [
+    { title: 'Dashboard', icon: 'fa-solid fa-house', route: '/home' },
+  ];
 
-    // Employees are visible to management and team leaders, not individual developers.
-    if (roles.some(role => ['SuperAdmin', 'Admin', 'OrganizationOwner', 'TeamLeader'].includes(role))) {
-      mainItems.push({
-        title: 'Employees',
-        icon: 'fa-solid fa-users',
-        route: '/employees',
-      });
-    }
-
-    // ⭐ Projects - visible to all authenticated users
+  if (roles.some(role => ['SuperAdmin', 'Admin', 'OrganizationOwner', 'TeamLeader'].includes(role))) {
     mainItems.push({
-      title: 'Projects',
-      icon: 'fa-solid fa-diagram-project',
-      route: '/projects',
+      title: 'Employees',
+      icon: 'fa-solid fa-users',
+      route: '/employees',
     });
-
-    sections.push({
-      title: 'Main',
-      items: mainItems,
-    });
-
-    // ⭐ Management section - visible to OrganizationOwner and SuperAdmin
-    const managementItems: SidebarMenuItem[] = [];
-
-    if (roles.some(r => r === 'OrganizationOwner' || r === 'SuperAdmin')) {
-      managementItems.push({
-        title: 'Organizations',
-        icon: 'fa-solid fa-building',
-        route: '/organizations',
-      });
-      managementItems.push({
-        title: 'Settings',
-        icon: 'fa-solid fa-gear',
-        route: '/organization_settings',
-      });
-      managementItems.push({
-        title: 'Invitation Approvals',
-        icon: 'fa-solid fa-user-check',
-        route: '/invitation-approvals',
-      });
-      managementItems.push({
-        title: 'GitHub Integration',
-        icon: 'fa-brands fa-github',
-        route: '/integrations',
-        badge: 'New',
-      });
-    }
-
-    // ⭐ Roles management - SuperAdmin only
-    if (roles.includes('SuperAdmin')) {
-      managementItems.push({
-        title: 'Roles',
-        icon: 'fa-solid fa-user-shield',
-        route: '/roles',
-      });
-    }
-
-    if (managementItems.length > 0) {
-      sections.push({
-        title: 'Management',
-        items: managementItems,
-      });
-    }
-
-    this.menuSectionsSignal.set(sections);
   }
+
+  mainItems.push({
+    title: 'Projects',
+    icon: 'fa-solid fa-diagram-project',
+    route: '/projects',
+  });
+
+  // ⬇️ Profile — متاح للكل
+  mainItems.push({
+    title: 'My Profile',
+    icon: 'fa-solid fa-id-card',
+    route: '/profile',
+  });
+
+  // ⬇️ Assessments — حسب الدور
+  if (roles.includes('TeamLeader')) {
+    mainItems.push({
+      title: 'Team Assessments',
+      icon: 'fa-solid fa-clipboard-check',
+      route: '/team-assessments',
+    });
+  }
+
+  if (roles.includes('Employee')) {
+    mainItems.push({
+      title: 'My Assessments',
+      icon: 'fa-solid fa-clipboard-check',
+      route: '/my-assessments',
+    });
+  }
+
+  sections.push({
+    title: 'Main',
+    items: mainItems,
+  });
+
+  const managementItems: SidebarMenuItem[] = [];
+
+  if (roles.some(r => r === 'OrganizationOwner' || r === 'SuperAdmin')) {
+    managementItems.push({
+      title: 'Organizations',
+      icon: 'fa-solid fa-building',
+      route: '/organizations',
+    });
+    managementItems.push({
+      title: 'Settings',
+      icon: 'fa-solid fa-gear',
+      route: '/organization_settings',
+    });
+    managementItems.push({
+      title: 'Invitation Approvals',
+      icon: 'fa-solid fa-user-check',
+      route: '/invitation-approvals',
+    });
+    managementItems.push({
+      title: 'GitHub Integration',
+      icon: 'fa-brands fa-github',
+      route: '/integrations',
+      badge: 'New',
+    });
+  }
+
+  if (roles.includes('SuperAdmin')) {
+    managementItems.push({
+      title: 'Roles',
+      icon: 'fa-solid fa-user-shield',
+      route: '/roles',
+    });
+  }
+
+  if (managementItems.length > 0) {
+    sections.push({
+      title: 'Management',
+      items: managementItems,
+    });
+  }
+
+  this.menuSectionsSignal.set(sections);
+}
 
   // ⭐ Set full menu
   setMenuSections(sections: SidebarSection[]): void {
