@@ -8,6 +8,7 @@ export const API_ROUTES = {
   organizations: {
     me: '/organizations/me',
     meSettings: '/organizations/me/settings',
+    meGithub: '/organizations/me/github',
   },
   employees: {
     list: '/employees',
@@ -41,5 +42,11 @@ export const API_ROUTES = {
   integration: {
     jiraSettings: (orgId: string) => `/integration/${orgId}/jira-settings`,
     sync: '/integration/sync',
+  },
+  payments: {
+    process: '/payments',
+    byId: (paymentId: string) => `/payments/${paymentId}`,
+    checkoutSession: '/payments/checkout-session',
+    checkoutSessionCancel: '/payments/checkout-session/cancel',
   },
 } as const;

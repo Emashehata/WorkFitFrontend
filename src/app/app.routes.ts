@@ -1,7 +1,7 @@
-import { organizationGuard } from './core/guards/organization.guard';
+import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 import { PublicGuard } from './core/guards/public.guard';
-import { Routes } from '@angular/router';
+import { paymentGuard } from './core/guards/payment.guard';
 import { RegisterOrganizationComponent } from './features/auth/register-organization/register-organization.component';
 import { LoginComponent } from './features/auth/login/login.component';
 import { HomeComponent } from './features/organizationOwner/home/home.component';
@@ -13,71 +13,25 @@ import { OrganizationSettingsComponent } from './features/organization/organizat
 import { EmployeesComponent } from './features/employee/employees/employees.component';
 
 export const routes: Routes = [
+  { path: '', component: LandingComponent, pathMatch: 'full', canActivate: [PublicGuard] },
+  { path: 'login', component: LoginComponent, canActivate: [PublicGuard] },
+  { path: 'register', component: RegisterOrganizationComponent, canActivate: [PublicGuard] },
+  { path: 'dashboard', redirectTo: 'home', pathMatch: 'full' },
   {
-    path: '',
-    component: LandingComponent,
-    pathMatch: 'full',
-    canActivate: [PublicGuard],
-  },
-  {
-    path: 'login',
-    component: LoginComponent,
-    canActivate: [PublicGuard],
-  },
-  {
-    path: 'register',
-    component: RegisterOrganizationComponent,
-    canActivate: [PublicGuard],
-  },
-  {
-    path: 'dashboard',
-    redirectTo: 'home',
-    pathMatch: 'full',
-  },
-
-  {
-    path: '',
-    component: DashboardLayoutComponent,
-    canActivate: [AuthGuard],
+    path: '', component: DashboardLayoutComponent, canActivate: [AuthGuard],
     children: [
-      {
-        path: 'home',
-        component: HomeComponent,
-      },
-      {
-        path: 'employees',
-        component: EmployeesComponent,
-      },
-      {
-        path: 'my-team',
-        component: EmployeesComponent,
-      },
-      {
-        path: 'projects',
-        component: ProjectComponent,
-      },
-      {
-        path: 'projects/:id',
-        component: ProjectDetailComponent,
-      },
-      {
-        path: 'organization_settings',
-        component: OrganizationSettingsComponent,
-      },
-
-
-      {
-        path: '',
-        loadChildren: () =>
-          import('./features/assessments/assessment.routes').then(
-            (m) => m.ASSESSMENT_ROUTES
-          ),
-      },
+      { path: 'home', component: HomeComponent },
+      { path: 'employees', component: EmployeesComponent },
+      { path: 'my-team', component: EmployeesComponent },
+      { path: 'projects', component: ProjectComponent },
+      { path: 'projects/:id', component: ProjectDetailComponent },
+      { path: 'organization_settings', component: OrganizationSettingsComponent, canActivate: [paymentGuard] },
+      { path: 'pricing', loadComponent: () => import('./features/pricing/pricing.component').then(m => m.PricingComponent) },
+      { path: 'payment-success', loadComponent: () => import('./features/organizationOwner/payment-success/payment-success.component').then(m => m.PaymentSuccessComponent) },
+      { path: 'integrations', loadComponent: () => import('./features/integrations/integrations.component').then(m => m.IntegrationsComponent) },
+      { path: '', loadChildren: () => import('./features/assessments/assessment.routes').then(m => m.ASSESSMENT_ROUTES) },
     ],
   },
-
-  {
-    path: '**',
-    redirectTo: 'home',
-  },
+  { path: 'github/callback', loadComponent: () => import('./features/integrations/github-callback/github-callback.component').then(m => m.GitHubCallbackComponent) },
+  { path: '**', redirectTo: 'home' },
 ];
