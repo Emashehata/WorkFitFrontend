@@ -8,6 +8,7 @@ import {
   CreateProjectRequest,
   UpdateProjectRequest,
   ProjectUpdatedDto,
+  ProjectMember,
 } from '../../models/project.models';
 import { API_ROUTES } from '../../constants/api-routes.constant';
 
@@ -81,6 +82,19 @@ export class ProjectService {
     return this.http.put<string>(
       `${this.baseUrl}${API_ROUTES.projects.archive(id)}`,
       {}
+    );
+  }
+
+  getProjectMembers(projectId: string): Observable<ProjectMember[]> {
+    return this.http.get<ProjectMember[]>(
+      `${this.baseUrl}${API_ROUTES.projects.members(projectId)}`
+    );
+  }
+
+  addProjectMember(projectId: string, employeeId: string): Observable<ProjectMember> {
+    return this.http.post<ProjectMember>(
+      `${this.baseUrl}${API_ROUTES.projects.members(projectId)}`,
+      { employeeId }
     );
   }
 

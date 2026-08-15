@@ -1,4 +1,4 @@
-import { Component, inject, input, output, signal, effect } from '@angular/core';
+import { Component, inject, input, output, signal, computed, effect } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
@@ -11,6 +11,7 @@ import { TaskDetailDto, EmployeeDetailsDto, EmployeeListItemDto, UpdateTaskReque
 import { TaskStatus } from '../../../../core/enums/task-status.enum';
 import { TaskPriority } from '../../../../core/enums/task-priority.enum';
 import { BadgeVariant } from '../../../../core/models/badge.model';
+import { ProjectService } from '../../../../core/services/project/project.service';
 
 @Component({
   selector: 'app-task-detail-modal',
@@ -25,6 +26,7 @@ export class TaskDetailModalComponent {
   close = output<void>();
 
   private taskService = inject(TaskService);
+  private projectService = inject(ProjectService);
   private authService = inject(AuthService);
   private toast = inject(ToastService);
   private fb = inject(FormBuilder);
@@ -33,6 +35,17 @@ export class TaskDetailModalComponent {
   assignee = signal<EmployeeDetailsDto | null>(null);
   creator = signal<EmployeeDetailsDto | null>(null);
   employees = signal<EmployeeListItemDto[]>([]);
+  employeeSearch = signal<string>('');
+
+  filteredEmployees = computed(() => {
+    const search = this.employeeSearch().trim().toLowerCase();
+    if (!search) return this.employees();
+    return this.employees().filter(e =>
+      e.name.toLowerCase().includes(search) ||
+      (e.jobTitle && e.jobTitle.toLowerCase().includes(search)) ||
+      (e.email && e.email.toLowerCase().includes(search))
+    );
+  });
 
   isLoading = signal(false);
   isSaving = signal(false);
@@ -80,7 +93,6 @@ export class TaskDetailModalComponent {
       const open = this.isOpen();
       if (id && open) {
         this.loadTaskDetails(id);
-        this.loadEmployees();
       } else {
         this.resetState();
       }
@@ -103,6 +115,7 @@ export class TaskDetailModalComponent {
         this.isLoading.set(false);
         this.patchEditForm(taskDetail);
         this.loadProfiles(taskDetail);
+        this.loadEmployees(taskDetail.projectId);
       },
       error: (err) => {
         console.error('Failed to load task details', err);
@@ -112,14 +125,14 @@ export class TaskDetailModalComponent {
   }
 
   private loadProfiles(taskDetail: TaskDetailDto) {
-    if (taskDetail.assigneeId) {
+    if (taskDetail.assigneeId && taskDetail.assigneeId !== '00000000-0000-0000-0000-000000000000') {
       this.taskService.getEmployeeById(taskDetail.assigneeId).subscribe({
         next: (profile) => this.assignee.set(profile),
         error: (err) => console.error('Failed to load assignee profile', err)
       });
     }
 
-    if (taskDetail.createdById) {
+    if (taskDetail.createdById && taskDetail.createdById !== '00000000-0000-0000-0000-000000000000') {
       this.taskService.getEmployeeById(taskDetail.createdById).subscribe({
         next: (profile) => this.creator.set(profile),
         error: (err) => console.error('Failed to load creator profile', err)
@@ -127,9 +140,15 @@ export class TaskDetailModalComponent {
     }
   }
 
-  private loadEmployees() {
-    this.taskService.getEmployees().subscribe({
-      next: (employees) => this.employees.set(employees),
+  private loadEmployees(projectId: string) {
+    this.employees.set([]);
+    this.projectService.getProjectMembers(projectId).subscribe({
+      next: (employees) => this.employees.set(employees
+        .filter(employee => employee.isActive)
+        .map(employee => ({
+          ...employee,
+          email: employee.email ?? '',
+        }))),
       error: (err) => console.warn('Failed to load employees', err),
     });
   }
@@ -165,7 +184,7 @@ export class TaskDetailModalComponent {
       },
       error: (err) => {
         this.isSaving.set(false);
-        const errorMsg = err.error?.message || err.error?.title || 'Failed to assign task';
+        const errorMsg = err.error?.userFriendlyMessage || err.error?.errorMessage || err.error?.message || err.error?.title || 'Failed to assign task';
         this.toast.error('Error', errorMsg);
         console.error('Failed to assign task', err);
       },

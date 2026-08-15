@@ -23,6 +23,7 @@ import { CreateTaskModalComponent } from '../create-task-modal/create-task-modal
 import { TaskDetailModalComponent } from '../task-detail-modal/task-detail-modal.component';
 import { EditProjectModalComponent } from '../edit-project-modal/edit-project-modal.component';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { map, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-project-detail',
@@ -54,13 +55,27 @@ export class ProjectDetailComponent implements OnInit {
   allTasks = signal<TaskListItem[]>([]);
   employees = signal<EmployeeListItemDto[]>([]);
   isLoading = signal(true);
-  projectError = signal(false);
-  tasksError = signal(false);
   isChangingStatus = signal(false);
   showCreateTaskModal = signal(false);
   showTaskDetailModal = signal(false);
   showEditProjectModal = signal(false);
+  isHeaderCollapsed = signal<boolean>(false);
   selectedTaskId = signal<string>('');
+  employeeSearch = signal<string>('');
+
+  toggleHeaderCollapse() {
+    this.isHeaderCollapsed.update(v => !v);
+  }
+
+  filteredEmployees = computed(() => {
+    const search = this.employeeSearch().trim().toLowerCase();
+    if (!search) return this.employees();
+    return this.employees().filter((e: EmployeeListItemDto) =>
+      e.name.toLowerCase().includes(search) ||
+      (e.jobTitle && e.jobTitle.toLowerCase().includes(search)) ||
+      (e.email && e.email.toLowerCase().includes(search))
+    );
+  });
 
   // ── Confirm dialog state ───────────────────────────────────
   showConfirm       = signal(false);
@@ -73,16 +88,6 @@ export class ProjectDetailComponent implements OnInit {
   private _pendingAction: (() => void) | null = null;
 
   isTeamLeader = computed(() => this.authService.isTeamLeader() || this.authService.isOrganizationOwner());
-  canManageProject = computed(() => {
-    if (this.authService.isOrganizationOwner()) return true;
-    const project = this.project();
-    const currentUser = this.authService.currentUser();
-    return this.authService.isTeamLeader()
-      && !!project
-      && (!!currentUser?.orgId
-        ? project.organizationId === currentUser.orgId
-        : project.teamLeaderId === currentUser?.userId);
-  });
   isEmployee = this.authService.isEmployee;
 
   employeeMap = computed(() => {
@@ -146,54 +151,119 @@ export class ProjectDetailComponent implements OnInit {
     Cancelled: [],
   };
 
+  highlightedTaskId = signal<string | null>(null);
+  highlightedTaskTitle = signal<string | null>(null);
+
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.projectId.set(id);
       this.loadProject(id);
       this.loadTasks(id);
-      this.loadEmployees();
+      if (!this.authService.isEmployee()) this.loadEmployees();
     }
+    this.route.queryParams.subscribe(params => {
+      if (params['highlightTaskId']) {
+        this.highlightedTaskId.set(params['highlightTaskId']);
+      }
+      if (params['highlightTaskTitle']) {
+        this.highlightedTaskTitle.set(params['highlightTaskTitle']);
+      }
+      this.scrollToHighlightedTask();
+    });
+  }
+
+  isTaskHighlighted(task: TaskListItem): boolean {
+    if (this.highlightedTaskId() && task.id === this.highlightedTaskId()) {
+      return true;
+    }
+    if (this.highlightedTaskTitle() && task.title.toLowerCase().trim() === this.highlightedTaskTitle()?.toLowerCase().trim()) {
+      return true;
+    }
+    return false;
+  }
+
+  clearHighlight(task?: TaskListItem): void {
+    this.highlightedTaskId.set(null);
+    this.highlightedTaskTitle.set(null);
+  }
+
+  onTaskCardClick(task: TaskListItem): void {
+    if (this.isTaskHighlighted(task)) {
+      this.clearHighlight(task);
+    }
+    this.onViewTask(task);
+  }
+
+  scrollToHighlightedTask(): void {
+    setTimeout(() => {
+      if (!this.highlightedTaskId() && !this.highlightedTaskTitle()) return;
+      const highlightedEl = document.querySelector('.highlighted-task-card');
+      if (highlightedEl) {
+        highlightedEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 350);
   }
 
   loadProject(id: string) {
-    this.projectError.set(false);
     this.projectService.getProjectById(id).subscribe({
       next: (project) => {
         this.project.set(project);
       },
-      error: (err) => {
-        this.projectError.set(true);
-        console.error('Failed to load project', err);
-      },
+      error: (err) => console.error('Failed to load project', err),
     });
   }
 
   loadTasks(id: string) {
     this.isLoading.set(true);
-    this.tasksError.set(false);
-    this.taskService.getProjectTasks(id).subscribe({
+    const request = this.authService.isEmployee()
+      ? this.taskService.getEmployees().pipe(
+          switchMap(employees => {
+            this.employees.set(employees);
+            const currentUser = this.authService.currentUser();
+            const employee = employees.find(item =>
+              item.email.toLowerCase() === currentUser?.email.toLowerCase() || item.id === currentUser?.userId
+            );
+            return this.taskService.getProjectTasks(id).pipe(
+              map(tasks => employee ? tasks.filter(task => task.assigneeId === employee.id) : [])
+            );
+          })
+        )
+      : this.taskService.getProjectTasks(id);
+
+    request.subscribe({
       next: (tasks) => {
         this.allTasks.set(tasks);
         this.isLoading.set(false);
+        this.scrollToHighlightedTask();
       },
       error: (err) => {
         console.error('Failed to load tasks', err);
-        this.tasksError.set(true);
         this.isLoading.set(false);
       },
     });
   }
 
   loadEmployees() {
-    this.taskService.getEmployees().subscribe({
-      next: (employees) => this.employees.set(employees),
+    this.projectService.getProjectMembers(this.projectId()).subscribe({
+      next: (employees) => this.employees.set(employees.map(employee => ({
+        ...employee,
+        email: employee.email ?? '',
+      }))),
       error: (err) => console.warn('Failed to load employees', err),
     });
   }
 
   getTasksByStatus(status: TaskStatus): TaskListItem[] {
-    return this.allTasks().filter(t => t.status === status);
+    const tasks = this.allTasks().filter(t => t.status === status);
+    return [...tasks].sort((a, b) => {
+      if (a.dueDate && b.dueDate) {
+        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      }
+      if (a.dueDate) return -1;
+      if (b.dueDate) return 1;
+      return a.title.localeCompare(b.title);
+    });
   }
 
   getColumnId(status: TaskStatus): string {
@@ -221,6 +291,10 @@ export class ProjectDetailComponent implements OnInit {
     return task.assigneeId ? (this.employeeMap().get(task.assigneeId) ?? 'Unassigned') : 'Unassigned';
   }
 
+  getCreatorName(task: TaskListItem): string {
+    return task.createdById ? (this.employeeMap().get(task.createdById) ?? 'System') : 'System';
+  }
+
   getInitials(employeeId: string): string {
     const name = this.employeeMap().get(employeeId) ?? 'Unknown';
     return name.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase();
@@ -244,7 +318,7 @@ export class ProjectDetailComponent implements OnInit {
 
   onChangeStatus(next: string) {
     const project = this.project();
-    if (!project || !this.canManageProject() || this.isChangingStatus()) return;
+    if (!project || this.isChangingStatus()) return;
 
     this.isChangingStatus.set(true);
     this.projectService.updateProjectStatus(project.id, toApiProjectStatus(next)).subscribe({
@@ -324,12 +398,10 @@ export class ProjectDetailComponent implements OnInit {
       // Call API
       const updateReq: UpdateTaskRequest = { status: newStatus };
       this.taskService.updateTask(task.id, updateReq).subscribe({
-        next: () => this.toast.success('Task moved', `Task moved to ${newStatus}`),
         error: (err) => {
           // Revert on error
           console.error('Failed to update task status', err);
           task.status = oldStatus;
-          this.toast.error('Move failed', 'The task could not be moved. The board has been refreshed.');
           this.reloadTasks();
         },
       });
@@ -347,7 +419,6 @@ export class ProjectDetailComponent implements OnInit {
       error: (err) => {
         console.error('Failed to complete task', err);
         task.status = oldStatus;
-        this.toast.error('Update failed', 'The task could not be completed.');
         this.reloadTasks();
       },
     });
@@ -364,10 +435,7 @@ export class ProjectDetailComponent implements OnInit {
       action: () => {
         this.taskService.deleteTask(task.id).subscribe({
           next: () => this.reloadTasks(),
-          error: (err) => {
-            this.toast.error('Delete failed', 'The task could not be deleted.');
-            console.error('Failed to delete task', err);
-          },
+          error: (err) => console.error('Failed to delete task', err),
         });
       },
     });
@@ -424,25 +492,8 @@ export class ProjectDetailComponent implements OnInit {
     this.showTaskDetailModal.set(true);
   }
 
-  onTaskKeydown(event: KeyboardEvent, task: TaskListItem) {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      this.onViewTask(task);
-    }
-  }
-
-  retryProject() {
-    const id = this.projectId();
-    if (id) this.loadProject(id);
-  }
-
-  retryTasks() {
-    const id = this.projectId();
-    if (id) this.loadTasks(id);
-  }
-
   canDrag(task: TaskListItem): boolean {
     // Only TeamLeader can drag, and Done tasks can't be moved
-    return this.canManageProject() && task.status !== TaskStatus.Done;
+    return this.isTeamLeader() && task.status !== TaskStatus.Done;
   }
 }

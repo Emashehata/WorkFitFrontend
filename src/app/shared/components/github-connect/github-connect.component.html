@@ -1,0 +1,231 @@
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- GITHUB CONNECTION CARD - PREMIUM DESIGN -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="group relative overflow-hidden rounded-2xl border-2 p-0 transition-all duration-500 hover:shadow-2xl"
+    [ngClass]="{
+    'border-emerald-200/80 bg-gradient-to-br from-emerald-50/50 via-white to-emerald-50/30': isConnected(),
+    'border-gray-200/80 bg-white hover:border-indigo-200/50': !isConnected()
+  }">
+
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- ANIMATED BACKGROUND ELEMENTS -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <!-- Gradient Orbs -->
+        <div class="absolute -top-20 -right-20 w-64 h-64 bg-indigo-200/20 rounded-full blur-3xl animate-pulse"></div>
+        <div
+            class="absolute -bottom-20 -left-20 w-64 h-64 bg-purple-200/20 rounded-full blur-3xl animate-pulse delay-1000">
+        </div>
+
+        <!-- GitHub Octocat Silhouette -->
+        <div class="absolute -bottom-10 -right-10 text-8xl opacity-[0.03] select-none">
+            <i class="fa-brands fa-github"></i>
+        </div>
+
+        <!-- Grid Pattern -->
+        <svg class="absolute inset-0 w-full h-full opacity-[0.03]" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" stroke-width="0.5" />
+                </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)" />
+        </svg>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- CONTENT -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <div class="relative p-6">
+
+        <!-- Loading State -->
+        @if (isLoading()) {
+        <div class="flex items-center gap-4 py-8">
+            <div class="relative">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <i class="fa-solid fa-spinner fa-spin text-indigo-500 text-xl"></i>
+                </div>
+            </div>
+            <div class="flex-1">
+                <div class="h-4 bg-gray-200 rounded-lg w-32 animate-pulse"></div>
+                <div class="h-3 bg-gray-100 rounded-lg w-48 mt-2 animate-pulse"></div>
+            </div>
+        </div>
+        }
+
+        <!-- Load Failed -->
+        @else if (loadFailed()) {
+        <div class="flex items-center justify-between py-4">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center">
+                    <i class="fa-solid fa-circle-exclamation text-red-400 text-2xl"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-700">Couldn't check connection</p>
+                    <p class="text-xs text-gray-400">Something went wrong</p>
+                </div>
+            </div>
+            <button (click)="refreshStatus()"
+                class="px-4 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50 rounded-xl transition">
+                <i class="fa-solid fa-rotate mr-2"></i>Retry
+            </button>
+        </div>
+        }
+
+        <!-- ✅ CONNECTED STATE - PREMIUM DESIGN -->
+        @else if (isConnected()) {
+        <!-- Header -->
+        <div class="flex items-start justify-between">
+            <div class="flex items-center gap-4">
+                <!-- Animated Avatar -->
+                <div class="relative">
+                    <div
+                        class="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-900 to-gray-700 flex items-center justify-center shadow-xl shadow-gray-200/50 group-hover:scale-105 transition-transform duration-500">
+                        <i class="fa-brands fa-github text-white text-2xl"></i>
+                    </div>
+                    <div
+                        class="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center animate-pulse">
+                        <i class="fa-solid fa-check text-white text-[10px]"></i>
+                    </div>
+                    <div
+                        class="absolute -top-2 -right-2 w-8 h-8 bg-emerald-100 rounded-full blur-md opacity-60 animate-ping">
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center gap-3">
+                        <h3 class="text-lg font-bold text-gray-900">GitHub</h3>
+                        <span
+                            class="px-2.5 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-semibold rounded-full flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                            Connected
+                        </span>
+                        <span class="px-2 py-0.5 bg-indigo-100 text-indigo-600 text-[10px] font-semibold rounded-full">
+                            {{ orgName() }}
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-3 mt-1">
+                        <p class="text-xs text-gray-400">
+                            <i class="fa-regular fa-clock mr-1"></i>
+                            Connected {{ connectionDate() | date:'MMM d, yyyy, h:mm a' }}
+                        </p>
+                        <button (click)="viewOnGitHub()"
+                            class="text-xs text-indigo-500 hover:text-indigo-700 transition">
+                            <i class="fa-regular fa-eye mr-1"></i> View
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Pills -->
+            <div class="flex items-center gap-2">
+                <div class="px-3 py-1.5 bg-gray-50 rounded-xl text-center border border-gray-100">
+                    <div class="text-xs font-bold text-gray-700">{{ stats().repos }}</div>
+                    <div class="text-[10px] text-gray-400">Repos</div>
+                </div>
+                <div class="px-3 py-1.5 bg-gray-50 rounded-xl text-center border border-gray-100">
+                    <div class="text-xs font-bold text-gray-700">{{ stats().commits }}</div>
+                    <div class="text-[10px] text-gray-400">Commits</div>
+                </div>
+                <div class="px-3 py-1.5 bg-gray-50 rounded-xl text-center border border-gray-100">
+                    <div class="text-xs font-bold text-gray-700">{{ stats().prs }}</div>
+                    <div class="text-[10px] text-gray-400">PRs</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="mt-4 flex items-center gap-3 pt-4 border-t border-gray-100/80">
+            <button
+                class="px-4 py-2 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-xl transition flex items-center gap-2">
+                <i class="fa-regular fa-folder-open"></i> View Repositories
+            </button>
+            <button
+                class="px-4 py-2 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-xl transition flex items-center gap-2">
+                <i class="fa-regular fa-clock"></i> Sync Now
+            </button>
+        </div>
+        }
+
+        <!-- ❌ DISCONNECTED STATE - PREMIUM DESIGN -->
+        @else {
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6 py-2">
+            <div class="flex items-center gap-4">
+                <!-- GitHub Icon with Glow -->
+                <div class="relative">
+                    <div
+                        class="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shadow-inner group-hover:shadow-lg transition-all duration-500">
+                        <i
+                            class="fa-brands fa-github text-gray-400 text-3xl group-hover:scale-110 transition-transform duration-500"></i>
+                    </div>
+                    <div
+                        class="absolute -inset-1 bg-indigo-400/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900">GitHub Integration</h3>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="px-2 py-0.5 bg-gray-100 text-gray-400 text-[10px] font-medium rounded-full">
+                            Not Connected
+                        </span>
+                        <p class="text-xs text-gray-400">
+                            <i class="fa-regular fa-circle-info mr-1"></i>
+                            Connect to enable code-based features
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row items-center gap-3">
+                <button (click)="connect()"
+                    class="group relative px-6 py-3 bg-gradient-to-r from-gray-900 to-gray-700 text-white font-medium rounded-xl hover:shadow-xl hover:shadow-gray-200/50 transition-all duration-500 flex items-center gap-3 overflow-hidden">
+                    <!-- Shine Effect -->
+                    <span
+                        class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></span>
+
+                    <i class="fa-brands fa-github text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                    <span>Connect GitHub</span>
+                    <i
+                        class="fa-solid fa-arrow-right text-xs opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300"></i>
+                </button>
+
+                <button class="text-xs text-gray-400 hover:text-gray-600 transition">
+                    <i class="fa-regular fa-circle-question mr-1"></i> Learn more
+                </button>
+            </div>
+        </div>
+
+        <!-- Feature Preview -->
+        <div class="mt-4 pt-4 border-t border-gray-100/80">
+            <div class="grid grid-cols-3 gap-3">
+                <div class="text-center p-2 bg-gray-50/50 rounded-xl">
+                    <i class="fa-regular fa-code text-gray-400 text-sm"></i>
+                    <p class="text-[10px] text-gray-400 mt-1">Code Sync</p>
+                </div>
+                <div class="text-center p-2 bg-gray-50/50 rounded-xl">
+                    <i class="fa-regular fa-user-check text-gray-400 text-sm"></i>
+                    <p class="text-[10px] text-gray-400 mt-1">Team Access</p>
+                </div>
+                <div class="text-center p-2 bg-gray-50/50 rounded-xl">
+                    <i class="fa-regular fa-chart-line text-gray-400 text-sm"></i>
+                    <p class="text-[10px] text-gray-400 mt-1">Insights</p>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- MODALS -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+@if (showConnectModal()) {
+<app-github-connect-modal (closed)="onModalClosed()" (connected)="onModalConnected()" />
+}
+
+@if (showSuccessModal()) {
+<app-github-connect-success (closed)="onSuccessModalClosed()" />
+}

@@ -1,4 +1,4 @@
-import { Component, inject, input, output, signal, OnInit, effect } from '@angular/core';
+import { Component, inject, input, output, signal, computed, effect } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { ButtonComponent } from '../../../../shared/components/button/button/button.component';
@@ -7,6 +7,7 @@ import { TaskType } from '../../../../core/enums/task-type.enum';
 import { TaskPriority } from '../../../../core/enums/task-priority.enum';
 import { ToastService } from '../../../../core/services/toast/toast.service';
 import { EmployeeListItemDto } from '../../../../core/models/task.models';
+import { ProjectService } from '../../../../core/services/project/project.service';
 
 @Component({
   selector: 'app-create-task-modal',
@@ -15,7 +16,7 @@ import { EmployeeListItemDto } from '../../../../core/models/task.models';
   templateUrl: './create-task-modal.component.html',
   styleUrl: './create-task-modal.component.scss'
 })
-export class CreateTaskModalComponent implements OnInit {
+export class CreateTaskModalComponent {
   isOpen = input<boolean>(false);
   projectId = input<string>('');
   close = output<void>();
@@ -23,11 +24,23 @@ export class CreateTaskModalComponent implements OnInit {
 
   private fb = inject(FormBuilder);
   private taskService = inject(TaskService);
+  private projectService = inject(ProjectService);
   private toast = inject(ToastService);
 
   isSubmitting = signal(false);
   isLoadingEmployees = signal(false);
   employees = signal<EmployeeListItemDto[]>([]);
+  employeeSearch = signal<string>('');
+
+  filteredEmployees = computed(() => {
+    const search = this.employeeSearch().trim().toLowerCase();
+    if (!search) return this.employees();
+    return this.employees().filter(e =>
+      e.name.toLowerCase().includes(search) ||
+      (e.jobTitle && e.jobTitle.toLowerCase().includes(search)) ||
+      (e.email && e.email.toLowerCase().includes(search))
+    );
+  });
 
   taskTypes = Object.values(TaskType);
   priorities = Object.values(TaskPriority);
@@ -52,19 +65,26 @@ export class CreateTaskModalComponent implements OnInit {
     });
   }
 
-  ngOnInit() {
-    // Initial load in case the modal starts open or effect hasn't fired yet.
-    if (this.employees().length === 0) {
-      this.loadEmployees();
-    }
-  }
-
   private loadEmployees() {
+    const projectId = this.resolveProjectId();
+    this.employees.set([]);
+    this.form.controls.assigneeId.setValue('', { emitEvent: false });
+
+    if (!projectId) {
+      this.form.controls.assigneeId.disable({ emitEvent: false });
+      return;
+    }
+
     this.isLoadingEmployees.set(true);
     this.form.controls.assigneeId.disable({ emitEvent: false });
-    this.taskService.getEmployees().subscribe({
+    this.projectService.getProjectMembers(projectId).subscribe({
       next: (employees) => {
-        this.employees.set(employees);
+        this.employees.set(employees
+          .filter(employee => employee.isActive)
+          .map(employee => ({
+            ...employee,
+            email: employee.email ?? '',
+          })));
         this.isLoadingEmployees.set(false);
         this.form.controls.assigneeId.enable({ emitEvent: false });
       },
@@ -76,14 +96,17 @@ export class CreateTaskModalComponent implements OnInit {
     });
   }
 
+  private resolveProjectId(): string {
+    const inputProjectId = this.projectId();
+    if (inputProjectId) return inputProjectId;
+
+    return window.location.pathname.match(/\/projects\/([a-f0-9-]{36})/i)?.[1] ?? '';
+  }
+
   onSubmit() {
-    let targetProjectId = this.projectId();
-    if (!targetProjectId) {
-      const match = window.location.pathname.match(/\/projects\/([a-f0-9-]{36})/i);
-      if (match && match[1]) {
-        targetProjectId = match[1];
-      }
-    }
+    if (this.isSubmitting() || this.form.invalid) return;
+
+    const targetProjectId = this.resolveProjectId();
 
     if (!targetProjectId) {
       this.toast.error('Error', 'Project ID is missing. Please reload the project page.');
@@ -124,7 +147,7 @@ export class CreateTaskModalComponent implements OnInit {
       },
       error: (err) => {
         this.isSubmitting.set(false);
-        const errorMsg = err.error?.message || err.error?.title || 'Failed to create task';
+        const errorMsg = err.error?.userFriendlyMessage || err.error?.errorMessage || err.error?.message || err.error?.title || 'Failed to create task';
         this.toast.error('Error', errorMsg);
         console.error('Failed to create task', err);
       }

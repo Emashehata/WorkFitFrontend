@@ -26,6 +26,15 @@ export interface ProjectDetail {
   coveragePct: number;
 }
 
+export interface ProjectMember {
+  id: string;
+  name: string;
+  email: string | null;
+  jobTitle: string;
+  isActive: boolean;
+  currentAllocationPercentage: number;
+}
+
 export interface RequiredSkillDto {
   skillId: string;
   skillName: string;

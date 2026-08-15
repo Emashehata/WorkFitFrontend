@@ -2,8 +2,24 @@ import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth/auth.service';
-import { CurrentUser } from '../../../core/models/auth.models';
+import { ProjectService } from '../../../core/services/project/project.service';
+import { TaskService } from '../../../core/services/task/task.service';
+import { TaskListItem } from '../../../core/models/task.models';
+import { TaskStatus } from '../../../core/enums/task-status.enum';
 import { AddEmployeeModalComponent } from '../../../shared/components/add-employee-modal/add-employee-modal.component';
+
+export interface UpcomingTaskItem {
+  id?: string;
+  projectId?: string;
+  title: string;
+  developer: string;
+  dueDate: Date;
+  dueLabel: string;
+  priority: string;
+  priorityClass: string;
+  dotClass: string;
+  bgClass: string;
+}
 
 @Component({
   selector: 'app-home',
@@ -14,6 +30,8 @@ import { AddEmployeeModalComponent } from '../../../shared/components/add-employ
 })
 export class HomeComponent implements OnInit {
   private authService = inject(AuthService);
+  private projectService = inject(ProjectService);
+  private taskService = inject(TaskService);
   private router = inject(Router);
 
   userName = signal<string>('User');
@@ -23,6 +41,16 @@ export class HomeComponent implements OnInit {
   currentDate = signal<string>('');
   currentTime = signal<string>('');
   showAddEmployeeModal = signal<boolean>(false);
+  showAllActivitiesModal = signal<boolean>(false);
+
+  upcomingTasks = signal<UpcomingTaskItem[]>([]);
+  recentActivities = signal<any[]>([]);
+
+  sortedUpcomingTasks = computed(() => {
+    return [...this.upcomingTasks()].sort(
+      (a, b) => a.dueDate.getTime() - b.dueDate.getTime(),
+    );
+  });
 
   // Dashboard statistics
   stats = signal([
@@ -49,40 +77,6 @@ export class HomeComponent implements OnInit {
       value: '0%',
       icon: 'chart',
       color: 'from-green-500 to-green-600',
-    },
-  ]);
-
-  // Recent activities
-  recentActivities = signal([
-    {
-      user: 'John Doe',
-      action: 'completed a task',
-      time: '2 min ago',
-      type: 'task',
-    },
-    {
-      user: 'Jane Smith',
-      action: 'joined the organization',
-      time: '15 min ago',
-      type: 'user',
-    },
-    {
-      user: 'Mike Johnson',
-      action: 'updated the project',
-      time: '1 hour ago',
-      type: 'project',
-    },
-    {
-      user: 'Sarah Wilson',
-      action: 'submitted a report',
-      time: '2 hours ago',
-      type: 'report',
-    },
-    {
-      user: 'Robert Brown',
-      action: 'commented on a task',
-      time: '3 hours ago',
-      type: 'comment',
     },
   ]);
 
@@ -125,10 +119,87 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  onUpcomingTaskClick(task: UpcomingTaskItem): void {
+    this.projectService.getProjectsForTeamLead().subscribe({
+      next: (projects) => {
+        if (projects && projects.length > 0) {
+          const targetProjectId = task.projectId || projects[0].id;
+          this.router.navigate(['/projects', targetProjectId], {
+            queryParams: {
+              highlightTaskId: task.id || '',
+              highlightTaskTitle: task.title || ''
+            }
+          });
+        } else {
+          this.router.navigate(['/projects'], {
+            queryParams: { highlightTaskTitle: task.title || '' }
+          });
+        }
+      },
+      error: () => {
+        this.router.navigate(['/projects'], {
+          queryParams: { highlightTaskTitle: task.title || '' }
+        });
+      }
+    });
+  }
+
   ngOnInit(): void {
     this.updateDateTime();
     setInterval(() => this.updateDateTime(), 1000);
     this.loadUserData();
+    this.loadDashboardTasksAndActivities();
+  }
+
+  loadDashboardTasksAndActivities(): void {
+    this.projectService.getProjectsForTeamLead().subscribe({
+      next: (projects) => {
+        if (!projects || projects.length === 0) {
+          this.upcomingTasks.set([]);
+          this.recentActivities.set([]);
+          return;
+        }
+
+        const taskPromises = projects.map(p =>
+          new Promise<(TaskListItem & { projectId: string })[]>((resolve) => {
+            this.taskService.getProjectTasks(p.id).subscribe({
+              next: tasks => resolve((tasks || []).map(t => ({ ...t, projectId: p.id }))),
+              error: () => resolve([])
+            });
+          })
+        );
+
+        Promise.all(taskPromises).then(taskArrays => {
+          const allTasks = taskArrays.flat();
+          if (allTasks.length === 0) {
+            this.upcomingTasks.set([]);
+            this.recentActivities.set([]);
+            return;
+          }
+
+          const upcomingItems: UpcomingTaskItem[] = allTasks
+            .filter(t => t.status !== TaskStatus.Done)
+            .map(t => ({
+              id: t.id,
+              projectId: t.projectId,
+              title: t.title,
+              developer: t.assigneeId ? 'Assigned Developer' : 'Unassigned',
+              dueDate: t.dueDate ? new Date(t.dueDate) : new Date(Date.now() + 86400000),
+              dueLabel: t.dueDate ? `Due ${new Date(t.dueDate).toLocaleDateString()}` : 'No Due Date',
+              priority: `${t.priority} Priority`,
+              priorityClass: t.priority === 'High' || t.priority === 'Critical' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700',
+              dotClass: t.priority === 'High' || t.priority === 'Critical' ? 'bg-orange-500' : 'bg-blue-500',
+              bgClass: 'bg-indigo-50/50 border-indigo-100'
+            }));
+
+          this.upcomingTasks.set(upcomingItems);
+        });
+      },
+      error: () => {
+        this.upcomingTasks.set([]);
+        this.recentActivities.set([]);
+      }
+    });
   }
 
   updateDateTime(): void {
@@ -151,18 +222,14 @@ export class HomeComponent implements OnInit {
   }
 
   loadUserData(): void {
-    // Get user data from auth service
     const user = this.authService.currentUser();
     if (user) {
-      // Set user name from displayName or fallback to email
       this.userName.set(
         user.displayName || user.email?.split('@')[0] || 'User',
       );
       this.userEmail.set(user.email || '');
       this.userRoles.set(user.roles || []);
 
-      // You can set organization name from user data if available
-      // For now, we'll keep it as a placeholder or derive from email domain
       if (user.email) {
         const domain = user.email.split('@')[1];
         if (domain) {
@@ -197,7 +264,6 @@ export class HomeComponent implements OnInit {
       .slice(0, 2);
   }
 
-  // Get role badge color
   getRoleBadgeColor(role: string): string {
     const roleColors: { [key: string]: string } = {
       Admin: 'bg-red-100 text-red-700',

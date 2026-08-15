@@ -4,14 +4,31 @@ import { TaskType } from '../enums/task-type.enum';
 
 export interface TaskListItem {
   id: string;
+  projectId?: string;
   title: string;
   taskType: TaskType;
   status: TaskStatus;
   priority: TaskPriority;
   assigneeId: string | null;
+  createdById?: string | null;
   storyPoints: number | null;
   dueDate: string | null;
   completedAt: string | null;
+}
+
+export interface DeveloperTask {
+  id: string;
+  projectId: string;
+  projectName: string;
+  title: string;
+  description: string | null;
+  status: number; // 0: Todo, 1: InProgress, 2: InReview, 3: Done
+  statusName: string;
+  priority: number;
+  priorityName: string;
+  dueDate: string | null;
+  storyPoints: number;
+  createdById: string | null;
 }
 
 export interface CreateTaskRequest {

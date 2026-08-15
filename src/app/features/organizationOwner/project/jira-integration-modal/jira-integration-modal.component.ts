@@ -6,7 +6,8 @@ import { IntegrationService } from '../../../../core/services/integration/integr
 import { OrganizationService } from '../../../../core/services/organization/organization.service';
 import { AuthService } from '../../../../core/services/auth/auth.service';
 import { ToastService } from '../../../../core/services/toast/toast.service';
-import { SyncResult } from '../../../../core/models/integration.models';
+import { SyncResult, UnknownDeveloper } from '../../../../core/models/integration.models';
+import { InvitationService } from '../../../../core/services/invitation/invitation.service';
 
 @Component({
   selector: 'app-jira-integration-modal',
@@ -25,10 +26,14 @@ export class JiraIntegrationModalComponent implements OnInit {
   private organizationService = inject(OrganizationService);
   private authService = inject(AuthService);
   private toast = inject(ToastService);
+  private invitationService = inject(InvitationService);
 
   isLoadingSettings = signal(false);
   isSubmitting = signal(false);
   syncResult = signal<SyncResult | null>(null);
+  invitationEmails = signal<Record<string, string>>({});
+  invitationStates = signal<Record<string, 'idle' | 'submitting' | 'pending' | 'error'>>({});
+  invitationErrors = signal<Record<string, string>>({});
 
   form = this.fb.nonNullable.group({
     baseUrl: ['', [Validators.required]],
@@ -110,6 +115,9 @@ export class JiraIntegrationModalComponent implements OnInit {
           next: (res) => {
             this.isSubmitting.set(false);
             this.syncResult.set(res);
+            this.invitationEmails.set(Object.fromEntries(
+              (res.unknownDevelopers ?? []).map((developer) => [this.developerKey(developer), developer.email ?? '']),
+            ));
             this.toast.success('Sync Complete', `Synced ${res.projectsSynced} project(s) and ${res.tasksSynced} task(s).`);
             this.synced.emit();
           },
@@ -128,5 +136,58 @@ export class JiraIntegrationModalComponent implements OnInit {
         console.error('Failed to save Jira settings', err);
       }
     });
+  }
+
+  developerKey(developer: UnknownDeveloper): string {
+    return `${developer.projectId}:${developer.employeeProfileId}:${developer.sourceAccountId}`;
+  }
+
+  updateInvitationEmail(developer: UnknownDeveloper, event: Event): void {
+    const key = this.developerKey(developer);
+    const email = (event.target as HTMLInputElement).value;
+    this.invitationEmails.update((emails) => ({ ...emails, [key]: email }));
+    this.invitationErrors.update((errors) => ({ ...errors, [key]: '' }));
+  }
+
+  requestInvitation(developer: UnknownDeveloper): void {
+    const key = this.developerKey(developer);
+    const currentState = this.invitationState(developer);
+    if (currentState === 'submitting' || currentState.toLowerCase() === 'pending') {
+      return;
+    }
+    const email = (this.invitationEmails()[key] ?? developer.email ?? '').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      this.invitationErrors.update((errors) => ({
+        ...errors,
+        [key]: 'Enter a valid email address before requesting.',
+      }));
+      return;
+    }
+
+    this.invitationStates.update((states) => ({ ...states, [key]: 'submitting' }));
+    this.invitationService.requestInvitation({
+      projectId: developer.projectId,
+      employeeProfileId: developer.employeeProfileId,
+      sourceAccountId: developer.sourceAccountId,
+      email,
+    }).subscribe({
+      next: () => {
+        this.invitationStates.update((states) => ({ ...states, [key]: 'pending' }));
+        this.invitationErrors.update((errors) => ({ ...errors, [key]: '' }));
+        this.toast.success('Invitation requested', `${developer.displayName} is awaiting owner approval.`);
+      },
+      error: (err) => {
+        this.invitationStates.update((states) => ({ ...states, [key]: 'error' }));
+        this.invitationErrors.update((errors) => ({
+          ...errors,
+          [key]: err?.error?.message || err?.error?.title || err?.error?.userFriendlyMessage || 'Invitation request failed.',
+        }));
+      },
+    });
+  }
+
+  invitationState(developer: UnknownDeveloper): string {
+    const state = this.invitationStates()[this.developerKey(developer)] ?? developer.invitationStatus;
+    return state.toLowerCase() === 'pending' ? 'pending' : state;
   }
 }

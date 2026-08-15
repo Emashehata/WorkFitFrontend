@@ -1,0 +1,49 @@
+<main class="approvals-page">
+  <header class="page-header">
+    <div>
+      <h1>Invitation approvals</h1>
+      <p>Review Jira developers requested by project leaders.</p>
+    </div>
+    <button type="button" class="refresh-button" (click)="loadPending()" [disabled]="loading()" aria-label="Refresh pending invitations">
+      <i class="fa-solid fa-rotate" [class.fa-spin]="loading()"></i>
+      Refresh
+    </button>
+  </header>
+
+  @if (developmentInvitationUrl()) {
+    <section class="development-panel" aria-labelledby="development-link-title">
+      <i class="fa-solid fa-code"></i>
+      <div>
+        <h2 id="development-link-title">Local development invitation URL</h2>
+        <p>Email delivery is disabled in this development environment. Use this URL to test acceptance.</p>
+        <a [href]="developmentInvitationUrl()" target="_blank" rel="noopener">{{ developmentInvitationUrl() }}</a>
+      </div>
+      <button type="button" aria-label="Dismiss development invitation URL" (click)="developmentInvitationUrl.set(null)"><i class="fa-solid fa-xmark"></i></button>
+    </section>
+  }
+
+  @if (loading()) {
+    <div class="state-panel" role="status"><i class="fa-solid fa-spinner fa-spin"></i><h2>Loading invitation requests...</h2></div>
+  } @else if (loadError()) {
+    <div class="state-panel error-state" role="alert"><i class="fa-solid fa-circle-exclamation"></i><h2>Unable to load requests</h2><p>{{ loadError() }}</p><button type="button" (click)="loadPending()">Try again</button></div>
+  } @else if (invitations().length === 0) {
+    <div class="state-panel"><i class="fa-solid fa-inbox"></i><h2>No pending invitations</h2><p>New developer requests will appear here for review.</p></div>
+  } @else {
+    <section class="approval-list" aria-label="Pending invitation requests">
+      @for (invitation of invitations(); track invitation.id) {
+        <article class="approval-row">
+          <div class="developer-identity">
+            <span class="avatar" aria-hidden="true">{{ invitation.displayName.charAt(0).toUpperCase() }}</span>
+            <div><h2>{{ invitation.displayName }}</h2><a [href]="'mailto:' + invitation.email">{{ invitation.email }}</a></div>
+          </div>
+          <div class="request-meta"><span>Requested</span><time [attr.datetime]="invitation.requestedAt">{{ invitation.requestedAt | date:'medium' }}</time></div>
+          <div class="row-actions">
+            <button type="button" class="reject-button" (click)="review(invitation, false)" [disabled]="!!decisionStates()[invitation.id]"><i class="fa-solid" [class.fa-spinner]="decisionStates()[invitation.id] === 'reject'" [class.fa-spin]="decisionStates()[invitation.id] === 'reject'" [class.fa-xmark]="decisionStates()[invitation.id] !== 'reject'"></i>Reject</button>
+            <button type="button" class="approve-button" (click)="review(invitation, true)" [disabled]="!!decisionStates()[invitation.id]"><i class="fa-solid" [class.fa-spinner]="decisionStates()[invitation.id] === 'approve'" [class.fa-spin]="decisionStates()[invitation.id] === 'approve'" [class.fa-check]="decisionStates()[invitation.id] !== 'approve'"></i>Approve</button>
+          </div>
+          @if (decisionErrors()[invitation.id]) { <p class="row-error" role="alert">{{ decisionErrors()[invitation.id] }}</p> }
+        </article>
+      }
+    </section>
+  }
+</main>

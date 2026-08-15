@@ -12,6 +12,7 @@ export class ModalComponent {
 
   title = input<string>('');
   isOpen = input<boolean>(false);
+  size = input<'default' | 'wide'>('default');
   close = output<void>();
   dialog = viewChild<ElementRef<HTMLElement>>('dialog');
 
