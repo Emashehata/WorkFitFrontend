@@ -60,11 +60,11 @@
         <div class="project-meta">
           <div class="meta-item">
             <i class="fa-solid fa-users"></i>
-            <span>Members <b>{{ project.memberCount }}</b></span>
+            <span>{{ isEmployee() ? 'Assigned to me' : 'Members' }} <b>{{ project.memberCount }}</b></span>
           </div>
           <div class="meta-item">
             <i class="fa-solid fa-list-check"></i>
-            <span>Tasks <b>{{ project.taskCount }}</b></span>
+            <span>{{ isEmployee() ? 'My tasks' : 'Tasks' }} <b>{{ project.taskCount }}</b></span>
           </div>
           <div class="meta-item">
             <i class="fa-regular fa-calendar"></i>
@@ -91,7 +91,7 @@
       <div class="empty-state">
         <i class="fa-solid fa-diagram-project"></i>
         <h3>{{ searchTerm() ? 'No matching projects' : 'No projects yet' }}</h3>
-        <p>{{ searchTerm() ? 'Try a different project name.' : 'Create your first project to get started.' }}</p>
+        <p>{{ searchTerm() ? 'Try a different project name.' : (isEmployee() ? 'No projects are assigned to you.' : 'Create your first project to get started.') }}</p>
       </div>
     }
   }

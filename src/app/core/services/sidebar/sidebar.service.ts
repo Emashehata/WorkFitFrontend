@@ -46,12 +46,14 @@ export class SidebarService {
       { title: 'Dashboard', icon: 'fa-solid fa-house', route: '/home' },
     ];
 
-    // ⭐ Employees - visible to all authenticated users
-    mainItems.push({
-      title: 'Employees',
-      icon: 'fa-solid fa-users',
-      route: '/employees',
-    });
+    // Employees are visible to management and team leaders, not individual developers.
+    if (roles.some(role => ['SuperAdmin', 'Admin', 'OrganizationOwner', 'TeamLeader'].includes(role))) {
+      mainItems.push({
+        title: 'Employees',
+        icon: 'fa-solid fa-users',
+        route: '/employees',
+      });
+    }
 
     // ⭐ Projects - visible to all authenticated users
     mainItems.push({

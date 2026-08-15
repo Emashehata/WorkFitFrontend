@@ -90,21 +90,23 @@
     <section class="project-stats" aria-label="Project summary">
       <div class="stat-card stat-card-primary">
         <i class="fa-solid fa-list-check"></i>
-        <div><strong>{{ allTasks().length }}</strong><span>Total tasks</span></div>
+        <div><strong>{{ allTasks().length }}</strong><span>{{ isEmployee() ? 'My tasks' : 'Total tasks' }}</span></div>
       </div>
       <div class="stat-card stat-card-success">
         <i class="fa-solid fa-circle-check"></i>
-        <div><strong>{{ completedTaskCount() }}</strong><span>Completed</span></div>
+        <div><strong>{{ completedTaskCount() }}</strong><span>{{ isEmployee() ? 'Completed by me' : 'Completed' }}</span></div>
       </div>
-      <div class="stat-card stat-card-info">
-        <i class="fa-solid fa-users"></i>
-        <div><strong>{{ assignedEmployeeIds().length }}</strong><span>Contributors</span></div>
-      </div>
-      <div class="stat-card stat-card-warning">
-        <i class="fa-solid fa-chart-pie"></i>
-        <div><strong>{{ project()?.coveragePct ?? 0 }}%</strong><span>Skill coverage</span></div>
-      </div>
-      @if (assignedEmployeeIds().length > 0) {
+      @if (!isEmployee()) {
+        <div class="stat-card stat-card-info">
+          <i class="fa-solid fa-users"></i>
+          <div><strong>{{ assignedEmployeeIds().length }}</strong><span>Contributors</span></div>
+        </div>
+        <div class="stat-card stat-card-warning">
+          <i class="fa-solid fa-chart-pie"></i>
+          <div><strong>{{ project()?.coveragePct ?? 0 }}%</strong><span>Skill coverage</span></div>
+        </div>
+      }
+      @if (!isEmployee() && assignedEmployeeIds().length > 0) {
         <div class="contributor-avatars" aria-label="Project contributors">
           @for (employeeId of assignedEmployeeIds().slice(0, 5); track employeeId) {
             <span class="avatar" [title]="employeeMap().get(employeeId) ?? 'Unknown'">{{ getInitials(employeeId) }}</span>
