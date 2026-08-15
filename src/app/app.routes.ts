@@ -36,6 +36,7 @@ export const routes: Routes = [
       { path: 'payment-success', loadComponent: () => import('./features/organizationOwner/payment-success/payment-success.component').then(m => m.PaymentSuccessComponent) },
       { path: 'integrations', loadComponent: () => import('./features/integrations/integrations.component').then(m => m.IntegrationsComponent) },
       { path: '', loadChildren: () => import('./features/assessments/assessment.routes').then(m => m.ASSESSMENT_ROUTES) },
+      { path: '', loadChildren: () => import('./features/talent-management/talent-management.routes').then(m => m.TALENT_MANAGEMENT_ROUTES) },
     ],
   },
   { path: 'github/callback', loadComponent: () => import('./features/integrations/github-callback/github-callback.component').then(m => m.GitHubCallbackComponent) },

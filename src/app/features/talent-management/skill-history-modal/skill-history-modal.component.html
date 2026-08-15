@@ -1,0 +1,83 @@
+<div
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+  (click)="onClose()"
+>
+  <div
+    class="w-full max-w-md rounded-xl bg-surface border border-border shadow-lg p-6"
+    (click)="$event.stopPropagation()"
+  >
+    @if (loading()) {
+
+      <div class="text-center text-text-secondary text-sm py-6">
+        Loading history...
+      </div>
+
+    } @else if (skillDetail()) {
+
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-bold text-text">
+          {{ skillDetail()!.skillName }} history
+        </h2>
+
+        <button
+          class="text-text-secondary hover:text-text text-lg leading-none"
+          (click)="onClose()"
+        >
+          ×
+        </button>
+      </div>
+
+      <div
+        class="flex items-center justify-between text-sm mb-4 pb-4 border-b border-border"
+      >
+        <span class="text-text-secondary">
+          Current score
+        </span>
+
+        <span class="text-text font-semibold">
+          {{ skillDetail()!.confidenceScore }} / 5
+        </span>
+      </div>
+
+      @if (skillDetail()!.confidenceChanges.length === 0) {
+
+        <p class="text-text-secondary text-sm">
+          No changes recorded yet.
+        </p>
+
+      } @else {
+
+        <div class="flex flex-col gap-3 max-h-80 overflow-y-auto">
+
+          @for (
+            change of skillDetail()!.confidenceChanges;
+            track change.id
+          ) {
+
+            <div
+              class="flex items-center justify-between text-sm border-b border-border pb-2 last:border-b-0"
+            >
+              <span class="text-text-secondary">
+                {{ change.createdAt | date: 'medium' }}
+              </span>
+
+              <span class="text-text font-medium">
+                {{ change.oldScore }} → {{ change.newScore }}
+              </span>
+            </div>
+
+          }
+
+        </div>
+
+      }
+
+    } @else {
+
+      <div class="text-center text-text-secondary text-sm py-6">
+        Couldn't load skill history.
+      </div>
+
+    }
+  </div>
+</div>

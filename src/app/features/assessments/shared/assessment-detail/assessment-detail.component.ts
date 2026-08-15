@@ -1,30 +1,36 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { finalize, switchMap, tap } from 'rxjs';
+
+import { AuthService } from '../../../../core/services/auth/auth.service';
+import { TaskService } from '../../../../core/services/task/task.service';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+
+import { TaskDetailDto } from '../../../../core/models/task.models';
 import { AlterSkillChange } from '../../../../core/models/assessment.model';
 import { AssessmentService } from '../../../../core/services/assessment/assessment.service';
-import { AuthService } from '../../../../core/services/auth/auth.service';
-import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
-import { NgClass } from '@angular/common';
-
 
 @Component({
   selector: 'app-assessment-detail',
   standalone: true,
-  imports: [FormsModule, ConfirmDialogComponent,NgClass],
+  imports: [NgClass, FormsModule, ConfirmDialogComponent],
   templateUrl: './assessment-detail.component.html',
 })
 export class AssessmentDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private assessmentService = inject(AssessmentService);
+  private taskService = inject(TaskService);
   private auth = inject(AuthService);
 
   assessment = this.assessmentService.selectedAssessment;
   loading = this.assessmentService.loading;
-
-  // computed جاهز في الـ AuthService، متعملهوش تاني
   isTeamLead = this.auth.isTeamLeader;
+
+  task = signal<TaskDetailDto | null>(null);
+  taskLoading = signal(false);
 
   isAltering = signal(false);
   alteredScores = signal<Record<string, number>>({});
@@ -39,9 +45,20 @@ export class AssessmentDetailComponent implements OnInit {
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.assessmentService.getById(id).subscribe();
-    }
+    if (!id) return;
+
+    this.assessmentService
+      .getById(id)
+      .pipe(
+        switchMap((assessment) => {
+          this.taskLoading.set(true);
+          return this.taskService.getTaskById(assessment.taskId).pipe(
+            tap((task) => this.task.set(task)),
+            finalize(() => this.taskLoading.set(false))
+          );
+        })
+      )
+      .subscribe();
   }
 
   toggleAlterMode() {
@@ -57,10 +74,7 @@ export class AssessmentDetailComponent implements OnInit {
 
   updateScore(skillChangeId: string, value: string) {
     const num = Number(value);
-    this.alteredScores.update((scores) => ({
-      ...scores,
-      [skillChangeId]: num,
-    }));
+    this.alteredScores.update((scores) => ({ ...scores, [skillChangeId]: num }));
   }
 
   submitAlter() {
@@ -68,24 +82,19 @@ export class AssessmentDetailComponent implements OnInit {
     if (!current) return;
 
     this.submitting.set(true);
-    const skillChanges: AlterSkillChange[] = current.skillChanges.map(
-      (sc) => ({
-        skillChangeId: sc.skillChangeId,
-        newScore: this.alteredScores()[sc.skillChangeId] ?? sc.proposedScore,
-        note: this.alterNote(),
-      })
-    );
+    const skillChanges: AlterSkillChange[] = current.skillChanges.map((sc) => ({
+      skillChangeId: sc.skillChangeId,
+      newScore: this.alteredScores()[sc.skillChangeId] ?? sc.proposedScore,
+      note: this.alterNote(),
+    }));
 
     this.assessmentService
       .alter(current.assessmentId, { skillChanges, note: this.alterNote() })
-      .subscribe({
-        next: (updated) => {
-          this.assessmentService.selectedAssessment.set(updated);
-          this.isAltering.set(false);
-          this.alterNote.set('');
-          this.submitting.set(false);
-        },
-        error: () => this.submitting.set(false),
+      .pipe(finalize(() => this.submitting.set(false)))
+      .subscribe((updated) => {
+        this.assessmentService.selectedAssessment.set(updated);
+        this.isAltering.set(false);
+        this.alterNote.set('');
       });
   }
 
@@ -96,17 +105,14 @@ export class AssessmentDetailComponent implements OnInit {
     this.submitting.set(true);
     this.assessmentService
       .approve(current.assessmentId, { note: this.approveNote() })
-      .subscribe({
-        next: () => {
-          this.assessmentService.updateLocalStatus(current.assessmentId, 'Approved');
-          this.assessmentService.selectedAssessment.update((a) =>
-            a ? { ...a, status: 'Approved' } : a
-          );
-          this.showApproveConfirm.set(false);
-          this.approveNote.set('');
-          this.submitting.set(false);
-        },
-        error: () => this.submitting.set(false),
+      .pipe(finalize(() => this.submitting.set(false)))
+      .subscribe(() => {
+        this.assessmentService.updateLocalStatus(current.assessmentId, 'Approved');
+        this.assessmentService.selectedAssessment.update((a) =>
+          a ? { ...a, status: 'Approved' } : a
+        );
+        this.showApproveConfirm.set(false);
+        this.approveNote.set('');
       });
   }
 
@@ -117,17 +123,14 @@ export class AssessmentDetailComponent implements OnInit {
     this.submitting.set(true);
     this.assessmentService
       .reject(current.assessmentId, { note: this.rejectNote() })
-      .subscribe({
-        next: () => {
-          this.assessmentService.updateLocalStatus(current.assessmentId, 'Rejected');
-          this.assessmentService.selectedAssessment.update((a) =>
-            a ? { ...a, status: 'Rejected' } : a
-          );
-          this.showRejectConfirm.set(false);
-          this.rejectNote.set('');
-          this.submitting.set(false);
-        },
-        error: () => this.submitting.set(false),
+      .pipe(finalize(() => this.submitting.set(false)))
+      .subscribe(() => {
+        this.assessmentService.updateLocalStatus(current.assessmentId, 'Rejected');
+        this.assessmentService.selectedAssessment.update((a) =>
+          a ? { ...a, status: 'Rejected' } : a
+        );
+        this.showRejectConfirm.set(false);
+        this.rejectNote.set('');
       });
   }
 

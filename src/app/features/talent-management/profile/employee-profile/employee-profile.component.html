@@ -1,0 +1,174 @@
+<div class="p-6 max-w-3xl mx-auto">
+  @if (loading()) {
+
+    <div class="p-8 text-center text-text-secondary">
+      Loading profile...
+    </div>
+
+  } @else if (profile()) {
+
+    <div class="flex items-center gap-3 mb-4">
+      <button
+        class="text-text-secondary hover:text-primary text-sm"
+        (click)="goBack()"
+      >
+        ← Back
+      </button>
+    </div>
+
+    <div class="rounded-xl border border-border bg-surface p-6 mb-6">
+      <div class="flex items-start gap-4">
+
+        <div
+          class="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-bold flex-shrink-0"
+        >
+          {{ initials() }}
+        </div>
+
+        <div class="flex-1">
+
+          <div class="flex items-center gap-3 flex-wrap">
+            <h1 class="text-xl font-bold text-text">
+              {{ profile()!.name }}
+            </h1>
+
+            <span
+              class="px-2.5 py-0.5 rounded-full text-xs font-semibold"
+              [ngClass]="statusBadgeClass(profile()!.status)"
+            >
+              {{ profile()!.status }}
+            </span>
+          </div>
+
+          <p class="text-text-secondary text-sm mt-1">
+            {{ profile()!.jobTitle }}
+          </p>
+
+          <div
+            class="flex items-center gap-4 mt-3 text-sm text-text-secondary flex-wrap"
+          >
+            <span>{{ profile()!.email }}</span>
+
+            @if (profile()!.linkedInUrl) {
+              <a
+                [href]="profile()!.linkedInUrl"
+                target="_blank"
+                rel="noopener"
+                class="text-primary hover:underline"
+              >
+                LinkedIn
+              </a>
+            }
+          </div>
+
+        </div>
+      </div>
+
+      @if (profile()!.bio) {
+        <p
+          class="text-sm text-text-secondary mt-4 pt-4 border-t border-border leading-relaxed"
+        >
+          {{ profile()!.bio }}
+        </p>
+      }
+
+      <div class="mt-4 pt-4 border-t border-border">
+        <div class="flex justify-between text-sm mb-1.5">
+          <span class="text-text-secondary">
+            Current allocation
+          </span>
+
+          <span class="text-text font-medium">
+            {{ profile()!.currentAllocationPercentage }}%
+          </span>
+        </div>
+
+        <div
+          class="w-full h-2 rounded-full bg-background overflow-hidden"
+        >
+          <div
+            class="h-full bg-primary rounded-full"
+            [style.width.%]="profile()!.currentAllocationPercentage"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-border bg-surface p-6">
+      <h2 class="text-lg font-bold text-text mb-4">
+        Skills
+      </h2>
+
+      @if (profile()!.skills.length === 0) {
+
+        <p class="text-text-secondary text-sm">
+          No skills recorded yet.
+        </p>
+
+      } @else {
+
+        <div class="flex flex-col gap-4">
+
+          @for (skill of profile()!.skills; track skill.id) {
+
+            <div
+              [class.cursor-pointer]="canViewSkillHistory()"
+              (click)="openSkillHistory(skill.skillId)"
+            >
+              <div class="flex justify-between text-sm mb-1.5">
+
+                <span
+                  class="text-text font-medium"
+                  [ngClass]="{
+                    'hover:text-primary': canViewSkillHistory()
+                  }"
+                >
+                  {{ skill.skillName }}
+
+                  @if (canViewSkillHistory()) {
+                    <span class="text-text-secondary text-xs ml-1">
+                      →
+                    </span>
+                  }
+                </span>
+
+                <span class="text-text-secondary">
+                  {{ skill.confidenceScore }} / 5
+                </span>
+
+              </div>
+
+              <div
+                class="w-full h-2 rounded-full bg-background overflow-hidden"
+              >
+                <div
+                  class="h-full rounded-full"
+                  [ngClass]="scoreColor(skill.confidenceScore)"
+                  [style.width.%]="scorePercent(skill.confidenceScore)"
+                ></div>
+              </div>
+            </div>
+
+          }
+
+        </div>
+
+      }
+    </div>
+
+    @if (activeSkillId && profile()) {
+      <app-skill-history-modal
+        [skillId]="activeSkillId"
+        [employeeId]="profile()!.employeeId"
+        (closed)="closeSkillHistory()"
+      />
+    }
+
+  } @else {
+
+    <div class="p-8 text-center text-text-secondary">
+      Profile not found.
+    </div>
+
+  }
+</div>
