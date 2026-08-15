@@ -1,0 +1,142 @@
+<app-modal
+  [title]="'Create New Task'"
+  [isOpen]="isOpen()"
+  (close)="close.emit()"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-grid">
+    <div class="form-group">
+      <label class="form-label" for="task-title">Task Title *</label>
+      <input
+        id="task-title"
+        class="form-input"
+        formControlName="title"
+        placeholder="Enter task title"
+      />
+      @if (form.controls.title.touched && form.controls.title.errors) {
+        <span class="form-error">
+          @if (form.controls.title.errors["required"]) {
+            Title is required
+          }
+          @if (form.controls.title.errors["minlength"]) {
+            Minimum 3 characters
+          }
+        </span>
+      }
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="task-description">Description</label>
+      <textarea
+        id="task-description"
+        class="form-input form-textarea"
+        formControlName="description"
+        placeholder="Describe the task"
+        rows="3"
+      ></textarea>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="task-type">Type</label>
+        <select id="task-type" class="form-input" formControlName="taskType">
+          @for (type of taskTypes; track type) {
+            <option [value]="type">{{ type }}</option>
+          }
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="task-priority">Priority</label>
+        <select
+          id="task-priority"
+          class="form-input"
+          formControlName="priority"
+        >
+          @for (p of priorities; track p) {
+            <option [value]="p">{{ p }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="task-assignee">
+        Assignee (Project Members)
+        @if (isLoadingEmployees()) {
+          <span class="field-hint"><i class="fa-solid fa-spinner fa-spin"></i> Loading…</span>
+        } @else if (employees().length > 0) {
+          <span class="field-hint">{{ filteredEmployees().length }} of {{ employees().length }} available</span>
+        }
+      </label>
+      <div style="margin-bottom: 6px;">
+        <input
+          type="text"
+          class="form-input"
+          style="font-size: 13px; padding: 6px 12px;"
+          placeholder="Type name to filter project members..."
+          [value]="employeeSearch()"
+          (input)="employeeSearch.set($any($event.target).value)" />
+      </div>
+      <select
+        id="task-assignee"
+        class="form-input"
+        formControlName="assigneeId"
+      >
+        <option value="">— Unassigned —</option>
+        @for (emp of filteredEmployees(); track emp.id) {
+          <option [value]="emp.id">{{ emp.name }} ({{ emp.jobTitle || 'Employee' }})</option>
+        }
+        @if (!isLoadingEmployees() && filteredEmployees().length === 0) {
+          <option [attr.disabled]="true">No matching project members found</option>
+        }
+      </select>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="task-story-points">Story Points</label>
+        <input
+          id="task-story-points"
+          type="number"
+          class="form-input"
+          formControlName="storyPoints"
+          placeholder="e.g. 5"
+          min="0"
+        />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="task-due-date">Due Date</label>
+        <input
+          id="task-due-date"
+          type="date"
+          class="form-input"
+          formControlName="dueDate"
+        />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="task-allocation">Allocation %</label>
+      <input
+        id="task-allocation"
+        type="number"
+        class="form-input"
+        formControlName="allocationPercentage"
+        placeholder="100"
+        min="0"
+        max="100"
+      />
+    </div>
+
+    <div class="form-actions">
+      <app-button variant="secondary" type="button" (click)="close.emit()">Cancel</app-button>
+      <app-button
+        variant="primary"
+        type="submit"
+        [loading]="isSubmitting()"
+        [disabled]="form.invalid"
+      >
+        Create Task
+      </app-button>
+    </div>
+  </form>
+</app-modal>

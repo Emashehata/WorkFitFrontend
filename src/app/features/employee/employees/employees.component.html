@@ -1,0 +1,195 @@
+<div class="employees-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">My Teams</h2>
+      <p class="page-subtitle">Project teams and developers assigned under your project leadership</p>
+    </div>
+    <button
+      type="button"
+      (click)="showAddEmployeeModal.set(true)"
+      class="add-emp-btn">
+      <i class="fa-solid fa-user-plus"></i>
+      Add Employee
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <div class="empty-state">
+      <i class="fa-solid fa-spinner animate-spin"></i>
+      <h3>Loading project teams...</h3>
+    </div>
+  } @else {
+    @if (isTeamLeader()) {
+      @if (projectTeams().length > 0) {
+        <!-- Render separate team section for each project -->
+        @for (team of projectTeams(); track team.project.id) {
+          <div class="project-team-card">
+            <div class="project-team-header">
+              <div class="team-info">
+                <i class="fa-solid fa-diagram-project text-indigo-600"></i>
+                <h3 class="team-project-name">{{ team.project.name }}</h3>
+                <span class="project-status-badge">{{ team.project.status }}</span>
+              </div>
+              <span class="team-count-chip">
+                <i class="fa-solid fa-users"></i> {{ team.members.length }} Developers
+              </span>
+            </div>
+
+            <div class="table-responsive">
+              <table class="emp-table">
+                <thead>
+                  <tr>
+                    <th>Developer</th>
+                    <th>Email</th>
+                    <th>Job Title</th>
+                    <th>Assigned Tasks</th>
+                    <th>Status</th>
+                    <th>Allocation</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (emp of team.members; track emp.id) {
+                    <tr class="dev-row" (click)="openDeveloperProfile(emp.id, emp.name)">
+                      <td>
+                        <div class="emp-identity">
+                          <div class="emp-avatar">
+                            {{ emp.name.charAt(0).toUpperCase() }}
+                          </div>
+                          <span class="emp-name font-semibold hover:text-indigo-600 cursor-pointer">{{ emp.name }}</span>
+                        </div>
+                      </td>
+                      <td class="emp-email">{{ emp.email }}</td>
+                      <td class="emp-title-cell">{{ emp.jobTitle || 'Developer' }}</td>
+                      <td>
+                        <span class="task-count-badge bg-indigo-50 text-indigo-700 font-semibold px-2.5 py-1 rounded-full text-xs">
+                          <i class="fa-solid fa-list-check"></i> {{ emp.taskCount }} Tasks
+                        </span>
+                      </td>
+                      <td>
+                        <span class="status-chip" [class.active]="emp.isActive">
+                          <span class="status-dot"></span>
+                          {{ emp.isActive ? 'Active' : 'Inactive' }}
+                        </span>
+                      </td>
+                      <td class="emp-alloc">
+                        <div class="alloc-bar-wrap">
+                          <div class="alloc-bar" [style.width.%]="emp.currentAllocationPercentage"></div>
+                        </div>
+                        <span>{{ emp.currentAllocationPercentage }}%</span>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all flex items-center gap-1.5"
+                          (click)="$event.stopPropagation(); openDeveloperProfile(emp.id, emp.name)">
+                          <i class="fa-solid fa-tasks"></i> Profile & Tasks
+                        </button>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="7" class="empty-table">
+                        <i class="fa-solid fa-user-slash"></i>
+                        <h3>No developers assigned yet</h3>
+                        <p>Add employees to this project to build its team.</p>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+      } @else {
+        <div class="table-card">
+          <div class="empty-table" style="padding: 48px 24px; text-align: center;">
+            <i class="fa-solid fa-users-slash" style="font-size: 36px; color: #94a3b8; margin-bottom: 12px;"></i>
+            <h3 style="font-size: 18px; font-weight: 600; color: #334155; margin-bottom: 6px;">No Project Teams Found</h3>
+            <p style="color: #64748b; font-size: 14px;">You have no active projects or team members assigned. Create a project to start building your team.</p>
+          </div>
+        </div>
+      }
+    } @else {
+      <!-- Organization Employees View -->
+      <div class="table-card">
+        <div class="table-responsive">
+          <table class="emp-table">
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Email</th>
+                <th>Job Title</th>
+                <th>Status</th>
+                <th>Allocation</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (emp of employees(); track emp.id) {
+                <tr class="dev-row" (click)="openDeveloperProfile(emp.id, emp.name)">
+                  <td>
+                    <div class="emp-identity">
+                      <div class="emp-avatar">
+                        {{ emp.name.charAt(0).toUpperCase() }}
+                      </div>
+                      <span class="emp-name font-semibold hover:text-indigo-600 cursor-pointer">{{ emp.name }}</span>
+                    </div>
+                  </td>
+                  <td class="emp-email">{{ emp.email }}</td>
+                  <td class="emp-title-cell">{{ emp.jobTitle }}</td>
+                  <td>
+                    <span class="status-chip" [class.active]="emp.isActive">
+                      <span class="status-dot"></span>
+                      {{ emp.isActive ? 'Active' : 'Inactive' }}
+                    </span>
+                  </td>
+                  <td class="emp-alloc">
+                    <div class="alloc-bar-wrap">
+                      <div class="alloc-bar" [style.width.%]="emp.currentAllocationPercentage"></div>
+                    </div>
+                    <span>{{ emp.currentAllocationPercentage }}%</span>
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all flex items-center gap-1.5"
+                      (click)="$event.stopPropagation(); openDeveloperProfile(emp.id, emp.name)">
+                      <i class="fa-solid fa-tasks"></i> Profile & Tasks
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="6" class="empty-table">
+                    <i class="fa-solid fa-users"></i>
+                    <h3>No employees found</h3>
+                    <p>Add your first employee to populate your organization team</p>
+                    <button type="button" class="add-emp-btn mt-3" (click)="showAddEmployeeModal.set(true)">
+                      <i class="fa-solid fa-user-plus"></i> Add Employee
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  }
+</div>
+
+<app-add-employee-modal
+  [isOpen]="showAddEmployeeModal()"
+  (close)="showAddEmployeeModal.set(false)"
+  (created)="loadEmployeesAndTeams()">
+</app-add-employee-modal>
+
+<app-developer-profile-modal
+  [isOpen]="showProfileModal()"
+  [employeeId]="selectedDeveloperId()"
+  [employeeName]="selectedDeveloperName()"
+  (close)="showProfileModal.set(false)"
+  (updated)="loadEmployeesAndTeams()">
+</app-developer-profile-modal>

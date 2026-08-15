@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpBackend } from '@angular/common/http';
 import { Observable, catchError, tap, throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { API_ROUTES } from '../../constants/api-routes.constant.ts';
+import { API_ROUTES } from '../../constants/api-routes.constant';
 import { AuthService } from '../auth/auth.service';
 import {
   GitHubConnectionRequest,
@@ -18,7 +18,7 @@ const GITHUB_STATUS_CACHE_KEY = 'github_status_cache';
 export class GitHubService {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
-  private baseUrl = 'https://localhost:7296/api';
+  private baseUrl = environment.baseUrl;
 
   private plainHttp: HttpClient;
 

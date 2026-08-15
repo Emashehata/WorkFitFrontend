@@ -10,7 +10,7 @@ import {
   OrganizationSettingsUpdate,
 } from '../../models/organization.models';
 import { AuthService } from '../auth/auth.service';
-import { API_ROUTES } from '../../constants/api-routes.constant.ts';
+import { API_ROUTES } from '../../constants/api-routes.constant';
 
 @Injectable({ providedIn: 'root' })
 export class OrganizationService {

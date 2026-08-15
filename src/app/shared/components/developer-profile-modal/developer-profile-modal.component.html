@@ -1,0 +1,143 @@
+<app-modal
+  [isOpen]="isOpen()"
+  (close)="close.emit()"
+  [title]="'Developer Profile & Assigned Tasks'"
+  size="wide">
+
+  <div class="dev-modal-content">
+    @if (isLoading()) {
+      <div class="dev-loading">
+        <i class="fa-solid fa-spinner animate-spin"></i>
+        <span>Loading developer profile & assigned tasks...</span>
+      </div>
+    } @else {
+      <!-- Profile Header Header Card -->
+      <div class="dev-header-card">
+        <div class="dev-avatar">
+          {{ (profile()?.name || employeeName() || 'D').charAt(0).toUpperCase() }}
+        </div>
+        <div class="dev-main-info">
+          <div class="dev-title-row">
+            <h3 class="dev-name">{{ profile()?.name || employeeName() }}</h3>
+            <span class="dev-status-tag" [class.active]="profile()?.status === 'Active'">
+              <span class="status-dot"></span>
+              {{ profile()?.status || 'Active' }}
+            </span>
+          </div>
+          <p class="dev-email"><i class="fa-solid fa-envelope"></i> {{ profile()?.email || 'N/A' }}</p>
+          <p class="dev-job-title"><i class="fa-solid fa-briefcase"></i> {{ profile()?.jobTitle || 'Software Engineer' }}</p>
+        </div>
+        <div class="dev-stats-box">
+          <div class="stat-pill">
+            <span class="stat-num">{{ assignedTasks().length }}</span>
+            <span class="stat-lbl">Assigned Tasks</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-num">{{ profile()?.currentAllocationPercentage || 0 }}%</span>
+            <span class="stat-lbl">Allocation</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Skills Tags if available -->
+      @if (profile()?.skills && profile()!.skills.length > 0) {
+        <div class="dev-skills-section">
+          <span class="skills-label"><i class="fa-solid fa-gears"></i> Technical Skills:</span>
+          <div class="skills-chips">
+            @for (sk of profile()!.skills; track sk.id) {
+              <span class="skill-chip">
+                {{ sk.skillName }}
+                <small>({{ sk.confidenceScore }}%)</small>
+              </span>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Projects & Assigned Tasks Section -->
+      <div class="dev-tasks-container">
+        <div class="tasks-section-header">
+          <h4>
+            <i class="fa-solid fa-list-check text-indigo-600"></i>
+            Projects & Assigned Tasks
+          </h4>
+          <span class="tasks-count-pill">
+            {{ assignedTasks().length }} Tasks Total
+          </span>
+        </div>
+
+        @if (groupedTasks.length > 0) {
+          @for (group of groupedTasks; track group.projectId) {
+            <div class="project-group-card">
+              <div class="project-group-header">
+                <div class="project-title">
+                  <i class="fa-solid fa-diagram-project"></i>
+                  <span>{{ group.projectName }}</span>
+                </div>
+                <span class="project-task-badge">
+                  {{ group.tasks.length }} Tasks Assigned
+                </span>
+              </div>
+
+              <div class="tasks-table-wrapper">
+                <table class="dev-tasks-table">
+                  <thead>
+                    <tr>
+                      <th>Task Title</th>
+                      <th>Priority</th>
+                      <th>Story Points</th>
+                      <th>Due Date</th>
+                      <th>Current Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (task of group.tasks; track task.id) {
+                      <tr>
+                        <td>
+                          <div class="task-title-cell">
+                            <span class="task-title">{{ task.title }}</span>
+                            @if (task.description) {
+                              <small class="task-desc">{{ task.description }}</small>
+                            }
+                          </div>
+                        </td>
+                        <td>
+                          <span class="badge" [ngClass]="getPriorityBadgeClass(task.priorityName)">
+                            {{ task.priorityName }}
+                          </span>
+                        </td>
+                        <td>
+                          <span class="sp-pill">
+                            <i class="fa-solid fa-cubes"></i> {{ task.storyPoints }} SP
+                          </span>
+                        </td>
+                        <td>
+                          <span class="due-text">
+                            <i class="fa-regular fa-calendar-check"></i>
+                            {{ task.dueDate ? (task.dueDate | date:'shortDate') : 'No due date' }}
+                          </span>
+                        </td>
+                        <td>
+                          <span class="status-badge" [ngClass]="getStatusBadgeClass(task.status)">
+                            <span class="status-dot"></span>
+                            {{ getStatusLabel(task.status) }}
+                          </span>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+        } @else {
+          <div class="no-tasks-empty">
+            <i class="fa-solid fa-clipboard-check"></i>
+            <h5>No Tasks Assigned</h5>
+            <p>This developer currently has no assigned tasks across active projects.</p>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</app-modal>

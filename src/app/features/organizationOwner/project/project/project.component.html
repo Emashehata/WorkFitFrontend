@@ -1,39 +1,133 @@
- <div class="projects-grid">
-  @for (project of projects; track project.id) {
-    <app-card>
-      <div card-header class="card-header-row">
-        <h3 class="project-title">{{ project.name }}</h3>
-       <app-badge
-  [variant]="getStatusConfig(project.status).variant"
-  [icon]="getStatusConfig(project.status).icon">
-  {{ project.status }}
-</app-badge>
-      </div>
+<!-- Page Header -->
+<div class="page-header">
+  <h2 class="page-title">Projects</h2>
+  <div class="header-actions">
+    <input
+      class="project-search"
+      type="search"
+      placeholder="Search projects"
+      [value]="searchTerm()"
+      (input)="onSearchChange($event)">
+    <select class="sort-select" [value]="sortBy()" (change)="onSortChange($event)">
+      <option value="name">Sort: Name</option>
+      <option value="startDate">Sort: Start date</option>
+      <option value="status">Sort: Status</option>
+    </select>
+    <select
+      class="status-filter"
+      [value]="selectedStatus()"
+      (change)="onStatusChange($event)">
+      <option value="">All Statuses</option>
+      @for (status of statusFilterOptions; track status) {
+        <option [value]="status">{{ status }}</option>
+      }
+    </select>
+    @if (isTeamLeader()) {
+      <app-button
+        variant="outline"
+        icon="fa-brands fa-jira"
+        (click)="showJiraModal.set(true)">
+        Sync Jira
+      </app-button>
+      <app-button
+        variant="primary"
+        icon="fa-solid fa-plus"
+        (click)="showCreateModal.set(true)">
+        New Project
+      </app-button>
+    }
+  </div>
+</div>
 
-      <div class="project-meta">
-        <div class="meta-item">
-          <i class="fa-solid fa-users"></i>
-          <span>Members <b>{{ project.memberCount ?? 0 }}</b></span>
+<div class="projects-grid">
+  @if (isLoading()) {
+    <div class="empty-state">
+      <i class="fa-solid fa-spinner animate-spin"></i>
+      <h3>Loading projects...</h3>
+    </div>
+  } @else {
+    @for (project of filteredProjects(); track project.id) {
+      <app-card>
+        <div card-header class="card-header-row">
+          <h3 class="project-title">{{ project.name }}</h3>
+          <app-badge
+            [variant]="getStatusConfig(project.status).variant"
+            [icon]="getStatusConfig(project.status).icon">
+            {{ project.status }}
+          </app-badge>
         </div>
-        <div class="meta-item">
-          <i class="fa-solid fa-list-check"></i>
-          <span>Tasks <b>{{ project.taskCount }}</b></span>
-        </div>
-        <div class="meta-item">
-          <i class="fa-regular fa-calendar"></i>
-          <span>{{ project.startDate ? (project.startDate | date:'MMM d, y') : '—' }}</span>
-        </div>
-        <div class="meta-item">
-          <i class="fa-solid fa-flag-checkered"></i>
-          <span>{{ project.endDate ? (project.endDate | date:'MMM d, y') : '—' }}</span>
-        </div>
-      </div>
 
-      <div card-footer>
-        <app-button variant="outline" icon="fa-solid fa-eye" (click)="onView(project)">View</app-button>
-        <app-button variant="secondary" icon="fa-solid fa-pen" (click)="onEdit(project)">Edit</app-button>
-        <app-button variant="danger" icon="fa-solid fa-trash" (click)="onDelete(project)">Delete</app-button>
+        <div class="project-meta">
+          <div class="meta-item">
+            <i class="fa-solid fa-users"></i>
+            <span>{{ isEmployee() ? 'Assigned to me' : 'Members' }} <b>{{ project.memberCount }}</b></span>
+          </div>
+          <div class="meta-item">
+            <i class="fa-solid fa-list-check"></i>
+            <span>{{ isEmployee() ? 'My tasks' : 'Tasks' }} <b>{{ project.taskCount }}</b></span>
+          </div>
+          <div class="meta-item">
+            <i class="fa-regular fa-calendar"></i>
+            <span>{{ project.startDate ? (project.startDate | date:'MMM d, y') : '—' }}</span>
+          </div>
+          <div class="meta-item">
+            <i class="fa-solid fa-flag-checkered"></i>
+            <span>{{ project.endDate ? (project.endDate | date:'MMM d, y') : '—' }}</span>
+          </div>
+        </div>
+        @if (project.description) {
+          <p class="project-description">{{ project.description }}</p>
+        }
+
+        <div card-footer class="card-footer-actions">
+          @if (isTeamLeader()) {
+            <app-button variant="secondary" icon="fa-solid fa-pen" (click)="onEdit(project)">Edit</app-button>
+            <app-button variant="danger" icon="fa-solid fa-box-archive" (click)="onArchive(project)">Archive</app-button>
+          }
+          <app-button class="view-action" variant="outline" icon="fa-solid fa-eye" (click)="onView(project)">View project</app-button>
+        </div>
+      </app-card>
+    } @empty {
+      <div class="empty-state">
+        <i class="fa-solid fa-diagram-project"></i>
+        <h3>{{ searchTerm() ? 'No matching projects' : 'No projects yet' }}</h3>
+        <p>{{ searchTerm() ? 'Try a different project name.' : (isEmployee() ? 'No projects are assigned to you.' : 'Create your first project to get started.') }}</p>
       </div>
-    </app-card>
+    }
   }
 </div>
+
+<!-- Create Project Modal -->
+<app-create-project-modal
+  [isOpen]="showCreateModal()"
+  (close)="showCreateModal.set(false)"
+  (created)="onProjectCreated()">
+</app-create-project-modal>
+
+<!-- Edit Project Modal -->
+<app-edit-project-modal
+  [isOpen]="showEditModal()"
+  [project]="selectedProject()"
+  (close)="showEditModal.set(false)"
+  (saved)="onProjectUpdated()">
+</app-edit-project-modal>
+
+<!-- Jira Integration Modal -->
+<app-jira-integration-modal
+  [isOpen]="showJiraModal()"
+  (close)="onJiraModalClosed()"
+  (synced)="onProjectCreated()">
+</app-jira-integration-modal>
+
+<!-- Confirm Dialog -->
+<app-confirm-dialog
+  [isOpen]="showConfirm()"
+  [title]="confirmTitle()"
+  [message]="confirmMessage()"
+  [confirmLabel]="confirmLabel()"
+  [confirmIcon]="confirmIcon()"
+  [confirmVariant]="confirmVariant()"
+  [headerIcon]="confirmHeaderIcon()"
+  (confirmed)="onConfirmed()"
+  (cancelled)="onCancelled()">
+</app-confirm-dialog>

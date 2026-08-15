@@ -29,6 +29,7 @@ export interface DecodedToken {
   exp: number;
   iss: string;
   aud: string;
+  OrgId?: string;
 }
 
 export interface CurrentUser {
@@ -36,4 +37,6 @@ export interface CurrentUser {
   email: string;
   displayName: string;
   roles: string[];
+  orgId?: string;
 }
+

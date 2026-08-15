@@ -1,61 +1,152 @@
+<!-- Overlay -->
+@if (opened()) {
+<div class="fixed inset-0 z-30 bg-text/30 lg:hidden" (click)="close.emit()"></div>
+}
+
 <!-- Sidebar -->
 <aside
-    class="fixed z-40 flex h-screen w-72 flex-col border-r border-border bg-surface transition-all duration-300 lg:static"
+    class="fixed z-40 flex h-screen flex-col border-r border-border bg-surface transition-all duration-300 lg:static"
+    [class.w-72]="!isCollapsed()"
+    [class.w-20]="isCollapsed()"
     [class.-translate-x-full]="!opened()">
 
-    <!-- Logo -->
-    <div class="border-b border-border px-6 py-6">
-        <div class="flex items-center gap-3">
+    <!-- Logo & Collapse Toggle -->
+    <div class="border-b border-border p-4 flex items-center justify-between" [class.justify-center]="isCollapsed()">
+        @if (!isCollapsed()) {
+        <div class="flex items-center gap-3 overflow-hidden">
             <div
-                class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-secondary shadow-lg">
+                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-secondary shadow-lg shadow-primary/20">
                 <span class="text-xl font-bold text-white">W</span>
             </div>
-            <div>
-                <h2 class="text-xl font-bold text-text">WorkFit</h2>
-                <p class="text-xs text-text-secondary">Workforce Platform</p>
+            <div class="truncate">
+                <h2 class="text-lg font-bold text-text truncate">WorkFit</h2>
+                <p class="text-[10px] text-text-secondary truncate">Workforce Platform</p>
             </div>
         </div>
+        <button
+            type="button"
+            (click)="toggleCollapse()"
+            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-border bg-background text-text-secondary hover:text-primary hover:border-primary transition-all hidden lg:flex"
+            title="Collapse Sidebar">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        } @else {
+        <!-- When Collapsed: W logo disappears, centered arrow button extends sidebar -->
+        <button
+            type="button"
+            (click)="toggleCollapse()"
+            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 to-secondary/10 text-primary hover:bg-primary hover:text-white transition-all shadow-sm cursor-pointer hidden lg:flex"
+            title="Expand Sidebar">
+            <i class="fa-solid fa-angles-right text-base animate-pulse"></i>
+        </button>
+        }
     </div>
 
-    <!-- Menu -->
-    <nav class="flex-1 overflow-y-auto px-4 py-6">
+    <!-- Menu Navigation -->
+    <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-4">
         @for (section of sections(); track section.title) {
-        <!-- Section Header -->
-        @if (section.title) {
-        <div class="mb-2 mt-4 text-xs font-semibold uppercase tracking-wider text-text-secondary first:mt-0">
-            {{ section.title }}
-        </div>
-        }
-
-        <!-- Items -->
-        @for (item of section.items; track item.route) {
-        <a [routerLink]="item.route"
-            routerLinkActive="bg-gradient-to-r from-primary to-secondary text-white shadow-lg"
-            class="group mb-1 flex items-center gap-4 rounded-xl px-4 py-3 font-medium text-text-secondary transition-all duration-300 hover:bg-background hover:text-primary"
-            (click)="close.emit()">
-            <i [class]="item.icon" class="w-5 text-center text-lg transition-colors"></i>
-            <span>{{ item.title }}</span>
-            @if (item.badge) {
-            <span class="ml-auto rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
-                {{ item.badge }}
-            </span>
+        <div>
+            <!-- Section Header -->
+            @if (section.title) {
+            @if (!isCollapsed()) {
+            <div class="mb-2 px-3 text-[10px] font-bold uppercase tracking-wider text-text-secondary/70">
+                {{ section.title }}
+            </div>
+            } @else {
+            <div class="my-2 border-t border-border/60"></div>
             }
-        </a>
-        }
+            }
+
+            <!-- Section Items -->
+            <div class="space-y-1">
+                @for (item of section.items; track item.route) {
+                @if (item.children && item.children.length > 0) {
+                <!-- Parent with children -->
+                <div>
+                    <button (click)="toggleItem(item.route)"
+                        [title]="isCollapsed() ? item.title : ''"
+                        [class]="isExpanded(item.route)
+                            ? 'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 font-medium text-text-secondary transition-all bg-gradient-to-r from-primary/10 to-secondary/10'
+                            : 'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 font-medium text-text-secondary transition-all hover:bg-background'"
+                        [class.justify-center]="isCollapsed()">
+                        <i [class]="item.icon" class="w-5 text-center text-lg shrink-0"></i>
+                        @if (!isCollapsed()) {
+                        <span class="flex-1 text-left truncate text-sm">{{ item.title }}</span>
+                        @if (item.badge) {
+                        <span class="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
+                            {{ item.badge }}
+                        </span>
+                        }
+                        <i class="fa-solid fa-chevron-down text-xs transition-transform"
+                            [class.rotate-180]="isExpanded(item.route)"></i>
+                        }
+                    </button>
+
+                    <!-- Children -->
+                    @if (isExpanded(item.route)) {
+                    <div class="mt-1 space-y-1" [class.ml-6]="!isCollapsed()" [class.border-l-2]="!isCollapsed()" [class.border-border]="!isCollapsed()" [class.pl-3]="!isCollapsed()">
+                        @for (child of item.children; track child.route) {
+                        <a [routerLink]="child.route" routerLinkActive="bg-primary/10 text-primary"
+                            [title]="isCollapsed() ? child.title : ''"
+                            class="flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium text-text-secondary transition-all hover:bg-background hover:text-primary"
+                            [class.justify-center]="isCollapsed()">
+                            <i [class]="child.icon" class="w-4 text-center text-sm shrink-0"></i>
+                            @if (!isCollapsed()) {
+                            <span class="truncate">{{ child.title }}</span>
+                            }
+                        </a>
+                        }
+                    </div>
+                    }
+                </div>
+                } @else {
+                <!-- Leaf item -->
+                <a [routerLink]="item.route"
+                    routerLinkActive="bg-gradient-to-r from-primary to-secondary text-white shadow-md shadow-primary/20"
+                    [title]="isCollapsed() ? item.title : ''"
+                    class="group flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium text-text-secondary transition-all duration-200 hover:bg-background hover:text-primary"
+                    [class.justify-center]="isCollapsed()"
+                    (click)="close.emit()">
+                    <i [class]="item.icon" class="w-5 text-center text-lg shrink-0 transition-colors"></i>
+                    @if (!isCollapsed()) {
+                    <span class="flex-1 truncate text-sm">{{ item.title }}</span>
+                    @if (item.badge) {
+                    <span class="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
+                        {{ item.badge }}
+                    </span>
+                    }
+                    }
+                </a>
+                }
+                }
+            </div>
+        </div>
         }
     </nav>
 
-    <!-- User Profile -->
-    <div class="border-t border-border p-4">
-        <div class="flex items-center gap-3 rounded-2xl bg-background p-3">
-            <div
-                class="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-r from-primary to-secondary font-bold text-white">
-                {{ userInitials() }}
+    <!-- User Profile & Logout -->
+    <div class="border-t border-border p-3">
+        <div class="flex items-center gap-2 rounded-2xl bg-background p-2" [class.justify-center]="isCollapsed()">
+            <div class="flex items-center gap-3 overflow-hidden" [title]="userRole() + ': ' + userName()">
+                <div
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-primary to-secondary font-bold text-white text-xs shadow-sm">
+                    {{ userInitials() }}
+                </div>
+                @if (!isCollapsed()) {
+                <div class="truncate min-w-0">
+                    <h4 class="text-xs font-bold text-text truncate">{{ userName() }}</h4>
+                    <p class="text-[10px] text-text-secondary truncate">{{ userRole() }}</p>
+                </div>
+                }
             </div>
-            <div>
-                <h4 class="text-sm font-semibold text-text">{{ userName() }}</h4>
-                <p class="text-xs text-text-secondary">{{ userRole() }}</p>
-            </div>
+            <button
+                type="button"
+                (click)="logout()"
+                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-danger hover:bg-danger/10 transition-colors cursor-pointer"
+                [class.ml-auto]="!isCollapsed()"
+                title="Sign Out">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
         </div>
     </div>
 </aside>

@@ -284,34 +284,83 @@
                         <!-- EMPLOYEES TAB -->
                         @case ('employees') {
                         <div>
-                            <div class="flex items-center gap-3 mb-6">
-                                <div class="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center">
-                                    <i class="fa-solid fa-users text-success text-lg"></i>
+                            <div class="flex items-center justify-between mb-6">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center">
+                                        <i class="fa-solid fa-users text-success text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-xl font-bold text-text">Employees</h2>
+                                        <p class="text-sm text-text-secondary">Manage your organization's team members</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h2 class="text-xl font-bold text-text">Employees</h2>
-                                    <p class="text-sm text-text-secondary">Manage your team members</p>
-                                </div>
+                                <button
+                                    type="button"
+                                    (click)="showAddEmployeeModal.set(true)"
+                                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary-hover text-white text-sm font-semibold rounded-xl transition-all shadow-md hover:shadow-lg">
+                                    <i class="fa-solid fa-user-plus"></i>
+                                    Add Employee
+                                </button>
                             </div>
 
-                            <div
-                                class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-info/10 to-primary/10 border-2 border-info/20 p-8 text-center">
-                                <div class="relative z-10">
-                                    <div
-                                        class="w-20 h-20 mx-auto bg-surface rounded-2xl shadow-lg flex items-center justify-center mb-4">
-                                        <i class="fa-solid fa-users text-3xl text-primary"></i>
-                                    </div>
-                                    <h3 class="text-lg font-semibold text-text">Employee Management</h3>
-                                    <p class="text-sm text-text-secondary max-w-md mx-auto mt-1">
-                                        Manage team members, roles, permissions, and organizational structure.
-                                    </p>
-                                    <div
-                                        class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-surface/70 rounded-full text-xs font-medium text-primary">
-                                        <i class="fa-solid fa-clock"></i>
-                                        Coming soon
+                            @if (isLoadingEmployees()) {
+                                <div class="p-12 text-center text-text-secondary">
+                                    <i class="fa-solid fa-spinner animate-spin text-2xl mb-2 text-primary"></i>
+                                    <p>Loading employees…</p>
+                                </div>
+                            } @else {
+                                <div class="bg-surface rounded-2xl border border-border overflow-hidden">
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-left text-sm text-text">
+                                            <thead class="bg-background text-xs uppercase font-semibold text-text-secondary border-b border-border">
+                                                <tr>
+                                                    <th class="px-6 py-4">Employee</th>
+                                                    <th class="px-6 py-4">Email</th>
+                                                    <th class="px-6 py-4">Job Title</th>
+                                                    <th class="px-6 py-4">Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-border">
+                                                @for (emp of employees(); track emp.id) {
+                                                    <tr class="hover:bg-background/50 transition-colors">
+                                                        <td class="px-6 py-4 font-semibold text-text">
+                                                            <div class="flex items-center gap-3">
+                                                                <div class="w-9 h-9 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs">
+                                                                    {{ emp.name.charAt(0) }}
+                                                                </div>
+                                                                <span>{{ emp.name }}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td class="px-6 py-4 text-text-secondary">{{ emp.email }}</td>
+                                                        <td class="px-6 py-4 font-medium">{{ emp.jobTitle }}</td>
+                                                        <td class="px-6 py-4">
+                                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+                                                                [class]="emp.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'">
+                                                                <span class="w-1.5 h-1.5 rounded-full" [class]="emp.isActive ? 'bg-emerald-500' : 'bg-slate-400'"></span>
+                                                                {{ emp.isActive ? 'Active' : 'Inactive' }}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                } @empty {
+                                                    <tr>
+                                                        <td colspan="4" class="px-6 py-12 text-center text-text-secondary">
+                                                            <i class="fa-solid fa-user-slash text-3xl mb-2 text-slate-300"></i>
+                                                            <p class="font-semibold text-text mb-1">No employees found</p>
+                                                            <p class="text-xs mb-4">Add your first employee to get started with team management</p>
+                                                            <button
+                                                                type="button"
+                                                                (click)="showAddEmployeeModal.set(true)"
+                                                                class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-xs font-semibold rounded-xl">
+                                                                <i class="fa-solid fa-user-plus"></i> Add Employee
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
-                            </div>
+                            }
                         </div>
                         }
 
@@ -389,4 +438,10 @@
         </div>
         }
     </div>
+
+    <app-add-employee-modal
+      [isOpen]="showAddEmployeeModal()"
+      (close)="showAddEmployeeModal.set(false)"
+      (created)="loadEmployees()">
+    </app-add-employee-modal>
 </div>

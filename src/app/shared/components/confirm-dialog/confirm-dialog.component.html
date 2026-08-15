@@ -1,3 +1,4 @@
+@if (isOpen()) {
 <div
   class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
   (click)="onCancel()"
@@ -6,7 +7,20 @@
     class="w-full max-w-md rounded-xl bg-surface border border-border shadow-lg p-6"
     (click)="$event.stopPropagation()"
   >
-    <h2 class="text-lg font-bold text-text mb-2">{{ title() }}</h2>
+    <div class="flex items-center gap-3 mb-3">
+      @if (headerIcon()) {
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg"
+          [class.bg-danger-10]="confirmVariant() === 'danger'"
+          [class.text-danger]="confirmVariant() === 'danger'"
+          [class.bg-primary-10]="confirmVariant() === 'primary'"
+          [class.text-primary]="confirmVariant() === 'primary'"
+          [class.bg-secondary-10]="confirmVariant() === 'secondary'"
+          [class.text-secondary]="confirmVariant() === 'secondary'">
+          <i [class]="headerIcon()"></i>
+        </div>
+      }
+      <h2 class="text-lg font-bold text-text mb-0">{{ title() }}</h2>
+    </div>
     <p class="text-sm text-text-secondary mb-4">{{ message() }}</p>
 
     @if (showInput()) {
@@ -24,18 +38,25 @@
     <div class="flex justify-end gap-3">
       <button
         type="button"
-        class="px-4 py-2 rounded-lg text-sm font-semibold bg-surface text-text border border-border hover:bg-background"
+        class="px-4 py-2 rounded-lg text-sm font-semibold bg-surface text-text border border-border hover:bg-background cursor-pointer"
         (click)="onCancel()"
       >
         {{ cancelLabel() }}
       </button>
       <button
         type="button"
-        class="px-4 py-2 rounded-lg text-sm font-semibold bg-primary text-white hover:bg-primary-hover"
+        class="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all flex items-center gap-2 cursor-pointer"
+        [class.bg-danger]="confirmVariant() === 'danger'"
+        [class.bg-primary]="confirmVariant() === 'primary'"
+        [class.bg-secondary]="confirmVariant() === 'secondary'"
         (click)="onConfirm()"
       >
+        @if (confirmIcon()) {
+          <i [class]="confirmIcon()"></i>
+        }
         {{ confirmLabel() }}
       </button>
     </div>
   </div>
 </div>
+}
