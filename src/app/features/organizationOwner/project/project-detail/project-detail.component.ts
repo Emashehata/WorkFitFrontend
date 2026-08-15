@@ -58,8 +58,13 @@ export class ProjectDetailComponent implements OnInit {
   showCreateTaskModal = signal(false);
   showTaskDetailModal = signal(false);
   showEditProjectModal = signal(false);
+  isHeaderCollapsed = signal<boolean>(false);
   selectedTaskId = signal<string>('');
   employeeSearch = signal<string>('');
+
+  toggleHeaderCollapse() {
+    this.isHeaderCollapsed.update(v => !v);
+  }
 
   filteredEmployees = computed(() => {
     const search = this.employeeSearch().trim().toLowerCase();
@@ -145,6 +150,9 @@ export class ProjectDetailComponent implements OnInit {
     Cancelled: [],
   };
 
+  highlightedTaskId = signal<string | null>(null);
+  highlightedTaskTitle = signal<string | null>(null);
+
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
@@ -153,6 +161,47 @@ export class ProjectDetailComponent implements OnInit {
       this.loadTasks(id);
       this.loadEmployees();
     }
+    this.route.queryParams.subscribe(params => {
+      if (params['highlightTaskId']) {
+        this.highlightedTaskId.set(params['highlightTaskId']);
+      }
+      if (params['highlightTaskTitle']) {
+        this.highlightedTaskTitle.set(params['highlightTaskTitle']);
+      }
+      this.scrollToHighlightedTask();
+    });
+  }
+
+  isTaskHighlighted(task: TaskListItem): boolean {
+    if (this.highlightedTaskId() && task.id === this.highlightedTaskId()) {
+      return true;
+    }
+    if (this.highlightedTaskTitle() && task.title.toLowerCase().trim() === this.highlightedTaskTitle()?.toLowerCase().trim()) {
+      return true;
+    }
+    return false;
+  }
+
+  clearHighlight(task?: TaskListItem): void {
+    this.highlightedTaskId.set(null);
+    this.highlightedTaskTitle.set(null);
+  }
+
+  onTaskCardClick(task: TaskListItem): void {
+    if (this.isTaskHighlighted(task)) {
+      this.clearHighlight(task);
+    }
+    this.onViewTask(task);
+  }
+
+  scrollToHighlightedTask(): void {
+    setTimeout(() => {
+      if (!this.highlightedTaskId() && !this.highlightedTaskTitle()) return;
+      const highlightedEl = document.querySelector('.highlighted-task-card');
+      if (highlightedEl) {
+        highlightedEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 350);
   }
 
   loadProject(id: string) {
@@ -170,6 +219,7 @@ export class ProjectDetailComponent implements OnInit {
       next: (tasks) => {
         this.allTasks.set(tasks);
         this.isLoading.set(false);
+        this.scrollToHighlightedTask();
       },
       error: (err) => {
         console.error('Failed to load tasks', err);
@@ -189,7 +239,15 @@ export class ProjectDetailComponent implements OnInit {
   }
 
   getTasksByStatus(status: TaskStatus): TaskListItem[] {
-    return this.allTasks().filter(t => t.status === status);
+    const tasks = this.allTasks().filter(t => t.status === status);
+    return [...tasks].sort((a, b) => {
+      if (a.dueDate && b.dueDate) {
+        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      }
+      if (a.dueDate) return -1;
+      if (b.dueDate) return 1;
+      return a.title.localeCompare(b.title);
+    });
   }
 
   getColumnId(status: TaskStatus): string {
