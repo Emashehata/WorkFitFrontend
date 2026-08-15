@@ -1,17 +1,53 @@
 <header class="bg-surface border-b border-border px-6 py-3 flex items-center justify-between shadow-sm sticky top-0 z-30">
-  <!-- Left Side: Toggle button & Breadcrumbs -->
-  <div class="flex items-center gap-4">
+  <!-- Left Side: Toggle button, Navigation controls & Interactive Breadcrumbs -->
+  <div class="flex items-center gap-3">
+    <!-- Sidebar Toggle (Mobile) -->
     <button
       type="button"
       (click)="toggleSidebar.emit()"
-      class="lg:hidden p-2 rounded-xl text-text-secondary hover:bg-background transition-colors">
+      class="lg:hidden p-2 rounded-xl text-text-secondary hover:bg-background transition-colors cursor-pointer"
+      title="Toggle Sidebar">
       <i class="fa-solid fa-bars text-lg"></i>
     </button>
-    <div class="hidden sm:flex items-center gap-2 text-sm text-text-secondary">
-      <span class="font-bold text-text">WorkFit</span>
+
+
+
+    <!-- Interactive Clickable Breadcrumb Trail -->
+    <nav aria-label="Breadcrumb" class="hidden sm:flex items-center gap-2 text-sm text-text-secondary ms-1">
+      <!-- WorkFit Root Link -->
+      <a
+        routerLink="/home"
+        class="font-bold text-slate-800 hover:text-indigo-600 hover:underline transition-colors flex items-center gap-1.5">
+        <i class="fa-solid fa-house text-xs text-indigo-500"></i>
+        <span>WorkFit</span>
+      </a>
+
       <i class="fa-solid fa-chevron-right text-xs opacity-40"></i>
-      <span class="capitalize font-medium text-primary">{{ userRole() }} Portal</span>
-    </div>
+
+      <!-- Portal Main Link -->
+      <a
+        routerLink="/home"
+        class="capitalize font-semibold text-indigo-600 hover:text-indigo-800 hover:underline transition-colors">
+        {{ userRole() }} Portal
+      </a>
+
+      <!-- Dynamic Route Subpage Segments -->
+      @for (crumb of breadcrumbs(); track crumb.url) {
+        <i class="fa-solid fa-chevron-right text-xs opacity-40"></i>
+
+        @if (!crumb.isLast) {
+          <a
+            [routerLink]="crumb.url"
+            class="font-medium text-slate-600 hover:text-indigo-600 hover:underline transition-colors capitalize">
+            {{ crumb.label }}
+          </a>
+        } @else {
+          <span class="font-bold text-slate-900 capitalize">
+            {{ crumb.label }}
+          </span>
+        }
+      }
+    </nav>
   </div>
 
   <!-- Right Side: User Badge & Sign Out Button -->

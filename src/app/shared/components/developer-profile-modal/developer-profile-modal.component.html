@@ -88,7 +88,6 @@
                       <th>Story Points</th>
                       <th>Due Date</th>
                       <th>Current Status</th>
-                      <th>Move State</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -123,22 +122,6 @@
                             <span class="status-dot"></span>
                             {{ getStatusLabel(task.status) }}
                           </span>
-                        </td>
-                        <td>
-                          <div class="state-transition-control">
-                            <select
-                              class="status-select-dropdown"
-                              [value]="task.status"
-                              [disabled]="updatingTaskId() === task.id"
-                              (change)="onStatusChange(task, $event)">
-                              @for (opt of statusOptions; track opt.value) {
-                                <option [value]="opt.value">{{ opt.label }}</option>
-                              }
-                            </select>
-                            @if (updatingTaskId() === task.id) {
-                              <i class="fa-solid fa-spinner animate-spin text-indigo-600 ml-2"></i>
-                            }
-                          </div>
                         </td>
                       </tr>
                     }
