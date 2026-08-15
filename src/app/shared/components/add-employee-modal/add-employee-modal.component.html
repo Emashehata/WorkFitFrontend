@@ -1,0 +1,106 @@
+<app-modal
+  [title]="'Assign Employee to Team / Project'"
+  [isOpen]="isOpen()"
+  (close)="close.emit()"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-grid">
+    <div class="form-group">
+      <label class="form-label" for="project-select">Project *</label>
+      <select
+        id="project-select"
+        class="form-input"
+        formControlName="projectId"
+        (change)="onProjectChange($event)"
+      >
+        <option value="">{{ isLoadingProjects() ? 'Loading projects...' : 'Select a project' }}</option>
+        @for (project of projects(); track project.id) {
+          <option [value]="project.id">{{ project.name }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Searchable Select Employee Field -->
+    <div class="form-group">
+      <label class="form-label" for="emp-select-input">Select Employee *</label>
+      <div class="input-with-icon">
+        <input
+          id="emp-select-input"
+          type="text"
+          class="form-input"
+          [value]="searchQuery()"
+          (input)="onSearchInput($event)"
+          (focus)="isDropdownOpen.set(true)"
+          [placeholder]="selectedProjectId() ? 'Type to search employee by name or email' : 'Select a project first'"
+          [disabled]="!selectedProjectId() || isLoadingMembers()"
+          autocomplete="off"
+        />
+        <i class="fa-solid fa-magnifying-glass input-icon text-text-secondary"></i>
+      </div>
+
+      <!-- Dropdown Results -->
+      @if (isDropdownOpen() && !selectedEmployee()) {
+        <div class="dropdown-menu">
+          @if (isLoadingEmployees() || isLoadingMembers()) {
+            <div class="dropdown-item empty-text">
+              <i class="fa-solid fa-spinner animate-spin"></i> Loading employees…
+            </div>
+          } @else {
+            @for (emp of filteredEmployees(); track emp.id) {
+              <div
+                class="dropdown-item"
+                (click)="selectEmployee(emp)">
+                <div class="emp-avatar-sm">{{ emp.name.charAt(0).toUpperCase() }}</div>
+                <div class="emp-details">
+                  <span class="emp-name-text">{{ emp.name }}</span>
+                  <span class="emp-sub-text">{{ emp.jobTitle }} • {{ emp.email }}</span>
+                </div>
+              </div>
+            } @empty {
+              <div class="dropdown-item empty-text">
+                No available organization employees found
+              </div>
+            }
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Disabled Email Field (Auto-populated when employee selected) -->
+    <div class="form-group">
+      <label class="form-label" for="emp-email">Email Address</label>
+      <input
+        id="emp-email"
+        type="email"
+        class="form-input disabled-input"
+        formControlName="email"
+        placeholder="Select an employee above to populate email"
+      />
+    </div>
+
+    <!-- Disabled Job Title Field (Auto-populated when employee selected) -->
+    <div class="form-group">
+      <label class="form-label" for="emp-title">Job Title</label>
+      <input
+        id="emp-title"
+        type="text"
+        class="form-input disabled-input"
+        formControlName="jobTitle"
+        placeholder="Select an employee above to populate job title"
+      />
+    </div>
+
+    <!-- Actions -->
+    <div class="form-actions">
+      <app-button variant="secondary" (click)="close.emit()">Cancel</app-button>
+      <app-button
+        variant="primary"
+        type="submit"
+        icon="fa-solid fa-user-check"
+        [loading]="isSubmitting()"
+        [disabled]="form.invalid || !selectedEmployee()"
+      >
+        Assign Employee
+      </app-button>
+    </div>
+  </form>
+</app-modal>

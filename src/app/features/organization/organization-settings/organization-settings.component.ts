@@ -1,11 +1,14 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { OrganizationService } from '../../../core/services/organization/organization.service';
+import { TaskService } from '../../../core/services/task/task.service';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { ToastService } from '../../../core/services/toast/toast.service';
 import { Organization } from '../../../core/models/organization.models';
+import { EmployeeListItemDto } from '../../../core/models/task.models';
+import { AddEmployeeModalComponent } from '../../../shared/components/add-employee-modal/add-employee-modal.component';
 
 type SettingsTabId = 'general' | 'preferences' | 'employees' | 'billing' | 'security';
 
@@ -29,12 +32,13 @@ function safeParse<T>(json: string | undefined, fallback: T): T {
 @Component({
   selector: 'app-organization-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, AddEmployeeModalComponent],
   templateUrl: './organization-settings.component.html',
 })
 export class OrganizationSettingsComponent implements OnInit {
   private fb = inject(FormBuilder);
   private organizationService = inject(OrganizationService);
+  private taskService = inject(TaskService);
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
 
@@ -42,6 +46,9 @@ export class OrganizationSettingsComponent implements OnInit {
   isLoading = signal(true);
   isSaving = signal(false);
   activeTab = signal<SettingsTabId>('general');
+  employees = signal<EmployeeListItemDto[]>([]);
+  isLoadingEmployees = signal(false);
+  showAddEmployeeModal = signal(false);
 
   readonly settingsTabs: SettingsTab[] = [
     { 
@@ -61,7 +68,6 @@ export class OrganizationSettingsComponent implements OnInit {
       label: 'Employees', 
       description: 'Team management', 
       icon: 'fa-solid fa-users',
-      badge: 'Soon'
     },
     { 
       id: 'billing', 
@@ -95,8 +101,30 @@ export class OrganizationSettingsComponent implements OnInit {
 
   private latestSettingsData: any = {};
 
+  constructor() {
+    effect(() => {
+      if (this.activeTab() === 'employees') {
+        this.loadEmployees();
+      }
+    });
+  }
+
   ngOnInit(): void {
     this.loadOrganizationData();
+  }
+
+  loadEmployees(): void {
+    this.isLoadingEmployees.set(true);
+    this.taskService.getEmployees().subscribe({
+      next: (emps) => {
+        this.employees.set(emps);
+        this.isLoadingEmployees.set(false);
+      },
+      error: (err) => {
+        console.warn('Failed to load employees', err);
+        this.isLoadingEmployees.set(false);
+      }
+    });
   }
 
   loadOrganizationData(): void {

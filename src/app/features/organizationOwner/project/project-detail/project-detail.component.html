@@ -1,0 +1,257 @@
+<div class="project-detail-page">
+
+  <!-- Header -->
+  <div class="detail-header" [class.compact-header]="isHeaderCollapsed()">
+    <div class="header-left">
+      <button class="back-btn" (click)="goBack()">
+        <i class="fa-solid fa-arrow-left"></i>
+      </button>
+      @if (project(); as proj) {
+        <div class="header-info">
+          <div class="flex items-center gap-3">
+            <h1 class="project-name">{{ proj.name }}</h1>
+            <app-badge
+              [variant]="getProjectStatusConfig(proj.status).variant"
+              [icon]="getProjectStatusConfig(proj.status).icon">
+              {{ getNormalizedStatus(proj.status) }}
+            </app-badge>
+          </div>
+
+          @if (!isHeaderCollapsed()) {
+            <div class="header-meta">
+              <span class="source-badge"><i class="fa-solid fa-link"></i> {{ getSourceLabel(proj.sourceSystem) }}</span>
+              @if (proj.startDate || proj.endDate) {
+                <span class="date-range">
+                  <i class="fa-regular fa-calendar"></i>
+                  {{ proj.startDate | date:'MMM d, y' }} — {{ proj.endDate | date:'MMM d, y' }}
+                </span>
+              }
+              @if (proj.coveragePct !== undefined && proj.coveragePct !== null) {
+                <span class="date-range">
+                  <i class="fa-solid fa-chart-pie"></i>
+                  Coverage {{ proj.coveragePct }}%
+                </span>
+              }
+            </div>
+
+            @if (proj.description) {
+              <p class="project-description">{{ proj.description }}</p>
+            }
+
+            @if (proj.requiredSkills && proj.requiredSkills.length > 0) {
+              <div class="skills-row">
+                <span class="skills-label"><i class="fa-solid fa-code"></i> Required Skills:</span>
+                <div class="skills-chips">
+                  @for (skill of proj.requiredSkills; track skill.skillId) {
+                    <span class="skill-chip">{{ skill.skillName }} · {{ skill.level }}</span>
+                  }
+                </div>
+              </div>
+            }
+          }
+        </div>
+      }
+    </div>
+
+    <div class="header-actions">
+      <button
+        type="button"
+        class="px-4 py-2.5 text-xs font-bold rounded-xl border border-indigo-600 text-indigo-600 hover:bg-indigo-50 transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+        (click)="toggleHeaderCollapse()">
+        <i class="fa-solid" [class.fa-chevron-down]="isHeaderCollapsed()" [class.fa-chevron-up]="!isHeaderCollapsed()"></i>
+        <span>{{ isHeaderCollapsed() ? 'Expand Info' : 'Collapse Info' }}</span>
+      </button>
+
+      @if (isTeamLeader()) {
+        @if (allowedNextStatuses().length > 0) {
+          <select
+            class="status-select"
+            [disabled]="isChangingStatus()"
+            (change)="onStatusSelectChange($event)">
+            <option value="">Move to…</option>
+            @for (status of allowedNextStatuses(); track status) {
+              <option [value]="status">{{ status }}</option>
+            }
+          </select>
+        }
+        <app-button variant="secondary" icon="fa-solid fa-pen" (click)="onEditProject()">Edit</app-button>
+        <app-button variant="danger" icon="fa-solid fa-box-archive" (click)="onArchive()">Archive</app-button>
+        <app-button
+          variant="primary"
+          icon="fa-solid fa-plus"
+          (click)="showCreateTaskModal.set(true)">
+          New Task
+        </app-button>
+      }
+    </div>
+  </div>
+
+  @if (!isHeaderCollapsed()) {
+    <section class="project-stats" aria-label="Project summary">
+      <div class="stat-card stat-card-primary">
+        <i class="fa-solid fa-list-check"></i>
+        <div><strong>{{ allTasks().length }}</strong><span>{{ isEmployee() ? 'My tasks' : 'Total tasks' }}</span></div>
+      </div>
+      <div class="stat-card stat-card-success">
+        <i class="fa-solid fa-circle-check"></i>
+        <div><strong>{{ completedTaskCount() }}</strong><span>{{ isEmployee() ? 'Completed by me' : 'Completed' }}</span></div>
+      </div>
+      @if (!isEmployee()) {
+        <div class="stat-card stat-card-info">
+          <i class="fa-solid fa-users"></i>
+          <div><strong>{{ assignedEmployeeIds().length }}</strong><span>Contributors</span></div>
+        </div>
+        <div class="stat-card stat-card-warning">
+          <i class="fa-solid fa-chart-pie"></i>
+          <div><strong>{{ project()?.coveragePct ?? 0 }}%</strong><span>Skill coverage</span></div>
+        </div>
+      }
+      @if (!isEmployee() && assignedEmployeeIds().length > 0) {
+        <div class="contributor-avatars" aria-label="Project contributors">
+          @for (employeeId of assignedEmployeeIds().slice(0, 5); track employeeId) {
+            <span class="avatar" [title]="employeeMap().get(employeeId) ?? 'Unknown'">{{ getInitials(employeeId) }}</span>
+          }
+          @if (assignedEmployeeIds().length > 5) {
+            <span class="avatar avatar-more">+{{ assignedEmployeeIds().length - 5 }}</span>
+          }
+        </div>
+      }
+    </section>
+  }
+
+  <!-- Kanban Board -->
+  <div class="kanban-board" [class.expanded-board]="isHeaderCollapsed()">
+    @for (col of columns; track col.status) {
+      <div class="kanban-column" [class]="col.colorClass">
+        <div class="column-header">
+          <div class="column-title-row">
+            <i [class]="col.icon" class="column-icon"></i>
+            <h3 class="column-title">{{ col.label }}</h3>
+          </div>
+          <span class="column-count">{{ getTasksByStatus(col.status).length }}</span>
+        </div>
+
+        <div
+          cdkDropList
+          [id]="getColumnId(col.status)"
+          [cdkDropListData]="getTasksByStatus(col.status)"
+          [cdkDropListConnectedTo]="columnIds"
+          (cdkDropListDropped)="onDrop($event)"
+          [cdkDropListDisabled]="!isTeamLeader()"
+          class="task-list">
+
+          @for (task of getTasksByStatus(col.status); track task.id) {
+            <div
+              class="task-card"
+              [class.highlighted-task-card]="isTaskHighlighted(task)"
+              cdkDrag
+              [cdkDragDisabled]="!canDrag(task)"
+              (click)="onTaskCardClick(task)">
+
+              <!-- Drag handle placeholder for visual cue -->
+              <div class="drag-placeholder" *cdkDragPlaceholder></div>
+
+              @if (isTaskHighlighted(task)) {
+                <div class="highlight-badge-pill">
+                  <i class="fa-solid fa-bolt animate-pulse"></i> Selected Task
+                </div>
+              }
+
+              <div class="task-card-header">
+                <div class="task-type-icon">
+                  <i [class]="getTaskTypeIcon(task.taskType)"></i>
+                </div>
+                <app-badge
+                  [variant]="getPriorityConfig(task.priority).variant"
+                  [icon]="getPriorityConfig(task.priority).icon">
+                  {{ task.priority }}
+                </app-badge>
+              </div>
+
+              <h4 class="task-title">{{ task.title }}</h4>
+
+              <div class="task-meta">
+                @if (task.storyPoints) {
+                  <span class="meta-chip">
+                    <i class="fa-solid fa-bolt font-bold text-amber-500"></i> {{ task.storyPoints }} pts
+                  </span>
+                }
+                @if (task.dueDate) {
+                  <span class="meta-chip">
+                    <i class="fa-regular fa-clock"></i> {{ task.dueDate | date:'MMM d' }}
+                  </span>
+                }
+                <span class="meta-chip" title="Assignee">
+                  <i class="fa-solid fa-user"></i> {{ getAssigneeName(task) }}
+                </span>
+                <span class="meta-chip" title="Created by">
+                  <i class="fa-solid fa-user-pen"></i> {{ getCreatorName(task) }}
+                </span>
+              </div>
+
+              <!-- Task Actions -->
+              <div class="task-actions" (click)="$event.stopPropagation()">
+                @if (task.status !== 'Done' && isEmployee()) {
+                  <button class="task-action-btn complete-btn" title="Mark Complete"
+                    (click)="onCompleteTask(task)">
+                    <i class="fa-solid fa-check"></i>
+                  </button>
+                }
+                @if (isTeamLeader()) {
+                  <button class="task-action-btn delete-btn" title="Delete Task"
+                    (click)="onDeleteTask(task)">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                }
+              </div>
+
+            </div>
+          } @empty {
+            <div class="empty-column">
+              <i class="fa-regular fa-folder-open"></i>
+              <span>No tasks</span>
+            </div>
+          }
+
+        </div>
+      </div>
+    }
+  </div>
+
+</div>
+
+<!-- Create Task Modal -->
+<app-create-task-modal
+  [isOpen]="showCreateTaskModal()"
+  [projectId]="projectId() || project()?.id || ''"
+  (close)="showCreateTaskModal.set(false)"
+  (created)="onTaskCreated()">
+</app-create-task-modal>
+
+<!-- Task Details Modal -->
+<app-task-detail-modal
+  [isOpen]="showTaskDetailModal()"
+  [taskId]="selectedTaskId()"
+  (close)="showTaskDetailModal.set(false)">
+</app-task-detail-modal>
+
+<!-- Edit Project Modal -->
+<app-edit-project-modal
+  [isOpen]="showEditProjectModal()"
+  [project]="project()"
+  (close)="showEditProjectModal.set(false)"
+  (saved)="onProjectUpdated()">
+</app-edit-project-modal>
+
+<!-- Confirm Dialog -->
+<app-confirm-dialog
+  [isOpen]="showConfirm()"
+  [title]="confirmTitle()"
+  [message]="confirmMessage()"
+  [confirmLabel]="confirmLabel()"
+  [confirmIcon]="confirmIcon()"
+  [confirmVariant]="confirmVariant()"
+  [headerIcon]="confirmHeaderIcon()"
+  (confirmed)="onConfirmed()"
+  (cancelled)="onCancelled()">
+</app-confirm-dialog>

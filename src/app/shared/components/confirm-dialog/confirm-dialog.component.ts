@@ -15,12 +15,16 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './confirm-dialog.component.html',
 })
 export class ConfirmDialogComponent {
-  title = input.required<string>();
-  message = input.required<string>();
+  isOpen = input<boolean>(true);
+  title = input<string>('Confirm Action');
+  message = input<string>('');
   showInput = input<boolean>(false);
   inputLabel = input<string>('Note');
   confirmLabel = input<string>('Confirm');
   cancelLabel = input<string>('Cancel');
+  confirmIcon = input<string>('');
+  confirmVariant = input<'danger' | 'primary' | 'secondary'>('primary');
+  headerIcon = input<string>('');
 
   inputChange = output<string>();
   confirmed = output<void>();

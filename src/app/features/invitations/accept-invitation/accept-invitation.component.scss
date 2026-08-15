@@ -1,0 +1,38 @@
+.accept-page { min-height: 100vh; display: grid; place-items: center; align-content: center; gap: 1.25rem; padding: 2rem 1rem; background: #f6f8fb; color: var(--color-text); }
+.brand { display: inline-flex; align-items: center; gap: 0.625rem; color: var(--color-text); text-decoration: none; }
+.brand span { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: 8px; background: var(--color-primary); color: white; font-weight: 800; }
+.brand strong { font-size: 1.2rem; }
+.accept-panel { width: min(100%, 560px); border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface); box-shadow: 0 18px 50px rgba(15, 23, 42, 0.09); padding: 2rem; }
+header { margin-bottom: 1.25rem; }
+.eyebrow { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--color-primary); font-size: 0.75rem; font-weight: 750; }
+header h1 { margin: 0.4rem 0 0; font-size: 1.75rem; }
+header p { margin: 0.35rem 0 0; color: var(--color-text-secondary); font-size: 0.875rem; }
+.invitation-info { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; padding: 0.875rem 0; margin-bottom: 1.25rem; border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); }
+.invitation-info div { min-width: 0; }
+.invitation-info span { display: block; color: var(--color-text-secondary); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; }
+.invitation-info strong { display: block; margin-top: 0.25rem; font-size: 0.75rem; overflow-wrap: anywhere; }
+form { display: flex; flex-direction: column; gap: 1rem; }
+.field-group { display: flex; flex-direction: column; gap: 0.4rem; }
+label { color: var(--color-text); font-size: 0.78rem; font-weight: 700; }
+input { width: 100%; border: 1px solid var(--color-border); border-radius: 8px; background: white; padding: 0.7rem 0.8rem; font-size: 0.875rem; }
+input:focus { outline: 3px solid color-mix(in srgb, var(--color-primary) 15%, transparent); border-color: var(--color-primary); }
+.password-input { position: relative; }
+.password-input input { padding-right: 2.75rem; }
+.password-input button { position: absolute; right: 0.35rem; top: 50%; transform: translateY(-50%); width: 2rem; height: 2rem; border: 0; border-radius: 6px; background: transparent; color: var(--color-text-secondary); cursor: pointer; }
+.password-policy { display: flex; flex-wrap: wrap; gap: 0.35rem 0.75rem; margin: 0.15rem 0 0; padding: 0; list-style: none; color: var(--color-text-secondary); font-size: 0.68rem; }
+.password-policy li { display: inline-flex; align-items: center; gap: 0.25rem; }
+.password-policy i { color: #cbd5e1; }
+.password-policy .met { color: #15803d; }
+.password-policy .met i { color: #15803d; }
+.field-error { color: #b91c1c; font-size: 0.7rem; }
+.submit-error { display: flex; align-items: flex-start; gap: 0.5rem; border: 1px solid #fecaca; border-radius: 8px; background: #fef2f2; color: #b91c1c; padding: 0.75rem; font-size: 0.75rem; }
+.submit-button { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; border: 0; border-radius: 8px; background: var(--color-primary); color: white; padding: 0.8rem 1rem; font-weight: 750; cursor: pointer; }
+.submit-button:disabled { opacity: 0.6; cursor: not-allowed; }
+.message-state { min-height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--color-text-secondary); }
+.message-state > i { font-size: 2rem; color: var(--color-primary); }
+.message-state h1 { margin: 1rem 0 0.35rem; color: var(--color-text); font-size: 1.35rem; }
+.message-state p { margin: 0; max-width: 380px; font-size: 0.85rem; }
+.message-state a { margin-top: 1.25rem; border-radius: 8px; background: var(--color-primary); color: white; padding: 0.7rem 1rem; font-size: 0.8rem; font-weight: 700; text-decoration: none; }
+.error-state > i { color: #b91c1c; }
+.success-state > i { color: #15803d; }
+@media (max-width: 520px) { .accept-page { padding: 1rem; } .accept-panel { padding: 1.25rem; } .invitation-info { grid-template-columns: 1fr; } }

@@ -7,7 +7,11 @@ import { AuthService } from '../auth/auth.service';
 })
 export class SidebarService {
   private authService = inject(AuthService);
+  isCollapsed = signal<boolean>(false);
 
+  toggleCollapse(): void {
+    this.isCollapsed.update(value => !value);
+  }
   // ⭐ All menu sections - can be updated dynamically
   private menuSectionsSignal = signal<SidebarSection[]>([]);
 
@@ -42,12 +46,14 @@ export class SidebarService {
       { title: 'Dashboard', icon: 'fa-solid fa-house', route: '/home' },
     ];
 
-    // ⭐ Employees - visible to all authenticated users
-    mainItems.push({
-      title: 'Employees',
-      icon: 'fa-solid fa-users',
-      route: '/employees',
-    });
+    // Employees are visible to management and team leaders, not individual developers.
+    if (roles.some(role => ['SuperAdmin', 'Admin', 'OrganizationOwner', 'TeamLeader'].includes(role))) {
+      mainItems.push({
+        title: 'Employees',
+        icon: 'fa-solid fa-users',
+        route: '/employees',
+      });
+    }
 
     // ⭐ Projects - visible to all authenticated users
     mainItems.push({
@@ -74,6 +80,11 @@ export class SidebarService {
         title: 'Settings',
         icon: 'fa-solid fa-gear',
         route: '/organization_settings',
+      });
+      managementItems.push({
+        title: 'Invitation Approvals',
+        icon: 'fa-solid fa-user-check',
+        route: '/invitation-approvals',
       });
       managementItems.push({
         title: 'GitHub Integration',

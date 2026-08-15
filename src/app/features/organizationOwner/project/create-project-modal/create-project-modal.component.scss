@@ -1,0 +1,85 @@
+@use '../../../../../styles/colors' as *;
+
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: $text;
+  letter-spacing: 0.02em;
+}
+
+.form-input {
+  padding: 10px 14px;
+  border: 1.5px solid $border;
+  border-radius: 12px;
+  font-size: 14px;
+  color: $text;
+  background: $surface;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.form-input::placeholder {
+  color: $text-secondary;
+}
+
+.form-input:focus {
+  border-color: $primary;
+  box-shadow: 0 0 0 3px rgba($primary, 0.1);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-error {
+  font-size: 12px;
+  color: $danger;
+  font-weight: 500;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+.required-skills {
+  border-top: 1px solid $border;
+  padding-top: 16px;
+}
+
+.skills-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.skills-heading p { margin: 4px 0 0; color: $text-secondary; font-size: 12px; }
+.skills-editor { display: grid; gap: 10px; margin-top: 12px; }
+.skill-editor-row { display: grid; grid-template-columns: minmax(0, 1fr) 130px 68px 32px; gap: 8px; align-items: start; }
+.priority-input { min-width: 0; }
+.remove-skill { width: 32px; height: 38px; border: 0; border-radius: 8px; color: $danger; background: rgba($danger, .1); cursor: pointer; }
+.skill-error { grid-column: 1 / -1; }
+
+@media (max-width: 640px) { .skill-editor-row { grid-template-columns: 1fr 1fr 58px 32px; } }

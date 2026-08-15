@@ -1,0 +1,59 @@
+<main class="accept-page">
+  <a class="brand" routerLink="/" aria-label="WorkFit home"><span>W</span><strong>WorkFit</strong></a>
+
+  <section class="accept-panel">
+    @if (loading()) {
+      <div class="message-state" role="status"><i class="fa-solid fa-spinner fa-spin"></i><h1>Checking invitation...</h1><p>Please wait while we validate your link.</p></div>
+    } @else if (invalidToken()) {
+      <div class="message-state error-state" role="alert"><i class="fa-solid fa-link-slash"></i><h1>Invitation unavailable</h1><p>This invitation link is invalid, expired, or has already been used.</p><a routerLink="/login">Go to login</a></div>
+    } @else if (accepted()) {
+      <div class="message-state success-state"><i class="fa-solid fa-circle-check"></i><h1>Account created</h1><p>Your WorkFit employee account is ready. Log in with {{ tokenInfo()?.email }}.</p><a routerLink="/login" [queryParams]="{ email: tokenInfo()?.email }">Log in</a></div>
+    } @else {
+      @if (tokenInfo(); as info) {
+      <header>
+        <span class="eyebrow"><i class="fa-solid fa-user-plus"></i> Developer invitation</span>
+        <h1>Join WorkFit</h1>
+        <p>Set your account details to join the project workspace.</p>
+      </header>
+
+      <div class="invitation-info">
+        <div><span>Name</span><strong>{{ info.displayName }}</strong></div>
+        <div><span>Email</span><strong>{{ info.email }}</strong></div>
+        <div><span>Expires</span><strong>{{ info.expiresAt | date:'medium' }}</strong></div>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="field-group">
+          <label for="display-name">Display name</label>
+          <input id="display-name" formControlName="displayName" autocomplete="name" />
+          @if (form.controls.displayName.touched && form.controls.displayName.invalid) { <span class="field-error">Enter at least 2 characters.</span> }
+        </div>
+
+        <div class="field-group">
+          <label for="password">Password</label>
+          <div class="password-input">
+            <input id="password" [type]="showPassword() ? 'text' : 'password'" formControlName="password" autocomplete="new-password" />
+            <button type="button" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"><i class="fa-solid" [class.fa-eye]="!showPassword()" [class.fa-eye-slash]="showPassword()"></i></button>
+          </div>
+          <ul class="password-policy" aria-label="Password requirements">
+            <li [class.met]="hasMinLength()"><i class="fa-solid fa-check"></i>8 characters</li>
+            <li [class.met]="hasUppercase()"><i class="fa-solid fa-check"></i>Uppercase</li>
+            <li [class.met]="hasLowercase()"><i class="fa-solid fa-check"></i>Lowercase</li>
+            <li [class.met]="hasNumber()"><i class="fa-solid fa-check"></i>Number</li>
+            <li [class.met]="hasSpecial()"><i class="fa-solid fa-check"></i>Special character</li>
+          </ul>
+        </div>
+
+        <div class="field-group">
+          <label for="confirm-password">Confirm password</label>
+          <input id="confirm-password" type="password" formControlName="confirmPassword" autocomplete="new-password" />
+          @if (form.controls.confirmPassword.touched && form.hasError('passwordMismatch')) { <span class="field-error">Passwords do not match.</span> }
+        </div>
+
+        @if (error()) { <div class="submit-error" role="alert"><i class="fa-solid fa-circle-exclamation"></i>{{ error() }}</div> }
+        <button class="submit-button" type="submit" [disabled]="submitting()"><i class="fa-solid" [class.fa-spinner]="submitting()" [class.fa-spin]="submitting()" [class.fa-user-check]="!submitting()"></i>{{ submitting() ? 'Creating account...' : 'Accept invitation' }}</button>
+      </form>
+      }
+    }
+  </section>
+</main>
