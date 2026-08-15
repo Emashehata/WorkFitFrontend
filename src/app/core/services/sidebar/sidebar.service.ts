@@ -42,13 +42,6 @@ export class SidebarService {
       { title: 'Dashboard', icon: 'fa-solid fa-house', route: '/home' },
     ];
 
-    // ⭐ Employees - visible to all authenticated users
-    mainItems.push({
-      title: 'Employees',
-      icon: 'fa-solid fa-users',
-      route: '/employees',
-    });
-
     // ⭐ Projects - visible to all authenticated users
     mainItems.push({
       title: 'Projects',
@@ -80,6 +73,11 @@ export class SidebarService {
         icon: 'fa-brands fa-github',
         route: '/integrations',
         badge: 'New',
+      });
+      managementItems.push({
+        title: 'Employees',
+        icon: 'fa-solid fa-users',
+        route: '/employees',
       });
     }
 

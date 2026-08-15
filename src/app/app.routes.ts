@@ -61,7 +61,6 @@ export const routes: Routes = [
             (m) => m.PaymentSuccessComponent,
           ),
       },
-
       {
         path: 'integrations',
         loadComponent: () =>
@@ -69,6 +68,13 @@ export const routes: Routes = [
             (m) => m.IntegrationsComponent,
           ),
       },
+      {
+        path: 'employees',
+        loadComponent: () =>
+          import('./features/cv-upload/cv-upload.component').then(
+            (m) => m.CvUploadComponent,
+          ),
+      }
     ],
   },
   {

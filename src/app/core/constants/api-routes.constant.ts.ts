@@ -4,11 +4,13 @@ export const API_ROUTES = {
   },
   workflow: {
     registerOrganization: '/workflow/organization/register',
+    cvsUpload: '/workflow/cvs/upload',
   },
   organizations: {
     me: '/organizations/me',
     meSettings: '/organizations/me/settings',
-    meGithub: '/organizations/me/github', 
+    meGithub: '/organizations/me/github',
+    meId: '/organizations/me/id',
   },
   employees: {
     list: '/employees',
@@ -17,10 +19,10 @@ export const API_ROUTES = {
   projects: {
     list: '/projects',
   },
-payments: {
-  process: '/payments',
-  byId: (paymentId: string) => `/payments/${paymentId}`,
-  checkoutSession: '/payments/checkout-session',
-  checkoutSessionCancel: '/payments/checkout-session/cancel',
-},
+  payments: {
+    process: '/payments',
+    byId: (paymentId: string) => `/payments/${paymentId}`,
+    checkoutSession: '/payments/checkout-session',
+    checkoutSessionCancel: '/payments/checkout-session/cancel',
+  },
 } as const;
