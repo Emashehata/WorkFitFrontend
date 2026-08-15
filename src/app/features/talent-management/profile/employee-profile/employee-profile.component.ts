@@ -37,19 +37,19 @@ export class EmployeeProfileComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    const paramId = this.route.snapshot.paramMap.get('id');
+    this.route.paramMap.subscribe((params) => {
+      const paramId = params.get('id');
 
-    if (paramId) {
-      // فيه id في الراوت = بنشوف بروفايل حد تاني
-      this.talentService.getEmployeeById(paramId).subscribe();
-      return;
-    }
+      if (paramId) {
+        this.talentService.getEmployeeById(paramId).subscribe();
+        return;
+      }
 
-    // مفيش id = بنشوف بروفايلنا احنا
-    const userId = this.auth.currentUser()?.userId;
-    if (userId) {
-      this.talentService.getEmployeeById(userId).subscribe();
-    }
+      const userId = this.auth.currentUser()?.userId;
+      if (userId) {
+        this.talentService.getEmployeeById(userId).subscribe();
+      }
+    });
   }
 
   openSkillHistory(skillId: string) {

@@ -17,8 +17,9 @@ import { InvitationApprovalsComponent } from './features/organizationOwner/invit
 import { AcceptInvitationComponent } from './features/invitations/accept-invitation/accept-invitation.component';
 
 export const routes: Routes = [
-  { path: '', component: LandingComponent, pathMatch: 'full', canActivate: [PublicGuard] },
-  { path: 'login', component: LoginComponent, canActivate: [PublicGuard] },
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: 'login', component: LoginComponent },
+  { path: 'landing', component: LandingComponent },
   { path: 'register', component: RegisterOrganizationComponent, canActivate: [PublicGuard] },
   { path: 'invitations/accept', component: AcceptInvitationComponent },
   { path: 'dashboard', redirectTo: 'home', pathMatch: 'full' },
@@ -40,5 +41,5 @@ export const routes: Routes = [
     ],
   },
   { path: 'github/callback', loadComponent: () => import('./features/integrations/github-callback/github-callback.component').then(m => m.GitHubCallbackComponent) },
-  { path: '**', redirectTo: 'home' },
+  { path: '**', redirectTo: 'login' },
 ];

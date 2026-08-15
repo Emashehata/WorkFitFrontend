@@ -25,14 +25,16 @@
       </div>
       <div>
         <h4 class="agent-title">WorkFit AI Sidekick</h4>
-        <span class="agent-subtitle">Active • Project Assistant</span>
+        <span class="agent-subtitle">
+          {{ chatMode() === 'none' ? 'Select Assistant Mode' : (chatMode() === 'recommendation' ? 'Task Recommendation Mode' : 'Vector DB Search Mode') }}
+        </span>
       </div>
     </div>
     <div class="header-actions">
       <button type="button" class="hdr-btn" (click)="toggleExpand()" [title]="isExpanded() ? 'Collapse View' : 'Expand View'">
         <i class="fa-solid" [class.fa-compress]="isExpanded()" [class.fa-expand]="!isExpanded()"></i>
       </button>
-      <button type="button" class="hdr-btn" (click)="clearChat()" title="Clear Chat">
+      <button type="button" class="hdr-btn" (click)="clearChat()" title="Reset Mode History">
         <i class="fa-solid fa-rotate-right"></i>
       </button>
       <button type="button" class="hdr-btn" (click)="toggleChat()" title="Close">
@@ -41,67 +43,257 @@
     </div>
   </div>
 
-  <!-- Messages Scroll Area -->
-  <div class="agent-messages-container" #scrollContainer>
-    @for (msg of messages(); track msg.id) {
-      <div class="message-row" [class.user-row]="msg.sender === 'user'" [class.agent-row]="msg.sender === 'agent'">
-        @if (msg.sender === 'agent') {
-          <div class="msg-avatar">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
+  <!-- Mode Selector Bar (Only displays target destination mode button) -->
+  @if (chatMode() !== 'none') {
+    <div class="agent-mode-bar flex items-center justify-between p-2 bg-slate-900 border-b border-slate-800 text-white gap-2">
+      @if (chatMode() === 'recommendation') {
+        <button
+          type="button"
+          class="mode-tab-btn flex-1 py-1.5 px-3 rounded text-xs font-semibold flex items-center justify-center gap-1.5 transition-all bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm cursor-pointer"
+          (click)="setMode('vector')">
+          <i class="fa-solid fa-database text-xs"></i>
+          <span>Switch to Vector DB Search</span>
+        </button>
+      }
+
+      @if (chatMode() === 'vector') {
+        <button
+          type="button"
+          class="mode-tab-btn flex-1 py-1.5 px-3 rounded text-xs font-semibold flex items-center justify-center gap-1.5 transition-all bg-purple-600 hover:bg-purple-700 text-white shadow-sm cursor-pointer"
+          (click)="setMode('recommendation')">
+          <i class="fa-solid fa-user-check text-xs"></i>
+          <span>Switch to Task Recommendation</span>
+        </button>
+      }
+
+      <button
+        type="button"
+        class="mode-tab-btn py-1.5 px-2.5 rounded text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all shrink-0 cursor-pointer"
+        (click)="setMode('none')"
+        title="Return to mode selection menu">
+        <i class="fa-solid fa-list-ul me-1"></i> Menu
+      </button>
+    </div>
+  }
+
+  <!-- INITIAL STATE: Mode Selection (when chatMode() === 'none') -->
+  @if (chatMode() === 'none') {
+    <div class="initial-mode-selection flex-1 flex flex-col justify-center items-center p-6 bg-slate-50 text-center gap-5 overflow-y-auto">
+      <div class="welcome-badge flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+        <span>WorkFit AI Assistant</span>
+      </div>
+
+      <div class="welcome-text">
+        <h3 class="text-base font-bold text-slate-800">Select AI Workflow</h3>
+        <p class="text-xs text-slate-500 mt-1">Choose an option below to start using the assistant</p>
+      </div>
+
+      <div class="mode-options-cards flex flex-col gap-3 w-full max-w-xs">
+        <!-- Option 1: Task Recommendation -->
+        <button
+          type="button"
+          class="option-card p-4 rounded-xl border border-indigo-200 bg-white hover:border-indigo-500 hover:shadow-md transition-all text-left flex items-start gap-3.5 group cursor-pointer"
+          (click)="setMode('recommendation')">
+          <div class="card-icon w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center text-lg transition-colors shrink-0">
+            <i class="fa-solid fa-user-check"></i>
           </div>
-        }
-        <div class="msg-bubble-wrap">
-          <div class="msg-bubble">
-            <p class="msg-text">{{ msg.text }}</p>
-            <div class="msg-footer flex items-center justify-between gap-2 mt-1">
-              <span class="msg-time">{{ msg.timestamp | date:'shortTime' }}</span>
-              @if (msg.sender === 'agent') {
-                <button
-                  type="button"
-                  class="copy-btn opacity-60 hover:opacity-100 text-[10px] text-gray-500 hover:text-indigo-600 transition-opacity flex items-center gap-1"
-                  (click)="copyMessageText(msg)">
-                  <i class="fa-solid" [class.fa-check]="copiedMsgId() === msg.id" [class.fa-copy]="copiedMsgId() !== msg.id"></i>
-                  <span>{{ copiedMsgId() === msg.id ? 'Copied' : '' }}</span>
-                </button>
+          <div>
+            <h5 class="text-xs font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">Task Recommendation</h5>
+            <p class="text-[11px] text-slate-500 leading-tight mt-0.5">Select a Project & Task to get AI-powered candidate employee recommendations.</p>
+          </div>
+        </button>
+
+        <!-- Option 2: Vector DB Search -->
+        <button
+          type="button"
+          class="option-card p-4 rounded-xl border border-purple-200 bg-white hover:border-purple-500 hover:shadow-md transition-all text-left flex items-start gap-3.5 group cursor-pointer"
+          (click)="setMode('vector')">
+          <div class="card-icon w-10 h-10 rounded-lg bg-purple-50 text-purple-600 group-hover:bg-purple-600 group-hover:text-white flex items-center justify-center text-lg transition-colors shrink-0">
+            <i class="fa-solid fa-database"></i>
+          </div>
+          <div>
+            <h5 class="text-xs font-bold text-slate-800 group-hover:text-purple-600 transition-colors">Vector DB Search</h5>
+            <p class="text-[11px] text-slate-500 leading-tight mt-0.5">Type custom prompts & questions to search across the vector database.</p>
+          </div>
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- ACTIVE STATE: Chat & GUI Controls -->
+  @if (chatMode() !== 'none') {
+    <!-- Messages Scroll Area (Renders mode-specific activeMessages) -->
+    <div class="agent-messages-container" #scrollContainer>
+      @for (msg of activeMessages(); track msg.id) {
+        <div class="message-row" [class.user-row]="msg.sender === 'user'" [class.agent-row]="msg.sender === 'agent'">
+          @if (msg.sender === 'agent') {
+            <div class="msg-avatar">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </div>
+          }
+          <div class="msg-bubble-wrap">
+            <div class="msg-bubble">
+              <p class="msg-text">{{ msg.text }}</p>
+              @if (msg.candidates?.length) {
+                <div class="candidate-list mt-3 flex flex-col gap-2">
+                  @for (candidate of msg.candidates; track candidate.employeeId) {
+                    <div class="candidate-item p-2.5 rounded-lg border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-indigo-200 transition-all">
+                      <div class="candidate-heading flex items-center justify-between gap-2">
+                        <button
+                          type="button"
+                          class="employee-name-btn text-indigo-600 font-bold hover:text-indigo-800 hover:underline flex items-center gap-1.5 text-xs text-left cursor-pointer transition-colors"
+                          (click)="openEmployeeProfile(candidate.employeeId)"
+                          title="Click to view employee profile">
+                          <span>#{{ candidate.rank }} {{ candidate.employeeName }}</span>
+                          <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-indigo-400"></i>
+                        </button>
+                        <span class="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">{{ candidate.score | number:'1.0-1' }}% Match</span>
+                      </div>
+                      <div class="mt-1 flex items-center justify-between text-[11px] text-slate-500">
+                        <span>Allocation Available:</span>
+                        <span class="font-semibold text-slate-700">{{ candidate.availableAllocation | number:'1.0-0' }}%</span>
+                      </div>
+                      <p class="text-xs text-slate-600 leading-relaxed mt-1.5 pt-1.5 border-t border-slate-200/80">{{ candidate.reasoning }}</p>
+                    </div>
+                  }
+                </div>
               }
+              <div class="msg-footer flex items-center justify-between gap-2 mt-1">
+                <span class="msg-time">{{ msg.timestamp | date:'shortTime' }}</span>
+                @if (msg.sender === 'agent') {
+                  <button
+                    type="button"
+                    class="copy-btn opacity-60 hover:opacity-100 text-[10px] text-gray-500 hover:text-indigo-600 transition-opacity flex items-center gap-1"
+                    (click)="copyMessageText(msg)">
+                    <i class="fa-solid" [class.fa-check]="copiedMsgId() === msg.id" [class.fa-copy]="copiedMsgId() !== msg.id"></i>
+                    <span>{{ copiedMsgId() === msg.id ? 'Copied' : '' }}</span>
+                  </button>
+                }
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    }
+      }
 
-    <!-- Typing Indicator -->
-    @if (isSending()) {
-      <div class="message-row agent-row">
-        <div class="msg-avatar">
-          <i class="fa-solid fa-wand-magic-sparkles"></i>
-        </div>
-        <div class="msg-bubble-wrap">
-          <div class="msg-bubble typing-bubble">
-            <span class="dot"></span>
-            <span class="dot"></span>
-            <span class="dot"></span>
+      <!-- Typing Indicator -->
+      @if (isSending()) {
+        <div class="message-row agent-row">
+          <div class="msg-avatar">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+          </div>
+          <div class="msg-bubble-wrap">
+            <div class="msg-bubble typing-bubble">
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+            </div>
           </div>
         </div>
-      </div>
-    }
-  </div>
+      }
+    </div>
 
-  <!-- Footer Input Bar -->
-  <div class="agent-footer-input">
-    <input
-      type="text"
-      class="agent-input-field"
-      placeholder="Type your message to AI Assistant..."
-      [(ngModel)]="userInput"
-      (keyup.enter)="sendMessage()"
-      [disabled]="isSending()" />
-    <button
-      type="button"
-      class="agent-send-btn"
-      [disabled]="!userInput().trim() || isSending()"
-      (click)="sendMessage()">
-      <i class="fa-solid fa-paper-plane"></i>
-    </button>
-  </div>
+    <!-- Footer Input Controls -->
+    <div class="agent-footer-input flex flex-col gap-2 p-2.5 bg-slate-50 border-t border-slate-200">
+      <!-- MODE 1: Task Employee Recommendation -->
+      @if (chatMode() === 'recommendation') {
+        <div class="recommendation-controls flex flex-col gap-2">
+          <!-- Collapse Toggle Bar -->
+          <div class="controls-header flex items-center justify-end">
+            <button
+              type="button"
+              class="collapse-btn text-xs text-slate-500 hover:text-indigo-600 bg-slate-100 hover:bg-indigo-50 px-2.5 py-1 rounded-md flex items-center gap-1.5 cursor-pointer font-semibold transition-all border border-slate-200 hover:border-indigo-200 shadow-2xs"
+              (click)="toggleControlsCollapse()">
+              <span>{{ isControlsCollapsed() ? 'Expand Controls' : 'Collapse Controls' }}</span>
+              <i class="fa-solid" [class.fa-chevron-up]="!isControlsCollapsed()" [class.fa-chevron-down]="isControlsCollapsed()"></i>
+            </button>
+          </div>
+
+          @if (!isControlsCollapsed()) {
+            <div class="dropdowns-row flex items-center gap-2">
+              <!-- Project Dropdown (Step 1) -->
+              <div class="flex-1 flex flex-col gap-0.5">
+                <label class="text-[10px] font-bold text-slate-600 uppercase tracking-wider">1. Select Project</label>
+                <select
+                  class="agent-task-select text-xs p-2 rounded border border-slate-300 bg-white shadow-sm focus:border-indigo-500"
+                  [ngModel]="selectedProjectId()"
+                  (ngModelChange)="onProjectChange($event)"
+                  [disabled]="isLoadingProjects() || isSending()"
+                  aria-label="Select Project">
+                  <option value="">
+                    {{ isLoadingProjects() ? 'Loading projects...' : '-- Select Project --' }}
+                  </option>
+                  @for (project of projects(); track project.id) {
+                    <option [value]="project.id">{{ project.name }}</option>
+                  }
+                </select>
+              </div>
+
+              <!-- Refresh Button -->
+              <button
+                type="button"
+                class="self-end p-2 text-slate-600 hover:text-indigo-600 rounded border border-slate-300 bg-white transition-colors shadow-sm"
+                (click)="refreshAll()"
+                title="Refresh Projects and Tasks">
+                <i class="fa-solid fa-arrows-rotate text-xs"></i>
+              </button>
+            </div>
+
+            <!-- Task Dropdown (Step 2 - DISPLAY NONE until project is selected) -->
+            @if (selectedProjectId()) {
+              <div class="flex flex-col gap-0.5 animate-fadeIn">
+                <label class="text-[10px] font-bold text-slate-600 uppercase tracking-wider">2. Select Task</label>
+                <select
+                  class="agent-task-select text-xs p-2 rounded border border-slate-300 bg-white shadow-sm focus:border-indigo-500"
+                  [ngModel]="selectedTaskId()"
+                  (ngModelChange)="selectedTaskId.set($event)"
+                  [disabled]="isLoadingTasks() || isSending()"
+                  aria-label="Select Task for AI Recommendation">
+                  <option value="">
+                    {{ isLoadingTasks() ? 'Loading tasks...' : (projectTasks().length ? '-- Select Task --' : 'No tasks found in project') }}
+                  </option>
+                  @for (task of projectTasks(); track task.id) {
+                    <option [value]="task.id">{{ task.title }}</option>
+                  }
+                </select>
+              </div>
+            }
+
+            <!-- Action Button -->
+            <button
+              type="button"
+              class="w-full py-2 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-1"
+              [disabled]="!selectedTaskId() || isSending()"
+              (click)="sendRecommendation()">
+              <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+              <span>{{ isSending() ? 'Analyzing & Recommending...' : 'Recommend Employee for Selected Task' }}</span>
+            </button>
+          }
+        </div>
+      }
+
+      <!-- MODE 2: Vector DB Search -->
+      @if (chatMode() === 'vector') {
+        <div class="vector-search-controls flex flex-col gap-2">
+          <label class="text-[10px] font-bold text-slate-600 uppercase tracking-wider">Vector DB Query / Prompt</label>
+          <div class="input-row flex items-center gap-2">
+            <input
+              type="text"
+              class="agent-input-field flex-1"
+              placeholder="Ask any question across full vector database..."
+              [(ngModel)]="userInput"
+              (keyup.enter)="sendVectorPrompt()"
+              [disabled]="isSending()" />
+            <button
+              type="button"
+              class="agent-send-btn"
+              [disabled]="!userInput().trim() || isSending()"
+              (click)="sendVectorPrompt()">
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
 </div>

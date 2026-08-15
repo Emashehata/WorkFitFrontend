@@ -25,8 +25,6 @@ export const appConfig: ApplicationConfig = {
       }),
       withViewTransitions(),
     ),
-    provideHttpClient(),
-
     provideAnimations(),
   ],
 };
