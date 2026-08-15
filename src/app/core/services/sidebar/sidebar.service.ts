@@ -40,10 +40,10 @@ export class SidebarService {
 
   const sections: SidebarSection[] = [];
 
-  const mainItems: SidebarMenuItem[] = [
-    { title: 'Dashboard', icon: 'fa-solid fa-house', route: '/home' },
-  ];
-
+  // ⭐ Main section - visible to everyone
+    const mainItems: SidebarMenuItem[] = [
+      { title: 'Dashboard', icon: 'fa-solid fa-house', route: '/home' },
+    ];
   if (roles.some(role => ['SuperAdmin', 'Admin', 'OrganizationOwner', 'TeamLeader'].includes(role))) {
     mainItems.push({
       title: 'Employees',
@@ -51,6 +51,7 @@ export class SidebarService {
       route: '/employees',
     });
   }
+  
 
   mainItems.push({
     title: 'Projects',
@@ -112,6 +113,29 @@ export class SidebarService {
       badge: 'New',
     });
   }
+    if (roles.some(r => r === 'OrganizationOwner' || r === 'SuperAdmin')) {
+      managementItems.push({
+        title: 'Organizations',
+        icon: 'fa-solid fa-building',
+        route: '/organizations',
+      });
+      managementItems.push({
+        title: 'Settings',
+        icon: 'fa-solid fa-gear',
+        route: '/organization_settings',
+      });
+      managementItems.push({
+        title: 'GitHub Integration',
+        icon: 'fa-brands fa-github',
+        route: '/integrations',
+        badge: 'New',
+      });
+      managementItems.push({
+        title: 'Employee Profiles',
+        icon: 'fa-solid fa-users',
+        route: '/Cvs',
+      });
+    }
 
   if (roles.includes('SuperAdmin')) {
     managementItems.push({

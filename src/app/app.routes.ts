@@ -38,6 +38,51 @@ export const routes: Routes = [
       { path: 'integrations', loadComponent: () => import('./features/integrations/integrations.component').then(m => m.IntegrationsComponent) },
       { path: '', loadChildren: () => import('./features/assessments/assessment.routes').then(m => m.ASSESSMENT_ROUTES) },
       { path: '', loadChildren: () => import('./features/talent-management/talent-management.routes').then(m => m.TALENT_MANAGEMENT_ROUTES) },
+      {
+        path: 'home',
+        component: HomeComponent,
+      },
+
+      {
+        path: 'projects',
+        component: ProjectComponent,
+      },
+
+      {
+        path: 'organization_settings',
+        component: OrganizationSettingsComponent,
+        canActivate: [paymentGuard],
+      },
+
+      {
+        path: 'pricing',
+        loadComponent: () =>
+          import('./features/pricing/pricing.component').then(
+            (m) => m.PricingComponent,
+          ),
+      },
+
+      {
+        path: 'payment-success',
+        loadComponent: () =>
+          import('./features/organizationOwner/payment-success/payment-success.component').then(
+            (m) => m.PaymentSuccessComponent,
+          ),
+      },
+      {
+        path: 'integrations',
+        loadComponent: () =>
+          import('./features/integrations/integrations.component').then(
+            (m) => m.IntegrationsComponent,
+          ),
+      },
+      {
+        path: 'Cvs',
+        loadComponent: () =>
+          import('./features/cv-upload/cv-upload.component').then(
+            (m) => m.CvUploadComponent,
+          ),
+      }
     ],
   },
   { path: 'github/callback', loadComponent: () => import('./features/integrations/github-callback/github-callback.component').then(m => m.GitHubCallbackComponent) },
