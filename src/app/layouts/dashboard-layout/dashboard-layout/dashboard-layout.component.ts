@@ -31,6 +31,7 @@ export class DashboardLayoutComponent implements OnInit {
   onResize() {
     const mobile = window.innerWidth < 992;
     this.isMobile.set(mobile);
+
     if (mobile) {
       this.sidebarOpen.set(false);
     } else {

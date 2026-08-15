@@ -72,6 +72,7 @@ export class AuthService {
   // ⭐ Get Token (with cleaning)
   getToken(): string | null {
     const token = localStorage.getItem(TOKEN_KEY);
+
     if (!token) return null;
     return this.cleanToken(token);
   }

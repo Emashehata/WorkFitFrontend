@@ -1,13 +1,20 @@
 @use "tailwindcss";
-@use "./styles/colors";
-/* Global Styles */
+@use "./styles/colors" as *;    
 
-html,
-body {
-  height: 100%;
-}
+@theme inline {
+  --color-primary: var(--color-primary);
+  --color-primary-hover: var(--color-primary-hover);
+  --color-secondary: var(--color-secondary);
 
-body {
-  @apply bg-slate-50 text-slate-800;
-  font-family: "Inter", sans-serif;
+  --color-success: var(--color-success);
+  --color-danger: var(--color-danger);
+  --color-warning: var(--color-warning);
+  --color-info: var(--color-info);
+
+  --color-background: var(--color-background);
+  --color-surface: var(--color-surface);
+
+  --color-text: var(--color-text);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-border: var(--color-border);
 }
