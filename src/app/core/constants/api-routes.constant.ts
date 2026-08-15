@@ -4,11 +4,13 @@ export const API_ROUTES = {
   },
   workflow: {
     registerOrganization: '/workflow/organization/register',
+    cvsUpload: '/workflow/cvs/upload',
   },
   organizations: {
     me: '/organizations/me',
     meSettings: '/organizations/me/settings',
     meGithub: '/organizations/me/github',
+    meId: '/organizations/me/id',
   },
   employees: {
     list: '/employees',

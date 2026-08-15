@@ -40,10 +40,10 @@ export class SidebarService {
 
   const sections: SidebarSection[] = [];
 
-  const mainItems: SidebarMenuItem[] = [
-    { title: 'Dashboard', icon: 'fa-solid fa-house', route: '/home' },
-  ];
-
+  // ⭐ Main section - visible to everyone
+    const mainItems: SidebarMenuItem[] = [
+      { title: 'Dashboard', icon: 'fa-solid fa-house', route: '/home' },
+    ];
   if (roles.some(role => ['SuperAdmin', 'Admin', 'OrganizationOwner', 'TeamLeader'].includes(role))) {
     mainItems.push({
       title: 'Employees',
@@ -51,10 +51,7 @@ export class SidebarService {
       route: '/employees',
     });
   }
-    // ⭐ Main section - visible to everyone
-    const mainItems: SidebarMenuItem[] = [
-      { title: 'Dashboard', icon: 'fa-solid fa-house', route: '/home' },
-    ];
+  
 
   mainItems.push({
     title: 'Projects',
@@ -134,9 +131,9 @@ export class SidebarService {
         badge: 'New',
       });
       managementItems.push({
-        title: 'Employees',
+        title: 'Employee Profiles',
         icon: 'fa-solid fa-users',
-        route: '/employees',
+        route: '/Cvs',
       });
     }
 

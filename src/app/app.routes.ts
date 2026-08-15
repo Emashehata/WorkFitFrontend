@@ -77,7 +77,7 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'employees',
+        path: 'Cvs',
         loadComponent: () =>
           import('./features/cv-upload/cv-upload.component').then(
             (m) => m.CvUploadComponent,
