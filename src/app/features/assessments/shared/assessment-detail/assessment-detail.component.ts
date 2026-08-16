@@ -10,7 +10,6 @@ import { AuthService } from '../../../../core/services/auth/auth.service';
 import { TaskService } from '../../../../core/services/task/task.service';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
-
 @Component({
   selector: 'app-assessment-detail',
   standalone: true,
@@ -50,54 +49,77 @@ export class AssessmentDetailComponent implements OnInit {
       .getById(id)
       .pipe(
         switchMap((assessment) => {
-          // ⚠️ taskId ممكن يبقى null دلوقتي، فمنجيبش التاسك في الحالة دي
           if (!assessment.taskId) return [null];
 
           this.taskLoading.set(true);
           return this.taskService.getTaskById(assessment.taskId).pipe(
             tap((task) => this.task.set(task)),
-            finalize(() => this.taskLoading.set(false))
+            finalize(() => this.taskLoading.set(false)),
           );
-        })
+        }),
       )
       .subscribe();
   }
 
-  toggleAlterMode() {
-    if (!this.isAltering()) {
-      const initial: Record<string, number> = {};
-      this.assessment()?.skillChanges.forEach((sc) => {
-        initial[sc.skillId] = sc.proposedScore;
-      });
-      this.alteredScores.set(initial);
-    }
-    this.isAltering.update((v) => !v);
+
+toggleAlterMode() {
+  if (!this.isAltering()) {
+    const initial: Record<string, number> = {};
+    this.assessment()?.skillChanges.forEach((sc) => {
+      initial[sc.skillId] = sc.proposedScore;
+    });
+    this.alteredScores.set(initial);
+  } else {
+    this.alterNote.set('');
+  }
+  this.isAltering.update((v) => !v);
+}
+
+updateScore(skillId: string, value: string) {
+  const num = Math.min(100, Math.max(0, Number(value)));
+  this.alteredScores.update((scores) => ({ ...scores, [skillId]: num }));
+}
+
+alteredCount(): number {
+  const current = this.assessment();
+  if (!current) return 0;
+  return current.skillChanges.filter(
+    (sc) => this.alteredScores()[sc.skillId] !== sc.proposedScore
+  ).length;
+}
+
+submitAlter() {
+  const current = this.assessment();
+  if (!current) return;
+
+  this.submitting.set(true);
+  const skillChanges: AlterSkillChange[] = current.skillChanges.map((sc) => ({
+    skillId: sc.skillId,
+    newScore: this.alteredScores()[sc.skillId] ?? sc.proposedScore,
+    note: this.alterNote(),
+  }));
+
+  this.assessmentService
+    .alter(current.assessmentId, { skillChanges, note: this.alterNote() })
+    .pipe(finalize(() => this.submitting.set(false)))
+    .subscribe((updated) => {
+      this.assessmentService.selectedAssessment.set(updated);
+      this.isAltering.set(false);
+      this.alterNote.set('');
+    });
+}
+
+
+  // NEW: score band for coloring bars/badges consistently
+  scoreTier(score: number): 'low' | 'mid' | 'high' {
+    if (score < 40) return 'low';
+    if (score < 70) return 'mid';
+    return 'high';
   }
 
-  updateScore(skillId: string, value: string) {
-    const num = Number(value);
-    this.alteredScores.update((scores) => ({ ...scores, [skillId]: num }));
-  }
-
-  submitAlter() {
-    const current = this.assessment();
-    if (!current) return;
-
-    this.submitting.set(true);
-    const skillChanges: AlterSkillChange[] = current.skillChanges.map((sc) => ({
-      skillId: sc.skillId,
-      newScore: this.alteredScores()[sc.skillId] ?? sc.proposedScore,
-      note: this.alterNote(),
-    }));
-
-    this.assessmentService
-      .alter(current.assessmentId, { skillChanges, note: this.alterNote() })
-      .pipe(finalize(() => this.submitting.set(false)))
-      .subscribe((updated) => {
-        this.assessmentService.selectedAssessment.set(updated);
-        this.isAltering.set(false);
-        this.alterNote.set('');
-      });
+  // NEW: signed delta between old and proposed, for the +/- indicator
+  delta(oldScore: number, newScore: number): number {
+    return newScore - oldScore;
   }
 
   confirmApprove() {
@@ -109,9 +131,12 @@ export class AssessmentDetailComponent implements OnInit {
       .approve(current.assessmentId, { note: this.approveNote() })
       .pipe(finalize(() => this.submitting.set(false)))
       .subscribe(() => {
-        this.assessmentService.updateLocalStatus(current.assessmentId, 'Approved');
+        this.assessmentService.updateLocalStatus(
+          current.assessmentId,
+          'Approved',
+        );
         this.assessmentService.selectedAssessment.update((a) =>
-          a ? { ...a, status: 'Approved' } : a
+          a ? { ...a, status: 'Approved' } : a,
         );
         this.showApproveConfirm.set(false);
         this.approveNote.set('');
@@ -127,21 +152,22 @@ export class AssessmentDetailComponent implements OnInit {
       .reject(current.assessmentId, { note: this.rejectNote() })
       .pipe(finalize(() => this.submitting.set(false)))
       .subscribe(() => {
-        this.assessmentService.updateLocalStatus(current.assessmentId, 'Rejected');
+        this.assessmentService.updateLocalStatus(
+          current.assessmentId,
+          'Rejected',
+        );
         this.assessmentService.selectedAssessment.update((a) =>
-          a ? { ...a, status: 'Rejected' } : a
+          a ? { ...a, status: 'Rejected' } : a,
         );
         this.showRejectConfirm.set(false);
         this.rejectNote.set('');
       });
   }
 
-  scorePercent(score: number): number {
-    return Math.min(100, Math.max(0, score)); // 0-100 مباشرة
-  }
-
   goBack() {
-    const backRoute = this.isTeamLead() ? '/team-assessments' : '/my-assessments';
+    const backRoute = this.isTeamLead()
+      ? '/team-assessments'
+      : '/my-assessments';
     this.router.navigate([backRoute]);
   }
 }
