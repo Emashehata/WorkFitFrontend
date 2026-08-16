@@ -1,12 +1,14 @@
 <div class="p-6 max-w-4xl mx-auto">
 
+  @let a = assessment();
+
   @if (loading()) {
 
     <div class="p-8 text-center text-text-secondary">
       Loading...
     </div>
 
-  } @else if (assessment()) {
+  } @else if (a) {
 
     <div class="flex items-center gap-4 mb-4">
 
@@ -18,30 +20,34 @@
       </button>
 
       <h1 class="text-xl font-bold text-text flex-1">
-        Assessment — {{ assessment()!.employeeName || assessment()!.employeeId }}
+        Assessment — {{ a.employeeName || a.employeeId }}
       </h1>
 
       <span
         class="px-3 py-1 rounded-full text-xs font-semibold"
         [ngClass]="{
-          'bg-warning/15 text-warning':
-            assessment()!.status === 'Pending' || !assessment()!.status,
-          'bg-success/15 text-success':
-            assessment()!.status === 'Approved',
-          'bg-danger/15 text-danger':
-            assessment()!.status === 'Rejected'
+          'bg-warning/15 text-warning': a.status === 'Pending' || !a.status,
+          'bg-success/15 text-success': a.status === 'Approved',
+          'bg-danger/15 text-danger': a.status === 'Rejected'
         }"
       >
-        {{ assessment()!.status || 'Pending' }}
+        {{ a.status || 'Pending' }}
       </span>
 
     </div>
+
 
     <div class="text-text-secondary mb-4">
 
       Task:
 
-      @if (taskLoading()) {
+      @if (!a.taskId) {
+
+        <span class="text-text-secondary text-sm italic">
+          No linked task
+        </span>
+
+      } @else if (taskLoading()) {
 
         <span class="text-text-secondary text-sm">
           Loading...
@@ -50,18 +56,19 @@
       } @else if (task()) {
 
         <strong class="text-text">
-          {{ task()!.title }}
+          {{ task()?.title }}
         </strong>
 
       } @else {
 
         <strong class="text-text">
-          {{ assessment()!.taskId }}
+          {{ a.taskId }}
         </strong>
 
       }
 
     </div>
+
 
     <div class="border border-border rounded-xl overflow-hidden">
 
@@ -73,8 +80,11 @@
             : 'grid-cols-[1.2fr_0.8fr_0.8fr_2fr]'
         "
       >
+
         <span>Skill</span>
+
         <span>Old Score</span>
+
         <span>Proposed Score</span>
 
         @if (isAltering()) {
@@ -82,12 +92,11 @@
         }
 
         <span>Evidence</span>
+
       </div>
 
-      @for (
-        sc of assessment()!.skillChanges;
-        track sc.skillChangeId
-      ) {
+
+      @for (sc of a.skillChanges; track sc.skillId) {
 
         <div
           class="grid gap-2 px-4 py-3 text-sm border-b border-border items-center last:border-b-0"
@@ -116,14 +125,11 @@
 
               <input
                 type="number"
+                min="0"
+                max="100"
                 class="w-[70px] px-2 py-1 rounded-md border border-border text-sm bg-surface text-text"
-                [value]="alteredScores()[sc.skillChangeId]"
-                (input)="
-                  updateScore(
-                    sc.skillChangeId,
-                    $any($event.target).value
-                  )
-                "
+                [value]="alteredScores()[sc.skillId]"
+                (input)="updateScore(sc.skillId, $any($event.target).value)"
               />
 
             </span>
@@ -139,6 +145,7 @@
       }
 
     </div>
+
 
     @if (isAltering()) {
 
@@ -163,10 +170,8 @@
 
     }
 
-    @if (
-      isTeamLead() &&
-      assessment()!.status === 'Pending'
-    ) {
+
+    @if (isTeamLead() && a.status === 'Pending') {
 
       <div class="flex gap-3 mt-6">
 
@@ -216,7 +221,14 @@
 
     }
 
+  } @else {
+
+    <div class="p-8 text-center text-text-secondary">
+      Assessment not found.
+    </div>
+
   }
+
 
   @if (showApproveConfirm()) {
 
@@ -232,6 +244,7 @@
     />
 
   }
+
 
   @if (showRejectConfirm()) {
 

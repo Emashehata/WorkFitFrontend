@@ -1,5 +1,4 @@
 export interface SkillChange {
-  skillChangeId: string;
   skillId: string;
   skillName: string;
   oldScore: number;
@@ -11,14 +10,14 @@ export interface Assessment {
   assessmentId: string;
   employeeId: string;
   employeeName?: string;
-  taskId: string;
+  taskId: string | null;
   taskName?: string;
   status?: 'Pending' | 'Approved' | 'Rejected';
   skillChanges: SkillChange[];
 }
 
 export interface AlterSkillChange {
-  skillChangeId: string;
+  skillId: string; // ⚠️ بدل skillChangeId - الـ response بقى بيرجّع skillId بس
   newScore: number;
   note: string;
 }

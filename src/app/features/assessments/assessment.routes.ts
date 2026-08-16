@@ -13,7 +13,7 @@ export const ASSESSMENT_ROUTES: Routes = [
       ),
   },
   {
-    path: 'team-assessments/:id',
+    path: 'team-assessments',
     canActivate: [roleGuard],
     data: { roles: [UserRole.TeamLeader] },
     loadComponent: () =>
@@ -31,7 +31,7 @@ export const ASSESSMENT_ROUTES: Routes = [
       ),
   },
   {
-    path: 'my-assessments/:id',
+    path: 'my-assessments',
     canActivate: [roleGuard],
     data: { roles: [UserRole.Employee] },
     loadComponent: () =>
