@@ -3,14 +3,13 @@ import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize, switchMap, tap } from 'rxjs';
-
+import { AlterSkillChange } from '../../../../core/models/assessment.model';
+import { TaskDetailDto } from '../../../../core/models/task.models';
+import { AssessmentService } from '../../../../core/services/assessment/assessment.service';
 import { AuthService } from '../../../../core/services/auth/auth.service';
 import { TaskService } from '../../../../core/services/task/task.service';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
-import { TaskDetailDto } from '../../../../core/models/task.models';
-import { AlterSkillChange } from '../../../../core/models/assessment.model';
-import { AssessmentService } from '../../../../core/services/assessment/assessment.service';
 
 @Component({
   selector: 'app-assessment-detail',
@@ -51,6 +50,9 @@ export class AssessmentDetailComponent implements OnInit {
       .getById(id)
       .pipe(
         switchMap((assessment) => {
+          // ⚠️ taskId ممكن يبقى null دلوقتي، فمنجيبش التاسك في الحالة دي
+          if (!assessment.taskId) return [null];
+
           this.taskLoading.set(true);
           return this.taskService.getTaskById(assessment.taskId).pipe(
             tap((task) => this.task.set(task)),
@@ -65,16 +67,16 @@ export class AssessmentDetailComponent implements OnInit {
     if (!this.isAltering()) {
       const initial: Record<string, number> = {};
       this.assessment()?.skillChanges.forEach((sc) => {
-        initial[sc.skillChangeId] = sc.proposedScore;
+        initial[sc.skillId] = sc.proposedScore;
       });
       this.alteredScores.set(initial);
     }
     this.isAltering.update((v) => !v);
   }
 
-  updateScore(skillChangeId: string, value: string) {
+  updateScore(skillId: string, value: string) {
     const num = Number(value);
-    this.alteredScores.update((scores) => ({ ...scores, [skillChangeId]: num }));
+    this.alteredScores.update((scores) => ({ ...scores, [skillId]: num }));
   }
 
   submitAlter() {
@@ -83,8 +85,8 @@ export class AssessmentDetailComponent implements OnInit {
 
     this.submitting.set(true);
     const skillChanges: AlterSkillChange[] = current.skillChanges.map((sc) => ({
-      skillChangeId: sc.skillChangeId,
-      newScore: this.alteredScores()[sc.skillChangeId] ?? sc.proposedScore,
+      skillId: sc.skillId,
+      newScore: this.alteredScores()[sc.skillId] ?? sc.proposedScore,
       note: this.alterNote(),
     }));
 
@@ -132,6 +134,10 @@ export class AssessmentDetailComponent implements OnInit {
         this.showRejectConfirm.set(false);
         this.rejectNote.set('');
       });
+  }
+
+  scorePercent(score: number): number {
+    return Math.min(100, Math.max(0, score)); // 0-100 مباشرة
   }
 
   goBack() {

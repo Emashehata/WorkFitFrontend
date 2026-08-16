@@ -1,0 +1,315 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+  <div
+    class="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl bg-surface border border-border shadow-lg p-6"
+  >
+
+    @let r = result();
+
+    @if (loading()) {
+
+      <div class="text-center py-12">
+        <p class="text-text-secondary text-sm">
+          Running code review and skill analysis...
+        </p>
+      </div>
+
+    } @else if (error()) {
+
+      <div class="text-center py-12">
+        <p class="text-danger text-sm mb-4">
+          Something went wrong while completing the task.
+        </p>
+
+        <button
+          class="px-4 py-2 rounded-lg text-sm bg-primary text-white"
+          (click)="run()"
+        >
+          Retry
+        </button>
+      </div>
+
+    } @else if (r) {
+
+      <div class="flex justify-between items-center mb-4">
+
+        <h2 class="text-lg font-bold text-text">
+          Task completed
+        </h2>
+
+        <button
+          class="text-text-secondary hover:text-text text-lg leading-none"
+          (click)="onClose()"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <!-- Code Review Summary -->
+      <div class="rounded-xl border border-border p-4 mb-4">
+
+        <div class="flex justify-between items-center mb-3">
+
+          <h3 class="font-semibold text-text">
+            Code review
+          </h3>
+
+          <span
+            class="px-2.5 py-0.5 rounded-full text-xs font-semibold"
+            [ngClass]="riskClass(r.codeReview.response.risk)"
+          >
+            {{ r.codeReview.response.risk }} risk
+          </span>
+
+        </div>
+
+
+        <div class="flex items-center gap-6 mb-3 text-sm">
+
+          <div>
+            <span class="text-text-secondary">
+              Overall score:
+            </span>
+
+            <span class="text-text font-semibold">
+              {{ r.codeReview.response.overallScore }}/100
+            </span>
+          </div>
+
+          <div>
+            <span class="text-text-secondary">
+              Technical debt:
+            </span>
+
+            <span class="text-text font-semibold">
+              {{ r.codeReview.response.technicalDebt }}
+            </span>
+          </div>
+
+        </div>
+
+
+        <p class="text-sm text-text-secondary leading-relaxed mb-3">
+          {{ r.codeReview.developerSummary }}
+        </p>
+
+
+        @if (r.codeReview.response.positiveFindings.length > 0) {
+
+          <div class="mb-3">
+
+            <p class="text-xs font-semibold text-text-secondary mb-1.5">
+              What went well
+            </p>
+
+            <ul class="text-sm text-text list-disc list-inside space-y-1">
+
+              @for (
+                finding of r.codeReview.response.positiveFindings;
+                track finding
+              ) {
+                <li>
+                  {{ finding }}
+                </li>
+              }
+
+            </ul>
+
+          </div>
+
+        }
+
+
+        @if (r.codeReview.response.issues.length > 0) {
+
+          <div class="mb-3">
+
+            <p class="text-xs font-semibold text-text-secondary mb-1.5">
+              Issues found
+            </p>
+
+            <div class="flex flex-col gap-2">
+
+              @for (
+                issue of r.codeReview.response.issues;
+                track issue.title
+              ) {
+
+                <div class="rounded-lg border border-border p-3">
+
+                  <div class="flex justify-between items-start mb-1">
+
+                    <span class="text-sm font-medium text-text">
+                      {{ issue.title }}
+                    </span>
+
+                    <span
+                      class="px-2 py-0.5 rounded-full text-xs font-semibold"
+                      [ngClass]="severityClass(issue.severity)"
+                    >
+                      {{ issue.severity }}
+                    </span>
+
+                  </div>
+
+                  <p class="text-xs text-text-secondary mb-1">
+                    {{ issue.detail }}
+                  </p>
+
+                  <p class="text-xs text-text-secondary italic">
+                    {{ issue.recommendation }}
+                  </p>
+
+                </div>
+
+              }
+
+            </div>
+
+          </div>
+
+        }
+
+
+        @if (r.codeReview.response.nextActions.length > 0) {
+
+          <div>
+
+            <p class="text-xs font-semibold text-text-secondary mb-1.5">
+              Next actions
+            </p>
+
+            <ul class="text-sm text-text list-disc list-inside space-y-1">
+
+              @for (
+                action of r.codeReview.response.nextActions;
+                track action
+              ) {
+                <li>
+                  {{ action }}
+                </li>
+              }
+
+            </ul>
+
+          </div>
+
+        }
+
+      </div>
+
+
+      <!-- Skill Gains -->
+      <div class="rounded-xl border border-border p-4">
+
+        <h3 class="font-semibold text-text mb-3">
+          Skill impact
+        </h3>
+
+
+        @if (
+          r.skillGainAnalysis.skillChanges.length === 0 &&
+          r.skillGainAnalysis.newSkills.length === 0
+        ) {
+
+          <p class="text-sm text-text-secondary">
+            No skill changes detected.
+          </p>
+
+        } @else {
+
+          <div class="flex flex-col gap-2">
+
+            @for (
+              change of r.skillGainAnalysis.skillChanges;
+              track change.skillId
+            ) {
+
+              <div
+                class="flex items-center justify-between text-sm border-b border-border pb-2 last:border-b-0"
+              >
+
+                <div>
+
+                  <span class="text-text font-medium">
+                    {{ change.skillName }}
+                  </span>
+
+                  <p class="text-xs text-text-secondary">
+                    {{ change.reasoning }}
+                  </p>
+
+                </div>
+
+                <span
+                  class="text-text font-semibold whitespace-nowrap ml-3"
+                >
+                  {{ change.oldScore }} → {{ change.newScore }}
+                </span>
+
+              </div>
+
+            }
+
+
+            @for (
+              newSkill of r.skillGainAnalysis.newSkills;
+              track newSkill.skillName
+            ) {
+
+              <div
+                class="flex items-center justify-between text-sm border-b border-border pb-2 last:border-b-0"
+              >
+
+                <div>
+
+                  <span class="text-text font-medium">
+                    {{ newSkill.skillName }}
+                  </span>
+
+                  <span
+                    class="ml-2 px-2 py-0.5 rounded-full text-xs bg-primary/15 text-primary"
+                  >
+                    New
+                  </span>
+
+                  <p class="text-xs text-text-secondary">
+                    {{ newSkill.reasoning }}
+                  </p>
+
+                </div>
+
+                <span
+                  class="text-text font-semibold whitespace-nowrap ml-3"
+                >
+                  {{ newSkill.newScore }}
+                </span>
+
+              </div>
+
+            }
+
+          </div>
+
+        }
+
+
+        <p class="text-xs text-text-secondary mt-3 pt-3 border-t border-border">
+          This has been submitted as a new assessment for your team leader's review.
+        </p>
+
+      </div>
+
+
+      <button
+        class="w-full mt-4 px-4 py-2 rounded-lg text-sm font-semibold bg-primary text-white hover:bg-primary-hover"
+        (click)="onClose()"
+      >
+        Done
+      </button>
+
+    }
+
+  </div>
+</div>

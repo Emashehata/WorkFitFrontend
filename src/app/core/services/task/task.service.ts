@@ -15,6 +15,7 @@ import {
   DeveloperTask,
 } from '../../models/task.models';
 import { API_ROUTES } from '../../constants/api-routes.constant';
+import { TaskCompleteWithCodeReviewResponse } from '../../models/task-completion.model';
 
 @Injectable({
   providedIn: 'root',
@@ -110,4 +111,11 @@ export class TaskService {
       req,
     );
   }
+
+  completeTaskWithCodeReview(taskId: string): Observable<TaskCompleteWithCodeReviewResponse> {
+  return this.http.post<TaskCompleteWithCodeReviewResponse>(
+    `${this.baseUrl}/api/tasks/${taskId}/take-complete-with-code-review`,
+    {}
+  );
+}
 }
