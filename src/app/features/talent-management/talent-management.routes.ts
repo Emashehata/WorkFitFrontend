@@ -1,5 +1,6 @@
-// features/talent-management/talent-management.routes.ts
 import { Routes } from '@angular/router';
+import { roleGuard } from '../../core/guards/role.guard';
+import { UserRole } from '../../core/enums/user-role.enum';
 
 export const TALENT_MANAGEMENT_ROUTES: Routes = [
   {
@@ -7,6 +8,14 @@ export const TALENT_MANAGEMENT_ROUTES: Routes = [
     loadComponent: () =>
       import('./profile/employee-profile/employee-profile.component').then(
         (m) => m.EmployeeProfileComponent
+      ),
+  },
+  {
+    path: 'org-employees',
+     
+    loadComponent: () =>
+      import('./employees-list/employees-list.component').then(
+        (m) => m.EmployeesListComponent
       ),
   },
   {

@@ -1,15 +1,17 @@
-import { Component, OnInit, inject, computed } from '@angular/core';
+import { Component, OnInit, inject, computed, signal } from '@angular/core';
 import { NgClass } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { finalize } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth/auth.service';
 import { TalentManagementService } from '../../../../core/services/talent-management/talent-management.service';
 import { SkillHistoryModalComponent } from '../../skill-history-modal/skill-history-modal.component';
-
+ 
 
 @Component({
   selector: 'app-employee-profile',
   standalone: true,
-  imports: [NgClass, SkillHistoryModalComponent],
+  imports: [NgClass, FormsModule, SkillHistoryModalComponent],
   templateUrl: './employee-profile.component.html',
 })
 export class EmployeeProfileComponent implements OnInit {
@@ -21,10 +23,20 @@ export class EmployeeProfileComponent implements OnInit {
   profile = this.talentService.currentEmployee;
   loading = this.talentService.loading;
 
-  // بس الـ Team Leader هو اللي يقدر يفتح الـ skill history
-  canViewSkillHistory = this.auth.isTeamLeader;
+  // ⭐ Team Leader و Organization Owner الاتنين يقدروا يشوفوا الـ skill history
+  canViewSkillHistory = computed(
+    () => this.auth.isTeamLeader() || this.auth.isOrganizationOwner()
+  );
+
+  isOwnProfile = computed(() => !this.route.snapshot.paramMap.get('id'));
 
   activeSkillId: string | null = null;
+
+  // GitHub linking (بس في بروفايلك انت)
+  showGitHubForm = signal(false);
+  githubAccountId = signal('');
+  githubDisplayName = signal('');
+  linkingGitHub = signal(false);
 
   initials = computed(() => {
     const name = this.profile()?.name ?? '';
@@ -37,19 +49,14 @@ export class EmployeeProfileComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe((params) => {
-      const paramId = params.get('id');
+    const paramId = this.route.snapshot.paramMap.get('id');
 
-      if (paramId) {
-        this.talentService.getEmployeeById(paramId).subscribe();
-        return;
-      }
+    if (paramId) {
+      this.talentService.getEmployeeById(paramId).subscribe();
+      return;
+    }
 
-      const userId = this.auth.currentUser()?.userId;
-      if (userId) {
-        this.talentService.getEmployeeById(userId).subscribe();
-      }
-    });
+    this.talentService.getMyProfile().subscribe();
   }
 
   openSkillHistory(skillId: string) {
@@ -59,6 +66,23 @@ export class EmployeeProfileComponent implements OnInit {
 
   closeSkillHistory() {
     this.activeSkillId = null;
+  }
+
+  submitGitHubLink() {
+    if (!this.githubAccountId() || !this.githubDisplayName()) return;
+
+    this.linkingGitHub.set(true);
+    this.talentService
+      .linkGitHubAccount({
+        gitHubAccountId: this.githubAccountId(),
+        gitHubDisplayName: this.githubDisplayName(),
+      })
+      .pipe(finalize(() => this.linkingGitHub.set(false)))
+      .subscribe(() => {
+        this.showGitHubForm.set(false);
+        this.githubAccountId.set('');
+        this.githubDisplayName.set('');
+      });
   }
 
   statusBadgeClass(status: string): string {

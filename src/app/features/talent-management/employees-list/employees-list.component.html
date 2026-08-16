@@ -1,0 +1,64 @@
+<div class="p-6">
+  <div class="flex flex-col gap-4 mb-6">
+    <h1 class="text-2xl font-bold text-text">Employees</h1>
+
+    <input
+      type="text"
+      placeholder="Search by name, title, or email"
+      class="w-full max-w-sm px-3 py-2 rounded-lg border border-border bg-surface text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+      [value]="searchTerm()"
+      (input)="onSearch($any($event.target).value)"
+    />
+  </div>
+
+  @if (loading()) {
+    <div class="p-8 text-center text-text-secondary">Loading employees...</div>
+  } @else if (filteredEmployees().length === 0) {
+    <div class="p-8 text-center text-text-secondary">No employees found.</div>
+  } @else {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      @for (employee of filteredEmployees(); track trackByEmployee($index, employee)) {
+        <div class="p-4 rounded-xl border border-border bg-surface hover:shadow-md transition-all duration-150">
+          <div class="flex justify-between items-center mb-2">
+            <span class="font-semibold text-text">{{ employee.name }}</span>
+            <span
+              class="px-2.5 py-0.5 rounded-full text-xs font-semibold"
+              [ngClass]="
+                employee.isActive
+                  ? 'bg-success/15 text-success'
+                  : 'bg-danger/15 text-danger'
+              "
+            >
+              {{ employee.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+
+          <div class="text-sm text-text-secondary mb-3">{{ employee.jobTitle }}</div>
+
+          <div class="text-xs text-text-secondary/70 mb-3">{{ employee.email }}</div>
+
+          <div class="mb-4">
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-text-secondary">Allocation</span>
+              <span class="text-text font-medium">{{ employee.currentAllocationPercentage }}%</span>
+            </div>
+            <div class="w-full h-1.5 rounded-full bg-background overflow-hidden">
+              <div
+                class="h-full bg-primary rounded-full"
+                [style.width.%]="employee.currentAllocationPercentage"
+              ></div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="w-full px-3 py-2 rounded-lg text-sm font-semibold bg-primary text-white hover:bg-primary-hover transition-colors"
+            (click)="viewDetails(employee.id)"
+          >
+            View Details
+          </button>
+        </div>
+      }
+    </div>
+  }
+</div>
