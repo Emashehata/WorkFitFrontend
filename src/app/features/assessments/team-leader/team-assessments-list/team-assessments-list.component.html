@@ -3,60 +3,50 @@
     <h1 class="text-2xl font-bold text-text">Team Assessments</h1>
 
     <div class="flex gap-2 flex-wrap">
-      @for (filter of filters; track filter) {
-        <button
-          type="button"
-          class="px-4  rounded-lg border text-sm font-medium transition-colors"
-          [ngClass]="
-            activeFilter() === filter
+      @for (filter of filters; track filter.value) {
+      <button type="button" class="px-4 py-1.5 rounded-lg border text-sm font-medium transition-colors" [ngClass]="
+            activeFilter() === filter.value
               ? 'bg-primary text-white border-primary'
               : 'bg-surface text-text-secondary border-border hover:border-primary'
-          "
-          (click)="setFilter(filter)"
-        >
-          {{ filter }}
-        </button>
+          " (click)="setFilter(filter.value)">
+        {{ filter.label }}
+      </button>
       }
     </div>
   </div>
 
   @if (loading()) {
-    <div class="p-8 text-center text-text-secondary">Loading assessments...</div>
+  <div class="p-8 text-center text-text-secondary">Loading assessments...</div>
   } @else if (filteredAssessments().length === 0) {
-    <div class="p-8 text-center text-text-secondary">No assessments found.</div>
+  <div class="p-8 text-center text-text-secondary">No assessments found.</div>
   } @else {
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      @for (assessment of filteredAssessments(); track trackByAssessment($index, assessment)) {
-        <a
-          [routerLink]="['/team-assessments', assessment.assessmentId]"
-          class="block p-4 rounded-xl border border-border bg-surface hover:shadow-md hover:-translate-y-0.5 transition-all duration-150"
-        >
-          <div class="flex justify-between items-center mb-2">
-            <span class="font-semibold text-text">
-              {{ assessment.employeeName || assessment.employeeId }}
-            </span>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    @for (assessment of filteredAssessments(); track trackByAssessment($index, assessment)) {
+    <a [routerLink]="['/team-assessments', assessment.assessmentId]"
+      class="block p-4 rounded-xl border border-border bg-surface hover:shadow-md hover:-translate-y-0.5 transition-all duration-150">
+      <div class="flex justify-between items-center mb-2">
+        <span class="font-semibold text-text">
+          {{ assessment.employeeName || assessment.employeeId }}
+        </span>
 
-            <span
-              class="px-2.5 py-0.5 rounded-full text-xs font-semibold"
-              [ngClass]="{
-                'bg-warning/15 text-warning': assessment.status === 'Pending' || !assessment.status,
-                'bg-success/15 text-success': assessment.status === 'Approved',
-                'bg-danger/15 text-danger': assessment.status === 'Rejected'
-              }"
-            >
-              {{ assessment.status || 'Pending' }}
-            </span>
-          </div>
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold" [ngClass]="{
+                  'bg-warning/15 text-warning': assessment.status === AssessmentStatus.Pending,
+                  'bg-success/15 text-success': assessment.status === AssessmentStatus.Approved,
+                  'bg-danger/15 text-danger': assessment.status === AssessmentStatus.Rejected
+                }">
+          {{ assessment.status | assessmentStatusLabel }}
+        </span>
+      </div>
 
-          <div class="text-sm text-text-secondary mb-2">
-            {{ assessment.taskName || assessment.taskId }}
-          </div>
+      <div class="text-sm text-text-secondary mb-2">
+        {{ assessment.taskId }}
+      </div>
 
-          <div class="text-xs text-text-secondary/70">
-            {{ assessment.skillChanges.length }} skill(s) proposed
-          </div>
-        </a>
-      }
-    </div>
+      <div class="text-xs text-text-secondary/70">
+        {{ assessment.skillChanges.length }} skill(s) proposed
+      </div>
+    </a>
+    }
+  </div>
   }
 </div>

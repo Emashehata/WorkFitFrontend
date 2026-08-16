@@ -15,14 +15,15 @@ import { OrganizationSettingsComponent } from './features/organization/organizat
 import { EmployeesComponent } from './features/employee/employees/employees.component';
 import { InvitationApprovalsComponent } from './features/organizationOwner/invitation-approvals/invitation-approvals.component';
 import { AcceptInvitationComponent } from './features/invitations/accept-invitation/accept-invitation.component';
-
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'landing', component: LandingComponent },
   { path: 'register', component: RegisterOrganizationComponent, canActivate: [PublicGuard] },
   { path: 'invitations/accept', component: AcceptInvitationComponent },
+  {path:"landing" , component:LandingComponent},
   { path: 'dashboard', redirectTo: 'home', pathMatch: 'full' },
+  
   {
     path: '',
     component: DashboardLayoutComponent,
@@ -33,7 +34,7 @@ export const routes: Routes = [
       { path: 'my-team', component: EmployeesComponent },
       { path: 'projects', component: ProjectComponent },
       { path: 'projects/:id', component: ProjectDetailComponent },
-      { path: 'organization_settings', component: OrganizationSettingsComponent, canActivate: [paymentGuard] },
+      { path: 'organization_settings', component: OrganizationSettingsComponent },
       { path: 'invitation-approvals', component: InvitationApprovalsComponent, canActivate: [roleGuard], data: { roles: [UserRole.OrganizationOwner] } },
       { path: 'pricing', loadComponent: () => import('./features/pricing/pricing.component').then(m => m.PricingComponent) },
       { path: 'payment-success', loadComponent: () => import('./features/organizationOwner/payment-success/payment-success.component').then(m => m.PaymentSuccessComponent) },

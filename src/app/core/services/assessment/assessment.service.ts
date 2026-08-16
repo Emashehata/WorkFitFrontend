@@ -6,6 +6,7 @@ import {
   Assessment,
   AlterAssessmentRequest,
   ApproveRejectRequest,
+  AssessmentStatus,
 } from '../../models/assessment.model';
 
 @Injectable({ providedIn: 'root' })
@@ -74,9 +75,9 @@ export class AssessmentService {
     );
   }
 
-  updateLocalStatus(id: string, status: 'Approved' | 'Rejected') {
-    this.assessments.update((list) =>
-      list.map((a) => (a.assessmentId === id ? { ...a, status } : a)),
-    );
-  }
+ updateLocalStatus(id: string, status: AssessmentStatus) {
+  this.assessments.update((list) =>
+    list.map((a) => (a.assessmentId === id ? { ...a, status } : a))
+  );
+}
 }
