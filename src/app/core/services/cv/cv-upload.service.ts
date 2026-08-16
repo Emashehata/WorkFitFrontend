@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
-import { API_ROUTES } from '../../constants/api-routes.constant.ts';
+import { API_ROUTES } from '../../constants/api-routes.constant';
 import { CVUploadResponse } from '../../models/cv.models';
 
 @Injectable({ providedIn: 'root' })
