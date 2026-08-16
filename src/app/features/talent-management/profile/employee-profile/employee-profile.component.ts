@@ -6,7 +6,7 @@ import { finalize } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth/auth.service';
 import { TalentManagementService } from '../../../../core/services/talent-management/talent-management.service';
 import { SkillHistoryModalComponent } from '../../skill-history-modal/skill-history-modal.component';
- 
+
 
 @Component({
   selector: 'app-employee-profile',
@@ -23,7 +23,6 @@ export class EmployeeProfileComponent implements OnInit {
   profile = this.talentService.currentEmployee;
   loading = this.talentService.loading;
 
-  // ⭐ Team Leader و Organization Owner الاتنين يقدروا يشوفوا الـ skill history
   canViewSkillHistory = computed(
     () => this.auth.isTeamLeader() || this.auth.isOrganizationOwner()
   );
@@ -32,14 +31,13 @@ export class EmployeeProfileComponent implements OnInit {
 
   activeSkillId: string | null = null;
 
-  // GitHub linking (بس في بروفايلك انت)
   showGitHubForm = signal(false);
   githubAccountId = signal('');
   githubDisplayName = signal('');
   linkingGitHub = signal(false);
 
   initials = computed(() => {
-    const name = this.profile()?.name ?? '';
+    const name = this.profile()?.Name ?? '';
     return name
       .split(' ')
       .map((part) => part[0])
@@ -97,13 +95,13 @@ export class EmployeeProfileComponent implements OnInit {
   }
 
   scoreColor(score: number): string {
-    if (score >= 4) return 'bg-success';
-    if (score >= 2) return 'bg-warning';
+    if (score >= 70) return 'bg-success';
+    if (score >= 40) return 'bg-warning';
     return 'bg-danger';
   }
 
   scorePercent(score: number): number {
-    return Math.min(100, Math.max(0, (score / 5) * 100));
+    return Math.min(100, Math.max(0, score));
   }
 
   goBack() {

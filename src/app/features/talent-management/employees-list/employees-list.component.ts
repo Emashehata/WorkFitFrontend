@@ -3,7 +3,7 @@ import { NgClass } from '@angular/common';
 import { Router } from '@angular/router';
 import { EmployeeListItem } from '../../../core/models/talent-management.model';
 import { TalentManagementService } from '../../../core/services/talent-management/talent-management.service';
- 
+
 
 @Component({
   selector: 'app-employees-list',
@@ -26,9 +26,9 @@ export class EmployeesListComponent implements OnInit {
     if (!term) return list;
     return list.filter(
       (e) =>
-        e.name.toLowerCase().includes(term) ||
-        e.jobTitle.toLowerCase().includes(term) ||
-        e.email.toLowerCase().includes(term)
+        e.Name.toLowerCase().includes(term) ||
+        e.JobTitle.toLowerCase().includes(term) ||
+        e.Email.toLowerCase().includes(term)
     );
   });
 
@@ -45,6 +45,6 @@ export class EmployeesListComponent implements OnInit {
   }
 
   trackByEmployee(index: number, employee: EmployeeListItem) {
-    return employee.id;
+    return employee.Id;
   }
 }

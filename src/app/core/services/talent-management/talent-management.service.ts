@@ -3,8 +3,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { Observable, tap, finalize } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { EmployeeProfile, EmployeeListItem, EmployeeSkillDetail, LinkGitHubRequest } from '../../models/talent-management.model';
- 
- 
+
 
 @Injectable({ providedIn: 'root' })
 export class TalentManagementService {
