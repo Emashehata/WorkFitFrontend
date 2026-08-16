@@ -34,16 +34,16 @@ export class SidebarService {
   /**
    * Initialize menu based on user roles
    */
-  initializeMenu(): void {
+   initializeMenu(): void {
   const user = this.authService.currentUser();
   const roles = user?.roles || [];
 
   const sections: SidebarSection[] = [];
 
-  // ⭐ Main section - visible to everyone
-    const mainItems: SidebarMenuItem[] = [
-      { title: 'Dashboard', icon: 'fa-solid fa-house', route: '/home' },
-    ];
+  const mainItems: SidebarMenuItem[] = [
+    { title: 'Dashboard', icon: 'fa-solid fa-house', route: '/home' },
+  ];
+
   if (roles.some(role => ['SuperAdmin', 'Admin', 'OrganizationOwner', 'TeamLeader'].includes(role))) {
     mainItems.push({
       title: 'Employees',
@@ -51,7 +51,6 @@ export class SidebarService {
       route: '/employees',
     });
   }
-  
 
   mainItems.push({
     title: 'Projects',
@@ -59,14 +58,12 @@ export class SidebarService {
     route: '/projects',
   });
 
-  // ⬇️ Profile — متاح للكل
   mainItems.push({
     title: 'My Profile',
     icon: 'fa-solid fa-id-card',
     route: '/profile',
   });
 
-  // ⬇️ Assessments — حسب الدور
   if (roles.includes('TeamLeader')) {
     mainItems.push({
       title: 'Team Assessments',
@@ -112,30 +109,21 @@ export class SidebarService {
       route: '/integrations',
       badge: 'New',
     });
+    managementItems.push({
+      title: 'Employee Profiles',
+      icon: 'fa-solid fa-users',
+      route: '/Cvs',
+    });
   }
-    if (roles.some(r => r === 'OrganizationOwner' || r === 'SuperAdmin')) {
-      managementItems.push({
-        title: 'Organizations',
-        icon: 'fa-solid fa-building',
-        route: '/organizations',
-      });
-      managementItems.push({
-        title: 'Settings',
-        icon: 'fa-solid fa-gear',
-        route: '/organization_settings',
-      });
-      managementItems.push({
-        title: 'GitHub Integration',
-        icon: 'fa-brands fa-github',
-        route: '/integrations',
-        badge: 'New',
-      });
-      managementItems.push({
-        title: 'Employee Profiles',
-        icon: 'fa-solid fa-users',
-        route: '/Cvs',
-      });
-    }
+
+  // ⭐ جديد — الـ Org Employees list، متاحة لـ Owner و Team Leader
+  if (roles.some(r => r === 'OrganizationOwner' || r === 'TeamLeader')) {
+    managementItems.push({
+      title: 'Org Employees',
+      icon: 'fa-solid fa-address-book',
+      route: '/org-employees',
+    });
+  }
 
   if (roles.includes('SuperAdmin')) {
     managementItems.push({

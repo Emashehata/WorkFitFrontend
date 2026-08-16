@@ -2,6 +2,7 @@ import { Component, OnInit, input, output, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { TalentManagementService } from '../../../core/services/talent-management/talent-management.service';
 
+
 @Component({
   selector: 'app-skill-history-modal',
   standalone: true,

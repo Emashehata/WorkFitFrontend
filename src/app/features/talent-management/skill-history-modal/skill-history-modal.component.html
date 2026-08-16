@@ -6,6 +6,7 @@
     class="w-full max-w-md rounded-xl bg-surface border border-border shadow-lg p-6"
     (click)="$event.stopPropagation()"
   >
+
     @if (loading()) {
 
       <div class="text-center text-text-secondary text-sm py-6">
@@ -15,6 +16,7 @@
     } @else if (skillDetail()) {
 
       <div class="flex justify-between items-center mb-4">
+
         <h2 class="text-lg font-bold text-text">
           {{ skillDetail()!.skillName }} history
         </h2>
@@ -25,6 +27,7 @@
         >
           ×
         </button>
+
       </div>
 
       <div
@@ -57,6 +60,7 @@
             <div
               class="flex items-center justify-between text-sm border-b border-border pb-2 last:border-b-0"
             >
+
               <span class="text-text-secondary">
                 {{ change.createdAt | date: 'medium' }}
               </span>
@@ -64,6 +68,7 @@
               <span class="text-text font-medium">
                 {{ change.oldScore }} → {{ change.newScore }}
               </span>
+
             </div>
 
           }
@@ -79,5 +84,6 @@
       </div>
 
     }
+
   </div>
 </div>

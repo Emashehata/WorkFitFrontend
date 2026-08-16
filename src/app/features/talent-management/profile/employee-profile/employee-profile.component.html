@@ -1,4 +1,5 @@
 <div class="p-6 max-w-3xl mx-auto">
+
   @if (loading()) {
 
     <div class="p-8 text-center text-text-secondary">
@@ -8,15 +9,18 @@
   } @else if (profile()) {
 
     <div class="flex items-center gap-3 mb-4">
+
       <button
         class="text-text-secondary hover:text-primary text-sm"
         (click)="goBack()"
       >
         ← Back
       </button>
+
     </div>
 
     <div class="rounded-xl border border-border bg-surface p-6 mb-6">
+
       <div class="flex items-start gap-4">
 
         <div
@@ -28,6 +32,7 @@
         <div class="flex-1">
 
           <div class="flex items-center gap-3 flex-wrap">
+
             <h1 class="text-xl font-bold text-text">
               {{ profile()!.name }}
             </h1>
@@ -38,6 +43,7 @@
             >
               {{ profile()!.status }}
             </span>
+
           </div>
 
           <p class="text-text-secondary text-sm mt-1">
@@ -47,9 +53,13 @@
           <div
             class="flex items-center gap-4 mt-3 text-sm text-text-secondary flex-wrap"
           >
-            <span>{{ profile()!.email }}</span>
+
+            <span>
+              {{ profile()!.email }}
+            </span>
 
             @if (profile()!.linkedInUrl) {
+
               <a
                 [href]="profile()!.linkedInUrl"
                 target="_blank"
@@ -58,22 +68,29 @@
               >
                 LinkedIn
               </a>
+
             }
+
           </div>
 
         </div>
+
       </div>
 
       @if (profile()!.bio) {
+
         <p
           class="text-sm text-text-secondary mt-4 pt-4 border-t border-border leading-relaxed"
         >
           {{ profile()!.bio }}
         </p>
+
       }
 
       <div class="mt-4 pt-4 border-t border-border">
+
         <div class="flex justify-between text-sm mb-1.5">
+
           <span class="text-text-secondary">
             Current allocation
           </span>
@@ -81,20 +98,86 @@
           <span class="text-text font-medium">
             {{ profile()!.currentAllocationPercentage }}%
           </span>
+
         </div>
 
         <div
           class="w-full h-2 rounded-full bg-background overflow-hidden"
         >
+
           <div
             class="h-full bg-primary rounded-full"
             [style.width.%]="profile()!.currentAllocationPercentage"
           ></div>
+
         </div>
+
       </div>
+
+      @if (isOwnProfile()) {
+
+        <div class="mt-4 pt-4 border-t border-border">
+
+          @if (!showGitHubForm()) {
+
+            <button
+              class="text-sm text-primary hover:underline"
+              (click)="showGitHubForm.set(true)"
+            >
+              + Link GitHub account
+            </button>
+
+          } @else {
+
+            <div class="flex flex-col gap-2 max-w-sm">
+
+              <input
+                type="text"
+                placeholder="GitHub account ID"
+                class="px-3 py-1.5 rounded-lg border border-border bg-surface text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                [ngModel]="githubAccountId()"
+                (ngModelChange)="githubAccountId.set($event)"
+              />
+
+              <input
+                type="text"
+                placeholder="GitHub display name"
+                class="px-3 py-1.5 rounded-lg border border-border bg-surface text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                [ngModel]="githubDisplayName()"
+                (ngModelChange)="githubDisplayName.set($event)"
+              />
+
+              <div class="flex gap-2 mt-1">
+
+                <button
+                  class="px-3 py-1.5 rounded-lg text-sm bg-surface text-text border border-border hover:bg-background"
+                  (click)="showGitHubForm.set(false)"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  class="px-3 py-1.5 rounded-lg text-sm bg-primary text-white disabled:opacity-60"
+                  [disabled]="linkingGitHub()"
+                  (click)="submitGitHubLink()"
+                >
+                  Save
+                </button>
+
+              </div>
+
+            </div>
+
+          }
+
+        </div>
+
+      }
+
     </div>
 
     <div class="rounded-xl border border-border bg-surface p-6">
+
       <h2 class="text-lg font-bold text-text mb-4">
         Skills
       </h2>
@@ -115,6 +198,7 @@
               [class.cursor-pointer]="canViewSkillHistory()"
               (click)="openSkillHistory(skill.skillId)"
             >
+
               <div class="flex justify-between text-sm mb-1.5">
 
                 <span
@@ -123,13 +207,17 @@
                     'hover:text-primary': canViewSkillHistory()
                   }"
                 >
+
                   {{ skill.skillName }}
 
                   @if (canViewSkillHistory()) {
+
                     <span class="text-text-secondary text-xs ml-1">
                       →
                     </span>
+
                   }
+
                 </span>
 
                 <span class="text-text-secondary">
@@ -141,12 +229,15 @@
               <div
                 class="w-full h-2 rounded-full bg-background overflow-hidden"
               >
+
                 <div
                   class="h-full rounded-full"
                   [ngClass]="scoreColor(skill.confidenceScore)"
                   [style.width.%]="scorePercent(skill.confidenceScore)"
                 ></div>
+
               </div>
+
             </div>
 
           }
@@ -154,14 +245,17 @@
         </div>
 
       }
+
     </div>
 
-    @if (activeSkillId && profile()) {
+    @if (activeSkillId) {
+
       <app-skill-history-modal
         [skillId]="activeSkillId"
         [employeeId]="profile()!.employeeId"
         (closed)="closeSkillHistory()"
       />
+
     }
 
   } @else {
@@ -171,4 +265,5 @@
     </div>
 
   }
+
 </div>

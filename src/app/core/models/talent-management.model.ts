@@ -12,11 +12,20 @@ export interface EmployeeProfile {
   name: string;
   email: string;
   jobTitle: string;
-  bio: string;
-  linkedInUrl: string;
+  bio: string | null;
+  linkedInUrl: string | null;
   status: string;
   currentAllocationPercentage: number;
   skills: EmployeeSkillSummary[];
+}
+
+export interface EmployeeListItem {
+  id: string;
+  name: string;
+  email: string;
+  jobTitle: string;
+  isActive: boolean;
+  currentAllocationPercentage: number;
 }
 
 export interface ConfidenceChange {
@@ -34,4 +43,9 @@ export interface EmployeeSkillDetail {
   skillName: string;
   confidenceScore: number;
   confidenceChanges: ConfidenceChange[];
+}
+
+export interface LinkGitHubRequest {
+  gitHubAccountId: string;
+  gitHubDisplayName: string;
 }

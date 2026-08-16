@@ -2,23 +2,41 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, tap, finalize } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { EmployeeProfile, EmployeeSkillDetail } from '../../models/talent-management.model';
-import { API_ROUTES } from '../../constants/api-routes.constant';
-
+import { EmployeeProfile, EmployeeListItem, EmployeeSkillDetail, LinkGitHubRequest } from '../../models/talent-management.model';
+ 
+ 
 
 @Injectable({ providedIn: 'root' })
 export class TalentManagementService {
   private http = inject(HttpClient);
   private baseUrl = environment.baseUrl;
+  private talentUrl = `${this.baseUrl}/talent-management`;
 
   currentEmployee = signal<EmployeeProfile | null>(null);
+  employeesList = signal<EmployeeListItem[]>([]);
   selectedSkill = signal<EmployeeSkillDetail | null>(null);
   loading = signal(false);
 
+  getMyProfile(): Observable<EmployeeProfile> {
+    this.loading.set(true);
+    return this.http.get<EmployeeProfile>(`${this.talentUrl}/employees/user`).pipe(
+      tap((res) => this.currentEmployee.set(res)),
+      finalize(() => this.loading.set(false))
+    );
+  }
+
   getEmployeeById(id: string): Observable<EmployeeProfile> {
     this.loading.set(true);
-    return this.http.get<EmployeeProfile>(`${this.baseUrl}${API_ROUTES.talent.employeeById(id)}`).pipe(
+    return this.http.get<EmployeeProfile>(`${this.talentUrl}/employees/${id}`).pipe(
       tap((res) => this.currentEmployee.set(res)),
+      finalize(() => this.loading.set(false))
+    );
+  }
+
+  getAllEmployees(): Observable<EmployeeListItem[]> {
+    this.loading.set(true);
+    return this.http.get<EmployeeListItem[]>(`${this.baseUrl}/employees`).pipe(
+      tap((res) => this.employeesList.set(res)),
       finalize(() => this.loading.set(false))
     );
   }
@@ -27,10 +45,19 @@ export class TalentManagementService {
     const params = new HttpParams().set('employeeId', employeeId);
     this.loading.set(true);
     return this.http
-      .get<EmployeeSkillDetail>(`${this.baseUrl}/employee-skills/${skillId}`, { params })
+      .get<EmployeeSkillDetail>(`${this.talentUrl}/employee-skills/${skillId}`, { params })
       .pipe(
         tap((res) => this.selectedSkill.set(res)),
         finalize(() => this.loading.set(false))
       );
+  }
+
+  linkGitHubAccount(req: LinkGitHubRequest): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/employees/me/github`, req);
+  }
+
+  clear() {
+    this.currentEmployee.set(null);
+    this.selectedSkill.set(null);
   }
 }
