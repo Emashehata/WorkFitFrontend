@@ -34,13 +34,8 @@ export class TeamAssessmentsListComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    const userId = this.auth.currentUser()?.userId;
-    if (!userId) return;
-
-    this.talentService.getEmployeeById(userId).subscribe((profile) => {
-      this.assessmentService.getByTeamLead(profile.employeeId).subscribe();
-    });
-  }
+  this.assessmentService.getByTeamLead().subscribe();
+}
 
   setFilter(filter: StatusFilter) {
     this.activeFilter.set(filter);

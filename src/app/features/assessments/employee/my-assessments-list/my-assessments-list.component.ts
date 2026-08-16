@@ -33,14 +33,9 @@ export class MyAssessmentsListComponent implements OnInit {
     return list.filter((a) => a.status === filter);
   });
 
-  ngOnInit(): void {
-    const userId = this.auth.currentUser()?.userId;
-    if (!userId) return;
-
-    this.talentService.getEmployeeById(userId).subscribe((profile) => {
-      this.assessmentService.getByEmployeeProfile(profile.employeeId).subscribe();
-    });
-  }
+ ngOnInit(): void {
+  this.assessmentService.getMyAssessments().subscribe();
+}
 
   setFilter(filter: StatusFilter) {
     this.activeFilter.set(filter);

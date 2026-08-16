@@ -6,6 +6,11 @@ export interface SkillChange {
   evidence: string;
 }
 
+export interface AlterSkillChange {
+  skillId: string; 
+  newScore: number;
+  note: string;
+}
 export interface Assessment {
   assessmentId: string;
   employeeId: string;
@@ -16,11 +21,7 @@ export interface Assessment {
   skillChanges: SkillChange[];
 }
 
-export interface AlterSkillChange {
-  skillId: string; // ⚠️ بدل skillChangeId - الـ response بقى بيرجّع skillId بس
-  newScore: number;
-  note: string;
-}
+
 
 export interface AlterAssessmentRequest {
   skillChanges: AlterSkillChange[];
