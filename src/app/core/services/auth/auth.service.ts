@@ -13,7 +13,7 @@ import {
   CurrentUser,
 } from '../../models/auth.models';
 import { API_ROUTES } from '../../constants/api-routes.constant';
-
+import { UserRole } from '../../enums/user-role.enum';
 const TOKEN_KEY = 'workfit_token';
 
 @Injectable({ providedIn: 'root' })
@@ -31,11 +31,11 @@ export class AuthService {
   // ⭐ Organization ID cache
   private _organizationId = signal<string | null>(null);
   readonly organizationId = this._organizationId.asReadonly();
-
-  // ⭐ Login
   login(req: LoginRequest): Observable<LoginResponse> {
     return this.http
-      .post(`${this.baseUrl}${API_ROUTES.identity.login}`, req, { responseType: 'text' })
+      .post(`${this.baseUrl}${API_ROUTES.identity.login}`, req, {
+        responseType: 'text',
+      })
       .pipe(
         tap((token) => {
           // Clean the token
@@ -47,7 +47,16 @@ export class AuthService {
         }),
       );
   }
-
+  readonly role = computed<UserRole | null>(
+    () => this.getUserRoles()[0] ?? null,
+  );
+  readonly isSuperAdmin = computed(() => this.hasRole(UserRole.SuperAdmin));
+  readonly isAdmin = computed(() => this.hasRole(UserRole.Admin));
+  readonly isOrganizationOwner = computed(() =>
+    this.hasRole(UserRole.OrganizationOwner),
+  );
+  readonly isTeamLeader = computed(() => this.hasRole(UserRole.TeamLeader));
+  readonly isEmployee = computed(() => this.hasRole(UserRole.Employee));
   // ⭐ Register Organization
   registerOrganization(
     req: RegisterOrganizationRequest,
@@ -55,7 +64,7 @@ export class AuthService {
     return this.http.post(
       `${this.baseUrl}${API_ROUTES.workflow.registerOrganization}`,
       req,
-      { responseType: 'text' }
+      { responseType: 'text' },
     );
   }
 
@@ -94,10 +103,10 @@ export class AuthService {
     const params = new HttpParams().set('userId', userId);
 
     return this.http
-      .get<string>(
-        `${this.baseUrl}${API_ROUTES.organizations.meId}`,
-        { params, responseType: 'text' as 'json' }
-      )
+      .get<string>(`${this.baseUrl}${API_ROUTES.organizations.meId}`, {
+        params,
+        responseType: 'text' as 'json',
+      })
       .pipe(
         tap((orgId) => {
           // Clean the response (remove quotes if present)
@@ -139,19 +148,16 @@ export class AuthService {
 
   // ⭐ ==================== ROLE HELPERS ====================
 
-  getUserRoles(): string[] {
-    return this._currentUser()?.roles || [];
+  getUserRoles(): UserRole[] {
+    return (this._currentUser()?.roles as UserRole[]) || [];
   }
-
-  hasRole(role: string): boolean {
+  hasRole(role: UserRole): boolean {
     return this.getUserRoles().includes(role);
   }
-
-  hasAnyRole(roles: string[]): boolean {
+  hasAnyRole(roles: UserRole[]): boolean {
     return roles.some((role) => this.hasRole(role));
   }
-
-  hasAllRoles(roles: string[]): boolean {
+  hasAllRoles(roles: UserRole[]): boolean {
     return roles.every((role) => this.hasRole(role));
   }
 
