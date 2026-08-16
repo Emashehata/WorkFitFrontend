@@ -1,31 +1,48 @@
 export interface EmployeeSkillSummary {
-  id: string;
-  skillId: string;
-  skillName: string;
-  confidenceScore: number;
+  Id: string;
+  SkillId: string;
+  SkillName: string;
+  ConfidenceScore: number;
+}
+
+export interface IdentityMapping {
+  Provider: string;
+  ExternalId: string;
+}
+
+export interface Certification {
+  Id: string;
+  Name: string;
+  IssuedAt: string | null;
 }
 
 export interface EmployeeProfile {
-  employeeId: string;
-  organizationId: string;
-  userId: string;
-  name: string;
-  email: string;
-  jobTitle: string;
-  bio: string | null;
-  linkedInUrl: string | null;
-  status: string;
-  currentAllocationPercentage: number;
-  skills: EmployeeSkillSummary[];
+  Id: string;
+  OrganizationId: string;
+  UserId: string;
+  Name: string;
+  Email: string;
+  JobTitle: string;
+  Bio: string | null;
+  LinkedInUrl: string | null;
+  Status: string;
+  IsActive: boolean;
+  CurrentAllocationPercentage: number;
+  HireDate: string | null;
+  CreatedAt: string;
+  UpdatedAt: string;
+  Skills: EmployeeSkillSummary[];
+  IdentityMappings: IdentityMapping[];
+  Certifications: Certification[];
 }
 
 export interface EmployeeListItem {
-  id: string;
-  name: string;
-  email: string;
-  jobTitle: string;
-  isActive: boolean;
-  currentAllocationPercentage: number;
+  Id: string;
+  Name: string;
+  Email: string;
+  JobTitle: string;
+  IsActive: boolean;
+  CurrentAllocationPercentage: number;
 }
 
 export interface ConfidenceChange {

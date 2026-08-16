@@ -7,18 +7,19 @@
     (click)="$event.stopPropagation()"
   >
 
+    @let s = skillDetail();
+
     @if (loading()) {
 
       <div class="text-center text-text-secondary text-sm py-6">
         Loading history...
       </div>
 
-    } @else if (skillDetail()) {
+    } @else if (s) {
 
       <div class="flex justify-between items-center mb-4">
-
         <h2 class="text-lg font-bold text-text">
-          {{ skillDetail()!.skillName }} history
+          {{ s.skillName }} history
         </h2>
 
         <button
@@ -27,8 +28,8 @@
         >
           ×
         </button>
-
       </div>
+
 
       <div
         class="flex items-center justify-between text-sm mb-4 pb-4 border-b border-border"
@@ -38,11 +39,12 @@
         </span>
 
         <span class="text-text font-semibold">
-          {{ skillDetail()!.confidenceScore }} / 5
+          {{ s.confidenceScore }} / 100
         </span>
       </div>
 
-      @if (skillDetail()!.confidenceChanges.length === 0) {
+
+      @if (s.confidenceChanges.length === 0) {
 
         <p class="text-text-secondary text-sm">
           No changes recorded yet.
@@ -52,10 +54,7 @@
 
         <div class="flex flex-col gap-3 max-h-80 overflow-y-auto">
 
-          @for (
-            change of skillDetail()!.confidenceChanges;
-            track change.id
-          ) {
+          @for (change of s.confidenceChanges; track change.id) {
 
             <div
               class="flex items-center justify-between text-sm border-b border-border pb-2 last:border-b-0"
