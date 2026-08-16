@@ -26,26 +26,26 @@
       </div>
     </div>
 
-    <!-- Filter Tabs -->
-    <div class="relative mb-8">
-      <div class="flex gap-2 flex-wrap p-1 bg-white/50 backdrop-blur-sm rounded-2xl border border-border/50 shadow-sm">
-        @for (filter of filters; track filter) {
-          <button type="button"
-            class="px-5 py-2 rounded-xl text-sm font-bold transition-all duration-300 relative"
-            [ngClass]="
-              activeFilter() === filter
-                ? 'bg-gradient-to-r from-primary to-primary/80 text-white shadow-lg shadow-primary/25'
-                : 'text-text-secondary hover:text-text hover:bg-white/50'
-            "
-            (click)="setFilter(filter)">
-            {{ filter }}
-            @if (activeFilter() === filter) {
-              <span class="absolute inset-0 rounded-xl bg-white/20 animate-pulse"></span>
-            }
-          </button>
+  <!-- Filter Tabs -->
+<div class="relative mb-8">
+  <div class="flex gap-2 flex-wrap p-1 bg-white/50 backdrop-blur-sm rounded-2xl border border-border/50 shadow-sm">
+    @for (filter of filters; track filter.value) {
+      <button type="button"
+        class="px-5 py-2 rounded-xl text-sm font-bold transition-all duration-300 relative"
+        [ngClass]="
+          activeFilter() === filter.value
+            ? 'bg-gradient-to-r from-primary to-primary/80 text-white shadow-lg shadow-primary/25'
+            : 'text-text-secondary hover:text-text hover:bg-white/50'
+        "
+        (click)="setFilter(filter.value)">
+        {{ filter.label }}
+        @if (activeFilter() === filter.value) {
+          <span class="absolute inset-0 rounded-xl bg-white/20 animate-pulse"></span>
         }
-      </div>
-    </div>
+      </button>
+    }
+  </div>
+</div>
 
     <!-- Content -->
     @if (loading()) {
@@ -80,17 +80,16 @@
               <div class="flex justify-between items-start mb-3">
                 <div class="flex-1 min-w-0">
                   <span class="font-bold text-text group-hover:text-primary transition-colors duration-300 truncate block">
-                    {{ assessment.taskName || assessment.taskId }}
+                    {{  assessment.taskId }}
                   </span>
                 </div>
-                <span class="ml-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm shrink-0"
-                  [ngClass]="{
-                    'bg-amber-50 text-amber-700 border border-amber-200': assessment.status === 'Pending' || !assessment.status,
-                    'bg-emerald-50 text-emerald-700 border border-emerald-200': assessment.status === 'Approved',
-                    'bg-rose-50 text-rose-700 border border-rose-200': assessment.status === 'Rejected'
-                  }">
-                  {{ assessment.status || 'Pending' }}
-                </span>
+              <span class="ml-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm shrink-0" [ngClass]="{
+                  'bg-amber-50 text-amber-700 border border-amber-200': assessment.status === AssessmentStatus.Pending,
+                  'bg-emerald-50 text-emerald-700 border border-emerald-200': assessment.status === AssessmentStatus.Approved,
+                  'bg-rose-50 text-rose-700 border border-rose-200': assessment.status === AssessmentStatus.Rejected
+                }">
+                {{ assessment.status | assessmentStatusLabel }}
+              </span>
               </div>
 
               <div class="flex items-center gap-3 text-xs text-text-secondary/70">

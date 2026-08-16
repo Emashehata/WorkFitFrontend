@@ -74,6 +74,7 @@ export class AuthService {
     this._currentUser.set(null);
     this._organizationId.set(null);
     this.router.navigate(['/login']);
+    localStorage.clear(); // Clears ALL localStorage data
   }
 
   // ⭐ Get Token (with cleaning)
